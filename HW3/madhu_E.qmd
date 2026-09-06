@@ -4,12 +4,54 @@ format: html
 editor: visual
 ---
 
-# Test File
-
 ## Task 1
 
-#### 1. Question
+1.  If your working directory is `myfolder/homework/`, what relative path would you specify to get the file located at `myfolder/MyData.csv`?
 
-```{r}
-#demo
-```
+    - `../MyData.csv`, since `..` indicates the parent folder
+
+2.  What are the major benefits of using R projects?
+
+    - R projects is an easy way to divide and organize your work. Each project contains a working directory, its own workspace, history, as well as folder structure & source documents.
+
+3.  What is Git and what is GitHub?
+
+    - Git is a version control software, used so that we can periodically save snapshots of our files/work, whereas GitHub is the online platform that stores our git repositories.
+    - GitHub is also key for collaboration with others, so that multiple people can share snapshots of repos and work on them at the same time and push it to the platform.
+
+4.  What are the two main differences between a tibble and a data.frame?
+
+    - Tibble is similar to a data.frame, but it is a modern re-imagining that's more compatible for the wonderful tidyverse library.
+    - They have a more compact print, and complain more upfront leading to cleaner code.
+    - Subsetting one column using \[ preserves the tibble, but df forces it down to a vector.
+
+## Task 2
+
+1.  Read glass.data into R from URL using `tidyverse`
+
+    ```{r}
+    library(tidyverse)
+
+    glass_data <- read_csv(
+      "https://www4.stat.ncsu.edu/~online/datasets/glass.data",
+      col_names = c("Id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "Type")
+    )
+    glass_data
+
+
+    ```
+
+2.  Read yeast.data into R from URL using `tidyverse`
+
+    ```{r}
+    yeast_data <- read_table(
+      "https://www4.stat.ncsu.edu/~online/datasets/yeast.data",
+      col_names = c("seq_name", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "class")
+    )
+
+    yeast_data
+    ```
+
+glass.data's delimiter were commas and yeast.data's were whitespaces.
+
+## Task 3
