@@ -4,6 +4,350 @@ format: html
 editor: visual
 ---
 
-\# Homework 2
+## Task 1: Basic Vector practice
 
-Group 6 Homework 2 submission.
+For this first task, we created vectors for pre-treatment and post-treatment from a medical experiment on blood pressure. We assigned a name to these vectors, and then calculate difference between the respective vectors to determine average difference.
+
+1.  Create two vectors. One vector corresponding to the pre measurements and one to the post measurements.
+
+    ```{r t1-p1}
+    # Creating Initial Vectors
+    pre_tr <- c(130, 128, 116, 124, 133, 134, 118, 126, 114, 127, 141, 138, 128, 140, 137, 131, 120, 128, 139, 135)
+
+    post_tr <- c(114, 98, 113, 99, 107, 116, 113, 111, 119, 117, 101, 119, 130, 122, 106, 106, 124, 102, 117, 113)
+    ```
+
+2.  Assign names to the vector elements using the paste() function. Note that names() can be overwritten by a character vector. To quickly create the names, try running the code. Create the same names for each vector’s elements.
+
+    ```{r t1-p2}
+    # Vector and patients IDs
+    subject_ids <- paste("Subject", 1:20, sep = "_")
+
+    names(pre_tr) <- subject_ids
+    names(post_tr) <- subject_ids
+    ```
+
+3.  Calculate the change in blood pressure for each patient by subtracting post-treatment measurements from pre-treatment measurements. Recall that R does math element-wise! Save this calculation as a new object (also a vector).
+
+    ```{r t1-p3}
+    # The change in blood pressure across all patients
+    diff_bp <- pre_tr - post_tr
+    diff_bp
+    ```
+
+4.  Calculate the average decrease in blood pressure across all patients.
+
+    ```{r t1-p4}
+    # Calculating the average in blood pressure across all patients
+    avg_diff <- mean(diff_bp)
+    avg_diff
+    ```
+
+    The average of all 20 patients the blood pressure dropped by 17 points.
+
+5.  Determine which patients experienced a decrease in blood pressure after treatment (a positive change). Use the which() function to just return the indices (and names) associated with this type of change.
+
+    ```{r t1-p5}
+    # Find subjects with a positive blood pressure change
+    decreased_bp <- which(diff_bp > 0) # which() returns positions, but not the actual                                              #difference themselves.
+    decreased_bp
+    ```
+
+    Based on the output, we can see how subjects 9,13, and 17 are not part of the list, indicating that their blood pressure went up after the treatment. Thus, the treatment didn't help them.
+
+6.  Subset the vector of differences to only return those that have a positive change.
+
+    ```{r t1-p6}
+    # Return only positive blood pressure changes
+
+    # Method 1: filter directly on the logical condition
+    positive_diff <- diff_bp[diff_bp > 0]
+    positive_diff
+
+    # Method 2: reuses the indices from the previous which() used in step 5. 
+    # this method more efficient since decreased_bp is already computed.
+    positive_diff <- diff_bp[decreased_bp]
+    positive_diff
+
+    # Both methods return the same result. Method 1 was chosen for the final approach as it reads clearly without having to go back to step 5.
+    ```
+
+    In this case we know that subjects 9, 13 and 17 are the patients whose blood pressure went up after the treatment.
+
+7.  Calculate the average decrease in blood pressure for those where the blood pressure decreased (positive change).
+
+    ```{r t1-p7}
+    # Average decrease in blood pressure for positive change valus 
+    avg_diff_decreased <- mean(positive_diff)
+    avg_diff_decreased
+    ```
+
+    Comparing the two resulted averages, notice how when we included everyone, the average decreased by 17, however this resulted included 3 patients whose blood pressure did not decrease. After we calculated the average only including the 17 patients who blood pressure improved, the average decreases about 20.65 points. This results is more accurate to identify the effectiveness of the treatment.
+
+## Task 2: Basic Data Frame Practice
+
+As we identified in Task 1 that three patients did not response to the treatment, this Task 2 organizes the full dataset into a data frame in order to filter out those non-responders.
+
+1.  Create a data frame object with four columns corresponding to your data above: patient, pre_bp, post_bp, and diff_bp
+
+    ```{r t2-p1}
+    # Create the blood pressure data frame
+
+    # Method 1:
+    bp_df <- data.frame(
+      patient = subject_ids, # character labels like "Subject_1"
+      pre_bp = unname(pre_tr),
+      post_bp = unname(post_tr),
+      diff_bp = unname(diff_bp)
+    )
+
+    bp_df
+
+    # Method 2: overwrites bp_df
+    patient <- 1:20
+
+    bp_df <- data.frame(patient = patient,
+                        pre_bp  = pre_tr,
+                        post_bp = post_tr,
+                        diff_bp,
+                        row.names = NULL)
+    bp_df
+
+
+    # Method 2 is the version used for the rest of the analysis, since it runs second and overwrites bp_df. It uses numeric patient IDs instead of the subject_ids strings, since we don't need the "Subject_" prefix once the data is inside a data frame column. This also avoids carrying over the named-vector attributes from Task 1.
+    ```
+
+2.  Return only rows where the diff_bp column is negative. (Use \[ or learn about the subset() function if you’d like. If you use \[, don’t reference the original vector from the first part, access the column of the data frame when looking at making a comparison.)
+
+    ```{r t2-p2}
+    # Returning only rows where the diff_bp column is negative
+
+    # Method 1: subset() reads more like plain English and does not require repeating the data frame name for each column
+    subset(bp_df, diff_bp < 0)
+
+    # Method 2: bracket indexing requires explicitly calling the data frame name each time.
+    negative_diff <- bp_df[bp_df$diff_bp < 0, ]
+    negative_diff
+    ```
+
+    Notice how these are the same patients in Task 1, whose blood pressure went up after the treatment.
+
+3.  Add a new column to the data frame corresponding to TRUE if the post_bp is less than 120. Recall you can use \$ to reference a column. If you reference a column that doesn’t exist, and save a vector (of appropriate length in it), that vector becomes a column of your data frame! Similar to the previous question, don’t reference the original vector from the first part, access the column of the data frame when looking at making a comparison.
+
+    ```{r t2-p3}
+    # Adding a new column named normal_range to the data frame that is TRUE if the post_bp is less than 120
+    bp_df$post_under_120 <- bp_df$post_bp < 120
+    bp_df
+    ```
+
+    The patients 13, 14, and 17 have post_bp values at or above 120. Notice that being under 120 post-treatment and having blood pressure decrease are two different criteria, which in this case we see how patient 14 appears here but not in Task 1.
+
+4.  Finally, print the data frame out nicely in your final document by modifying the code below appropriately
+
+    ```{r t2-p4}
+    # Print the data frame with knitr
+    knitr::kable(bp_df)
+    ```
+
+## Task 3: List Practice
+
+For third section, we built the placebo data frame (same as Task 2), then we combined both data frames into a named list, and demonstrated a different ways to access elements from that list.
+
+1.  Create a new data frame with this data in it that is similar to the data frame from task 2 (including the new column).
+
+    ```{r t3-p1}
+    # Pre-treatment blood pressure measurements for placebo subjects
+    placebo_pre <- c(138, 135, 147, 117, 152, 134, 114, 121, 131, 130)
+    # Post-treatment blood pressure measurements for placebo subjects
+    placebo_post <- c(105, 136, 123, 130, 134, 143, 135, 139, 120, 124)
+
+    # Calculate the change in blood pressure
+    placebo_diff <- placebo_pre - placebo_post
+
+    # Method 1: uses character subject_ids and follows Task 1 bp_df implementation.
+    placebo_df <- data.frame(
+      patient = subject_ids,
+      pre_bp = placebo_pre,
+      post_bp = placebo_post,
+      diff_bp = placebo_diff
+    )
+
+
+
+    # Method 2: overwrites subject_ids itself to 1:10
+    # This overwrites subject_ids from Task 1 with a shorter vector (length of 10 instead of 20). Not an issue here since Task 1's subject_ids isn't referenced again after this section,
+    subject_ids  <- 1:10
+
+    placebo_df <- data.frame(
+      patient = subject_ids,
+      pre_bp = placebo_pre,
+      post_bp = placebo_post,
+      diff_bp = placebo_diff,
+      row.names = NULL
+    )
+
+    # Add the same logical column used in Task 2
+    placebo_df$post_under_120 <- placebo_df$post_bp < 120
+    placebo_df
+
+    # Method 3: adds normal_range column and uses the numeric subject_ids
+    placebo_df <- data.frame(patient=subject_ids,
+                             pre_bp=placebo_pre,
+                             post_bp=placebo_post,
+                             diff_bp=placebo_diff,
+                             normal_range=placebo_post < 120,
+                             row.names = NULL)
+    ```
+
+2.  Now create and store a list with two elements:
+
+    - 1st element named treatment and contains the first data frame you created
+
+    - 2nd element named placebo and contains the second data frame you created.
+
+    ```{r t3-p2}
+    # Combine the treatment and placebo data frames into a list
+
+    # Method 1
+    bp_list <- list(
+      treatment = bp_df,
+      placebo = placebo_df
+    )
+
+    bp_list
+
+    # Method 2
+    experiment_list <- list(treatment = bp_df, placebo = placebo_df)
+    experiment_list
+
+    # Both methods create the same two dataframes 
+    ```
+
+3.  Access the first list element using three different types of syntax.
+
+    ```{r t3-p3}
+    # Access by numeric position
+    bp_list[[1]]
+
+    # Access by element name using double brackets
+    bp_list[["treatment"]]
+
+    # Access by element name using $
+    bp_list$treatment
+    ```
+
+4.  In one line, access the placebo data frame, pre_bp column.
+
+    ```{r t3-p4}
+    # Access the placebo pre_bp column
+    bp_list$placebo$pre_bp
+
+    experiment_list$placebo$pre_bp # use if experiment_list is used
+    ```
+
+## Task 4: Control Flow Practice
+
+For this last section, we added a status column to each data frame inside the list, then used a for loop with if/else logic to classify each patient as optimal, borderline, or high based on their post treatment/placebo blood pressure values.
+
+1.  Suppose we want to characterize the post-treatment (or placebo) blood pressure measurement as optimal (≤ 120), borderline (120 \< bp ≤ 130), and high (\> 130). First, create a new column in each data frame from above called status. You can do this via
+
+    `your_df$status <- character(20) #or 10 depending on number of observations`
+
+    Note: You want to add this additional column to the data frames that are stored in your list (R doesn’t do referencing to the original object).
+
+    ```{r t4-p1}
+    # Create empty status columns in the data frames stored in the list
+    bp_list$treatment$status <- character(nrow(bp_list$treatment))
+    bp_list$placebo$status <- character(nrow(bp_list$placebo))
+
+    # Other method: harcoding
+    bp_list$treatment$status <- character(20)
+    bp_list$placebo$status <- character(10)
+
+    # We kept the nrow() version as prefered approach since it will stay correct even if the # number of patients change.
+    # Hardcoding could break if the dataset size change.
+    ```
+
+2.  For the non-placebo data frame (within the list), create a for loop and use if/then/else logic to create the status column’s values.
+
+    ```{r t4-p2}
+    # Creating loop for treatment data frame with conditions optimal (≤ 120), borderline (120 < bp ≤ 130), and high (> 130).
+
+    for (i in 1:nrow(experiment_list$treatment)) {
+      bp_value <- experiment_list$treatment$post_bp[i]
+      if (bp_value <= 120) {
+        experiment_list$treatment$status[i] <- "optimal"
+      } else if (bp_value > 120 & bp_value <= 130) {
+        experiment_list$treatment$status[i] <- "borderline"
+      } else {
+        experiment_list$treatment$status[i] <- "high"
+      }
+    }
+
+    experiment_list$treatment
+
+
+    # Other method
+    for (i in 1:20) {
+      
+      x <- bp_list$treatment$post_bp[i]
+      
+      if (x <= 120) {
+        bp_list$treatment$status[i] <- "optimal"
+      } 
+      
+      else if (x > 130) {
+        bp_list$treatment$status[i] <- "high"
+      } 
+      
+      else {
+        bp_list$treatment$status[i] <- "borderline"
+      }
+      
+    }
+
+    # Both loops generate identical results. The first loop is more explicit in a three way check. The second version just checks only two conditions and lets the else catch the middle "borderline".
+    ```
+
+3.  Repeat for the placebo data frame (within the list)
+
+    ```{r t4-p3}
+    # Creating the same loop with conditions optimal (≤ 120), borderline (120 < bp ≤ 130), and high (> 130) for placebo 
+
+    for (i in 1:nrow(experiment_list$placebo)) {
+      bp_value <- experiment_list$placebo$post_bp[i]
+      if (bp_value <= 120) {
+        experiment_list$placebo$status[i] <- "optimal"
+      } else if (bp_value > 120 & bp_value <= 130) {
+        experiment_list$placebo$status[i] <- "borderline"
+      } else {
+        experiment_list$placebo$status[i] <- "high"
+      }
+    }
+
+    experiment_list$placebo
+
+    # Other method
+
+    for (i in 1:10) {
+      
+      x <- bp_list$placebo$post_bp[i]
+      
+      if (x <= 120) {
+        bp_list$placebo$status[i] <- "optimal"
+      } 
+      
+      else if (x > 130) {
+        bp_list$placebo$status[i] <- "high"
+      } 
+      
+      else {
+        bp_list$placebo$status[i] <- "borderline"
+      }
+      
+    }
+
+    # Both methods follow the same logic as the previous step applied to the placebo group.
+    ```
+
+Across these four tasks, the analysis advanced from a single summary statistic, to an organized and filterable dataset, to a comparison between treatment and placebo groups, and finally to a clinical classification of each patient. Through these transformations, we were able to identify not just whether blood pressure decreased on average, but also how many patients actually reached a healthy range following treatment, and how that outcome compared to the placebo group.

@@ -1,0 +1,223 @@
+---
+title: "Divya_A"
+editor: visual
+---
+
+## Task 1: Conceptual Questions
+
+1.  **If your working directory is `myfolder/homework/`, what relative path would you specify to get the file located at `myfolder/MyData.csv`?**\
+    The relative path would be `../MyData.csv`.
+
+2.  **What are the major benefits of using R projects?**\
+    R projects help keep files organized, make it easier to use relative file paths, and keep project-specific files and settings together.
+
+3.  **What is Git and what is GitHub?**\
+    Git is a version control system that tracks changes to files. GitHub is an online platform used to store Git repositories and collaborate with others.
+
+4.  **What are the two main differences between a tibble and a data.frame?**\
+    Tibbles print a smaller preview of the data instead of printing everything, and they are stricter when accessing columns and do not partially match column names.
+
+## Task 2: Reading Delimited Data
+
+### Glass Data
+
+The glass data is comma-delimited and does not include column names. I read the data directly from the URL and added the appropriate variable names.
+
+```{r}
+library(tidyverse)
+
+glass <- read_csv(
+  "https://www4.stat.ncsu.edu/~online/datasets/glass.data",
+  col_names = c(
+    "Id", "RI", "Na", "Mg", "Al", "Si",
+    "K", "Ca", "Ba", "Fe", "Type"
+  )
+)
+
+glass
+```
+
+### Yeast Data
+
+The yeast data is separated by whitespace and does not include column names. I read the data directly from the URL and added the appropriate variable names.
+
+```{r}
+yeast <- read_table(
+  "https://www4.stat.ncsu.edu/~online/datasets/yeast.data",
+  col_names = c(
+    "seq_name", "mcg", "gvh", "alm", "mit",
+    "erl", "pox", "vac", "nuc", "class"
+  )
+)
+
+yeast
+```
+
+## Task 3: Combining Excel and Delimited Data
+
+### White Wine Data
+
+First, I read the white wine data from the first sheet of the Excel file using the `readxl` package.
+
+```{r}
+#| message: false
+#| warning: false
+
+library(readxl)
+library(tidyverse)
+
+white_wine <- read_excel(
+  "data/white-wine.xlsx",
+  sheet = 1
+)
+
+white_wine
+```
+
+Next, I read the alternative variable names from the second sheet and use them to replace the current column names.
+
+```{r}
+white_names <- read_excel(
+  "data/white-wine.xlsx",
+  sheet = 2
+)
+
+colnames(white_wine) <- white_names[[1]]
+
+white_wine
+```
+
+I then add a column indicating that every observation in this data set is a white wine.
+
+```{r}
+white_wine <- white_wine |>
+  mutate(type = "white")
+
+white_wine
+```
+
+### Red Wine Data
+
+The red wine data is semicolon-delimited. I read it directly from the URL using `readr`, replace the column names with the same variable names used for the white wine data, and add a column identifying the observations as red wine.
+
+```{r}
+red_wine <- read_delim(
+  "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
+  delim = ";",
+  col_types = cols(.default = col_double())
+)
+
+colnames(red_wine) <- white_names[[1]]
+
+red_wine <- red_wine |>
+  mutate(type = "red")
+
+red_wine
+```
+
+### Combined Wine Data
+
+Finally, I combine the white and red wine data into one tibble using `bind_rows()`.
+
+```{r}
+wine_data <- bind_rows(
+  white_wine,
+  red_wine
+)
+
+wine_data
+```
+
+## Task 4: Writing Functions
+
+### Interquartile Range Function
+
+First, I create a function called `getIQR` that calculates the interquartile range by subtracting the 25th percentile from the 75th percentile. The returned value is unnamed, and additional arguments can be passed to `quantile()`.
+
+```{r}
+getIQR <- function(x, ...) {
+  result <- quantile(x, 0.75, ...) - quantile(x, 0.25, ...)
+  unname(result)
+}
+```
+
+I apply the function to the `fixed_acidity` and `citric_acid` columns of the combined wine data.
+
+```{r}
+getIQR(wine_data$fixed_acidity)
+
+getIQR(wine_data$citric_acid)
+```
+
+### Coefficient of Variation Function
+
+Next, I create a function called `getCoefVar` that calculates the sample coefficient of variation as the sample standard deviation divided by the absolute value of the sample mean.
+
+```{r}
+getCoefVar <- function(x, ...) {
+  sd(x, ...) / abs(mean(x, ...))
+}
+```
+
+I apply this function to the same two variables.
+
+```{r}
+getCoefVar(wine_data$fixed_acidity)
+
+getCoefVar(wine_data$citric_acid)
+```
+
+### Summary Function
+
+Next, I create a wrapper function called `getSummaries`. This function calls the two functions created above and returns both the IQR and coefficient of variation with appropriate names.
+
+```{r}
+getSummaries <- function(x, ...) {
+  c(
+    IQR = getIQR(x, ...),
+    CoefVar = getCoefVar(x, ...)
+  )
+}
+```
+
+I apply the summary function to the `fixed_acidity` and `citric_acid` variables.
+
+```{r}
+getSummaries(wine_data$fixed_acidity)
+
+getSummaries(wine_data$citric_acid)
+```
+
+### Infix Function
+
+Finally, I create an infix function that can be used in place of `cbind()`.
+
+```{r}
+`%cbind%` <- function(x, y) {
+  cbind(x, y)
+}
+```
+
+I create the provided data frames and vector and test the infix function first with the two data frames and then with all three objects.
+
+```{r}
+set.seed(1)
+
+df1 <- data.frame(
+  unif = runif(10),
+  norm = rnorm(10)
+)
+
+df2 <- data.frame(
+  gamma = rgamma(10, shape = 1),
+  beta = rbeta(10, shape1 = 5, shape2 = 1)
+)
+
+vec1 <- rnorm(10, mean = 10)
+
+# Combine the two data frames
+df1 %cbind% df2
+
+# Combine both data frames and the vector
+(df1 %cbind% df2) %cbind% vec1
+```
