@@ -1,0 +1,209 @@
+---
+title: "Homework 3 - Maab Aldulimy"
+editor: visual
+---
+
+## Task 1: Conceptual Questions
+
+We start by answering the list of questions posed at the beginning of the homework 3 sheet.
+
+1.The relative path would be ../MyData.csv, since .. moves up one directory from myfolder/homework/ to myfolder/.
+
+2.R projects are great because they provide automatic working directory management, since R sets the working directory to the project's folder instead of requiring a manual setwd() call each session. Everything related to the project (scripts, data, .qmd files) is in one folder, making it easy to move, zip up, or clone fresh from GitHub. R projects also maintain their own separate environment and work directly with Git through RStudio's Git tab, since the project root and Git repo root are typically the same folder, keeping tracking, committing, and pushing all lined up cleanly.
+
+3.Git is a version control system that takes snapshots of r projects and stores the history on the local computer. while GitHub is a website that gives online storage area for repositories. This allows collaborations with other members through push and pull request features. The main difference is that Git tracks changes locally, while GitHub hosts that history remotely and enables collaboration between multiple people.
+
+4.The first main difference between tibble and a data.frame is how they are printed. tibble is presented in a much more organized and useful way where as data.frame is less organized and overwhelming.The second difference is that a tibble has multiple classes (tbl_df, tbl, data.frame), while a data.frame has only one (data.frame). This extra class structure lets R apply special tibble behavior (like the fancy printing) through method dispatch, while still falling back to standard data.frame behavior when needed.
+
+## Task 2: Reading Delimited Data
+
+In this task I read the Glass and Yeast data sets as specified in the descriptions that follow.
+
+Below I read the glass data set from the website : https://www4.stat.ncsu.edu/\~online/datasets/glass.data. I first checked to see what is used to separate the data points. I noticed that \[,\] were used therefor we used read_csv().Then column names were assigned based on the table in the HW3 Form.
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+glass <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/glass.data",col_names = FALSE)
+
+# adding column names:
+
+colnames(glass) <- c("Id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "Type")
+glass
+```
+
+Here we read the the Yeast Data from https://www4.stat.ncsu.edu/\~online/datasets/yeast.data. I first checked the delimiter and noticed that is was spaces this time. Therefor we used the read_table() function. Then we assigned column names in the same way as the glass example above.
+
+```{r}
+yeast <- read_table("https://www4.stat.ncsu.edu/~online/datasets/yeast.data", col_names = FALSE)
+
+#add column names:
+
+colnames(yeast) <- c("seq_name", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "class")
+yeast
+
+```
+
+## Task 3: Combining Excel and Delimited Data
+
+In this task we attempt to combine two data sets related to the red and white variants of the Portuguese “Vinho Verde” wine.
+
+first we start with the white variant data we want to pull this data in see it in a tibble then make sure we have the correct column names and add a section to identify that this is the white variant data.
+
+```{r}
+library(readxl)
+
+#reading in the excel data:
+
+white_wine <- read_excel("data/white-wine.xlsx")
+white_wine
+
+# viewing column names in sheet 2 :
+
+white_wine_names <- read_excel("data/white-wine.xlsx", sheet = 2)
+white_wine_names
+
+# fixing column names:
+
+colnames(white_wine) <- white_wine_names$Variables
+white_wine
+
+# adding a column named type that identifies the white variant
+
+white_wine<-white_wine |>
+  mutate(type= "white")
+
+```
+
+Second we read in the red variant data. Looking at the raw data we realize that values like 7.4, 0.7, 1.9 use periods as decimals, and semicolons ; separate the columns.In order to read this data correctly we use the read_delim() function and specify the delimiter as a semicolon instead of the default comma.Then we view the data, correct column names, and add a type column.
+
+```{r}
+#reading in the excel data:
+
+red_wine <- read_delim("https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv", delim = ";")
+red_wine
+
+# fixing column names:
+
+colnames(red_wine) <- white_wine_names$Variables
+red_wine
+
+# adding a column named type that identifies the red variant
+
+red_wine<-red_wine |>
+  mutate(type= "red")
+
+```
+
+Now we simply want to join the red and white wine data using the bind_rows() function.
+
+```{r}
+wine<-dplyr::bind_rows(red_wine,white_wine)
+wine
+```
+
+## Task 4: Writing a Function:
+
+In this section we write functions to get the IQR and coefficient of variation individually then together via getSummaries(). Additionally we write an infix function that can be used in replace of the cbind function.
+
+```{r}
+# making the getIQR function 
+getIQR <- function(vector,...) {
+  q_75<- quantile(vector,0.75,...)
+  q_25<- quantile(vector,0.25,...)
+  IQR<- unname(q_75 - q_25) 
+ 
+  return(IQR)
+}
+# testing if the function works:
+
+getIQR(c(1, 2, 3, 4, 5, 100))
+
+# using on wine column fixed_acidity:
+
+getIQR(wine$fixed_acidity)
+
+# using on wine column citric_acid:
+
+getIQR(wine$citric_acid)
+
+```
+
+Making getCoefVar() that returns the sample coefficient of variation, defined as the sample standard deviation divided by the absolute value of the sample mean.
+
+```{r}
+
+# making the getCoefVar function 
+getCoefVar <- function(vector,...) {
+  stand_dev<- sd(vector,...)
+  abs_mean<- abs(mean(vector,...))
+  CoefVar<- unname(stand_dev/ abs_mean) 
+ 
+  return(CoefVar)
+}
+# testing if the function works:
+
+getCoefVar(c(1, 2, 3, 4, 5, 100))
+
+# using on wine column fixed_acidity:
+
+getCoefVar(wine$fixed_acidity)
+
+# using on wine column citric_acid:
+
+getCoefVar(wine$citric_acid)
+
+```
+
+Making getSummaries a function that takes in a vector and returns both the IQR and the coefficient of variation using the two functions above.
+
+```{r}
+
+# making the getSummaries function 
+getSummaries <- function(vector,...) {
+  IQR<- getIQR(vector,...)
+  CoefVar<- getCoefVar(vector,...)
+ 
+ 
+  return(list("IQR" = IQR , "CoefVar" = CoefVar))
+}
+# testing if the function works:
+
+getSummaries(c(1, 2, 3, 4, 5, 100))
+
+# using on wine column fixed_acidity:
+
+getSummaries(wine$fixed_acidity)
+
+# using on wine column citric_acid:
+
+getSummaries(wine$citric_acid)
+```
+
+Making an infix function that can be used in replace of the cbind function
+
+```{r}
+
+# making the infix function 
+`%in_a_bind%` <-  function(a, b,...) {
+  cbind(a, b,...)
+}
+# testing if the function works:
+
+df1 <- data.frame(unif = runif(10), norm = rnorm(10))
+df2 <- data.frame(gamma = rgamma(10, shape = 1), beta = rbeta(10, shape1 = 5, shape2 = 1))
+vec1 <- rnorm(10, mean = 10)
+
+# test on df1 and df2 
+
+df1 %in_a_bind% df2
+
+# # test on all three df1,df2,vec1
+
+df1 %in_a_bind% df2 %in_a_bind% vec1  
+```
+
+------------------------------------------------------------------------
