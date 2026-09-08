@@ -58,12 +58,12 @@ library(readxl)
 
 #reading in the excel data:
 
-white_wine <- read_excel("white-wine.xlsx")
+white_wine <- read_excel("data/white-wine.xlsx")
 white_wine
 
 # viewing column names in sheet 2 :
 
-white_wine_names <- read_excel("white-wine.xlsx", sheet = 2)
+white_wine_names <- read_excel("data/white-wine.xlsx", sheet = 2)
 white_wine_names
 
 # fixing column names:
