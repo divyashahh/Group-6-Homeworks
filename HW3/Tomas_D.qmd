@@ -1,0 +1,184 @@
+---
+title: "Tomas_D"
+format: html
+editor: visual
+---
+
+## Homework 3
+
+#### Task 1
+
+1\. If your working directory is myfolder/homework/, what relative path would you specify to get the file located at myfolder/MyData.csv?
+
+- ../MyData.csv
+
+2\. What are the major benefits of using R projects?
+
+- The main benefits of R projects include relative filepaths and working directories to quickly access relevant scripts and data. Also, there are isolated workspaces and easy version control implementation.
+
+3\. What is Git and what is GitHub?
+
+- Git is a version control software used in project development. Github is an online repository for the same projects, allowing collaboration, sharing, and an easier GUI for navigation.
+
+4\. What are the two main differences between a tibble and a data.frame?
+
+- When printing a data.frame, all rows and columns are shown, vs a tibble only the first 10 rows are shown, in a more compact view. Tibbles will only return tibbles when sub-setting a column, dfs will return a vector.
+
+#### Task 2
+
+```{r}
+library(tidyverse) #loading packages
+
+
+#Reading data and creating column names
+data <- read_csv("https://www4.stat.ncsu.edu/online/datasets/glass.data", col_names = c("Id","RI","Na","Mg","Al","Si","K","Ca","Ba","Fe","Type_of_Glass"))
+
+data # printing tibble
+```
+
+```{r}
+yeast_data <- read.table("https://www4.stat.ncsu.edu/online/datasets/yeast.data", col.names = c("seq_name","mcg","gvh","alm","mit","erl","pox","vac","nuc","class"))
+
+#yeast_data
+```
+
+#### Task 3
+
+```{r}
+getwd() # finding my place
+library(readxl) #loading packages
+
+white_wine_s1 <- read_excel("data/white-wine.xlsx", sheet =1)#reading data from folder
+
+white_wine_s1 #viewing tibble
+
+wine_colnames <- read_excel("data/white-wine.xlsx",sheet = 2) #Read in second sheet
+
+colnames(white_wine_s1) <- wine_colnames[[1]] #Assign colnames as a vector
+
+
+
+#Adding "white" columns
+
+white_wine_s1$type <- "white"
+
+white_wine_s1
+
+```
+
+##### Task 3 Part 2
+
+```{r}
+#Loading Packages
+library(readr)
+library(dplyr)
+
+#Reading in red wine file
+red_wine <- read_delim(
+  "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
+  delim = ";"
+)
+
+#Assigning column names and new "red" column
+colnames(red_wine) <- wine_colnames[[1]]
+red_wine$type <- "red"
+
+# print tibble
+red_wine
+
+#combine datasets
+
+wine_data <- bind_rows(white_wine_s1, red_wine)
+wine_data
+```
+
+#### Task 4
+
+```{r}
+#Define function and arguments
+getIQR <- function(x,...){
+  
+  #Compute quantiles
+  quantiles <- quantile(x, probs = c(0.25,0.75),...)
+  
+  #calc iqr
+  iqr <- quantiles[2] - quantiles[1]
+  
+  return(unname(iqr))
+  
+}
+
+fixed_acidity_iqr <- getIQR(wine_data$fixed_acidity)
+citric_acid_iqr <- getIQR(wine_data$citric_acid)
+
+fixed_acidity_iqr
+citric_acid_iqr
+```
+
+```{r}
+#Define function
+getCoefVar <- function(x,...){
+  
+  #sd function
+  sd <- sd(x,...)
+  
+  #mean function
+  mean <- mean(x,...)
+  
+  #cv calc
+  cv <- sd/ abs(mean)
+  
+  return(cv)
+}
+
+#Calc CV values
+fixed_acidity_cv <- getCoefVar(wine_data$fixed_acidity)
+citric_acid_cv <- getCoefVar(wine_data$citric_acid)
+
+fixed_acidity_cv
+citric_acid_cv
+```
+
+```{r}
+#Define function
+getSummaries <- function(x,...){
+  iqr_calc <- getIQR(x,...)
+  iqr_cv <- getCoefVar(x,...)
+  
+  out <- c(IQR = iqr_calc, CV = iqr_cv)
+  
+  return(out)
+}
+
+#Calc summaries
+fixed_acidity_summary <- getSummaries(wine_data$fixed_acidity)
+citric_acid_summary <- getSummaries(wine_data$citric_acid)
+
+fixed_acidity_summary
+citric_acid_summary
+```
+
+```{r}
+#Infix operator
+
+`%cb%` <- function(a, b) {
+  cbind(a, b)
+}
+
+#Set random seeds 
+set.seed(1)
+
+#create set data frames
+df1  <- data.frame(unif = runif(10), norm = rnorm(10))
+df2  <- data.frame(gamma = rgamma(10, shape = 1), beta = rbeta(10, shape1 = 5, shape2 = 1))
+vec1 <- rnorm(10, mean = 10)
+
+#testing operators
+test1 <- df1 %cb% df2
+
+print(test1)
+
+test2 <- df1 %cb% df2 %cb% vec1
+
+print(test2)
+```
