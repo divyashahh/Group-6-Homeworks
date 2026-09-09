@@ -2,12 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.9.28">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Javi B">
 
-<title>javi_b</title>
+<title>Homework 4</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -38,7 +39,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-ece42c8223ec2bf36298a08f122c9a68.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -82,13 +83,101 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Homework 4</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Javi B </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
+
+<section id="task-1-conceptual-questions" class="level2">
+<h2 class="anchored" data-anchor-id="task-1-conceptual-questions">Task 1: Conceptual Questions</h2>
+<ol type="1">
+<li><p>Rewrite the following nested function call using baseR’s chaining operator:</p>
+<p>library(tidyverse) arrange(filter(select(as_tibble(iris), starts_with(“Petal”), Species), Petal.Length &lt; 1.55), Species)</p></li>
+<li><p>What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?</p></li>
+</ol>
+</section>
+<section id="task-2-note-use-chaining-where-possible" class="level2">
+<h2 class="anchored" data-anchor-id="task-2-note-use-chaining-where-possible">Task 2: (Note: Use chaining where possible!)</h2>
+<section id="glass-data" class="level3">
+<h3 class="anchored" data-anchor-id="glass-data">Glass Data</h3>
+<p>In HW 3 you read in the glass data from <a href="https://www4.stat.ncsu.edu/~online/datasets/glass.data." class="uri">https://www4.stat.ncsu.edu/~online/datasets/glass.data.</a> Let’s reread that data (use your code from HW 3) that also names the columns. Recall the last variable being Type of Glass with values of – 1 building_windows_float_processed, – 2 building_windows_non_float_processed, – 3 vehicle_windows_float_processed, – 4 vehicle_windows_non_float_processed (none in this database), – 5 containers, – 6 tableware, – 7 headlamps.</p>
+<ol start="3" type="1">
+<li><p>Start a chain on your data object that overwrites the Type_of_glass variable using mutate()</p>
+<ul>
+<li><p>Create a factor version of the variable that replaces the numbers with string labels (that is, replace 1 with “building_windows_float_processed”, 2 with “building_win. . . ”, etc. - see the variable descriptions above to give meaningful values).</p></li>
+<li><p>This could also be done by first using an ifelse() type call and then converting to a factor. Either way is fine!</p></li>
+</ul></li>
+<li><p>Continue your chain and keep only observations where the Fe variable is less than 0.2 and the Type of Glass is either “tableware” or “headlamp”</p></li>
+</ol>
+</section>
+<section id="yeast-data" class="level3">
+<h3 class="anchored" data-anchor-id="yeast-data">Yeast Data</h3>
+<p>In HW 3 you read in the Yeast data from <a href="https://www4.stat.ncsu.edu/~online/datasets/yeast.data." class="uri">https://www4.stat.ncsu.edu/~online/datasets/yeast.data.</a> Read this data into R directly from the URL, adding column names as well.</p>
+<ol start="5" type="1">
+<li><p>Start a chain that removes the seq_name and nuc columns.</p></li>
+<li><p>Continue your chain to add columns corresponding to the mean and median of each numeric variable (<code>mcg</code>, <code>gvh</code>, <code>alm</code>, <code>mit</code>, <code>erl</code>, <code>pox</code>, and <code>vac</code>) at each class grouping (see the <code>across()</code> function as we did in the <code>dplyr</code> video!).</p></li>
+</ol>
+</section>
+<section id="wine-data" class="level3">
+<h3 class="anchored" data-anchor-id="wine-data">Wine Data</h3>
+<p>In HW 3 you read in two data sets on wine. Read those two in and combine them as was done there.</p>
+<ol start="7" type="1">
+<li><p>Start a chain on your new combined data object to filter the data to only look at high-quality wines (quality &gt; 6.5) and wines that have a reasonable alcohol value (alcohol &lt; 132).</p></li>
+<li><p>Continue your chain to now sort the data from highest quality to lowest.</p></li>
+<li><p>Continue your chain to select only the variables that contain acid, the alcohol variable, the type variable, and the quality variable.</p></li>
+<li><p>Continue your chain to add the mean and standard deviation of the alcohol variable to the data set for each setting of the quality variable.</p></li>
+</ol>
+</section>
+</section>
+<section id="task-3-database-practice" class="level2">
+<h2 class="anchored" data-anchor-id="task-3-database-practice">Task 3: Database Practice</h2>
+<p>Download the Lahman.db file associated with the Connecting to Databases notes/video.</p>
+<ol start="11" type="1">
+<li><p>Connect to the database and then look at all of the tables in the database.</p></li>
+<li><p>Use the tbl() function and dplyr to return all of the data from the Teams table for the year 2015.</p></li>
+<li><p>Repeat the above by using the sql() function within tbl() (here you have to write actual SQL!).</p></li>
+</ol>
+<p>Either use dplyr or write SQL queries for the rest of these questions!</p>
+<ol start="14" type="1">
+<li><p>Return all of the players in the hall of fame, the year they were voted into the hall of fame, and their category (only those three variables!). See the HallOfFame table, the inducted variable is important here.</p></li>
+<li><p>Combine the table from the previous question with the People table in order to have the nameFirst and nameLast names added to what was returned above.</p></li>
+<li><p>Return only the playerID (manager ID in this case), G, W, and L columns from the Managers table. Use chaining to then</p>
+<ul>
+<li><p>Determine the overall win/loss records (sum of wins and sum of losses) for each of these hall of fame managers</p>
+<ul>
+<li><p>We haven’t quite covered this so I’ll help out. We want to use group_by() with summarize() rather than mutate(). Something like this:</p>
+<p>tbl(con, “Managers”) |&gt; select(…) |&gt; group_by(playerID) |&gt; summarize(G_managed = sum(G, na.rm = TRUE), Total_W = sum(W, na.rm = TRUE), Total_L = sum(L, na.rm = TRUE))</p></li>
+<li><p>Create a new variable that is the career win/loss percentage (Total_W/G_managed). (Note: I did this after collect() otherwise the column type has to be set. . . )</p></li>
+<li><p>Sort the resulting data by the win/loss percentage variable (from largest to smallest).</p></li>
+</ul></li>
+</ul></li>
+<li><p>Use the results from the previous two questions to answer this one! Return information for only the people that managed a team and were inducted into the hall of fame (regardless of their category in the hall of fame - you want to return all people in the hall of fame that ever managed at all). (Just return all of the variables from both of the above two questions - 9 total columns)</p></li>
+</ol>
+
+
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
