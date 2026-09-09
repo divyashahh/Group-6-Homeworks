@@ -63,10 +63,7 @@ editor: visual
     ```{r t3-p3}
     library(readxl)
 
-    white_wine <- read_excel(
-      "HW3/data/white-wine.xlsx",
-      sheet = 1
-    )
+    white_wine <- read_excel("data/white-wine.xlsx", sheet = 1)
     white_wine
     ```
 
@@ -77,7 +74,7 @@ editor: visual
     - Grab that column and overwrite the current column names (`colnames()`) of your white wine tibble. Note that `colnames(object)` allows for ‘left hand side assignment’. That is, you can call it on the left and store an object in it to overwrite it. Similar to `names(object) <- c(...)`
 
 ```{r t3-p4}
-colnames(white_wine) <- read_excel("HW3/data/white-wine.xlsx", sheet = 2) |>
+colnames(white_wine) <- read_excel("data/white-wine.xlsx", sheet = 2) |>
   pull(1)
 ```
 
@@ -101,7 +98,7 @@ colnames(white_wine) <- read_excel("HW3/data/white-wine.xlsx", sheet = 2) |>
       "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
       delim = ";"
     )
-    colnames(red_wine) <- read_excel("HW3/data/white-wine.xlsx", sheet = 2) |> 
+    colnames(red_wine) <- read_excel("data/white-wine.xlsx", sheet = 2) |> 
       pull(1)
     red_wine <- red_wine |> 
       mutate(type = "red")
