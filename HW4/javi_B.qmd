@@ -11,10 +11,10 @@ editor: visual
     `library(tidyverse) arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species), Petal.Length < 1.55), Species)`
 
     ```{r t1-p1}
-    as_tibble(iris) |>
-        select(starts_with("Petal"), Species) |>
-        filter(Petal.Length < 1.55) |>
-        arrange(Species)
+    iris_df <- as.data.frame(iris)
+    iris_subset <- iris_df[iris_df$Petal.Length < 1.55, c("Petal.Length", "Petal.Width", "Species")]
+    iris_sorted <- iris_subset[order(iris_subset$Species), ]
+    iris_sorted
     ```
 
 2.  What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?
@@ -119,7 +119,7 @@ In HW 3 you read in two data sets on wine. Read those two in and combine them as
     wine_data
 
     wine_final <- wine_data |>
-      filter(quality > 6.5, alcohol < 132) |> #filter the data to only look at high-quality wines
+      filter(quality > 6.5, alcohol < 13.2) |> #filter the data to only look at high-quality wines
       arrange(desc(quality)) |> # sort the data from highest quality to lowest.
       select(contains("acid"), alcohol, type, quality) |> #  select only the variables that contain acid, the alcohol variable, the type variable, and the quality variable.
       group_by(quality) |>
