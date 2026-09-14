@@ -1,0 +1,173 @@
+---
+title: "Homework 4 - Maab Aldulimy"
+format: html
+editor: visual
+---
+
+## Task 1: Conceptual Questions
+
+In this task we start by answering a list of relevant questions posed at the beginning of the assignment.
+
+1.  Rewrite the following nested function call using baseR’s chaining operator:
+
+```{r}
+library(tidyverse)
+arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species), Petal.Length <
+1.55), Species)
+```
+
+using base R's chaining operatior :
+
+```{r}
+as_tibble(iris) |>
+  select(starts_with("Petal"), Species) |>
+  filter(Petal.Length < 1.55) |>
+  arrange(Species)
+  
+```
+
+2.  What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?
+
+    - Long format data is where each row consists of one observation and each column one variable.Wide format data has more than one observation in a given row, with values for different time points or conditions spread across separate columns. Long format is generally preferred for statistical analysis, since most plotting, summarizing, and modeling functions expect data in this form.
+
+## Task 2: Data Manipulation with dplyr
+
+In this task we take the Glass Data and Yeast Data read them directly from the URL using the appropriate tidyverse function depending on the delimiter used for each specific data respectively.
+
+### Glass Data:
+
+Below we read the Glass Data set from: https://www4.stat.ncsu.edu/\~online/datasets/glass.data.We use mutate() and factor() to assign meaningful labels to each numeric type value. We then filter the data to keep only rows where the type is "tableware" or "headlamps," and where the Fe value is less than 0.2.
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+glass <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/glass.data",col_names = FALSE)
+
+# adding column names:
+
+colnames(glass) <- c("Id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "Type")
+glass
+
+# Replacing the numbers with string labels (that is,replace 1 with “building_windows_float_processed”, 2 with “building_win. . . ”, etc. 
+
+glass<-glass|> 
+  mutate(Type = factor(Type, 
+                        levels = c(1, 2, 3, 5, 6, 7),
+                        labels = c("building_windows_float_processed","building_windows_non_float_processed", "vehicle_windows_float_processed","containers","tableware","headlamps")))|>
+  filter(Type %in% c("tableware","headlamps"))|>
+  filter(Fe <0.2)
+```
+
+### Yeast Data :
+
+We then read in the Yeast Data from https://www4.stat.ncsu.edu/\~online/datasets/yeast.data. We first removed the seq_name and nuc columns using select(). We then grouped the data by class using group_by(). Finally, we used mutate() along with across() to calculate the mean and median of each numeric variable, following the approach shown in the video attached to the dplyr class notes.
+
+```{r}
+yeast <- read_table("https://www4.stat.ncsu.edu/~online/datasets/yeast.data", col_names = FALSE)
+
+#add column names:
+
+colnames(yeast) <- c("seq_name", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "class")
+yeast
+
+yeast<-yeast|>
+  select(-seq_name,-nuc)|>
+  group_by(class)|>
+  mutate(across(where(is.numeric),list(mean=mean,median=median),.names = "{.col}_{.fn}"))
+
+```
+
+### Wine Data:
+
+We start by combining the wine data set from HW3, which includes a type column labeling each observation as "white" or "red." We filter this data to only include high-quality wines (quality \> 6.5) with a reasonable alcohol value (alcohol \< 13.2), then sort the results from highest to lowest quality. We select only the variables that contain "acid," along with alcohol, type, and quality. Finally, we group by quality and calculate the mean and standard deviation of alcohol for each quality group.
+
+```{r}
+library(readxl)
+
+#reading in the excel data:
+white_wine <- read_excel("../HW3/data/white-wine.xlsx")
+# viewing column names in sheet 2 :
+white_wine_names <- read_excel("../HW3/data/white-wine.xlsx", sheet = 2)
+# fixing column names:
+colnames(white_wine) <- white_wine_names$Variables
+# adding a column named type that identifies the white variant
+white_wine<-white_wine |>
+  mutate(type= "white")
+
+#reading in the excel data:
+red_wine <- read_delim("https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv", delim = ";")
+# fixing column names:
+colnames(red_wine) <- white_wine_names$Variables
+# adding a column named type that identifies the red variant
+red_wine<-red_wine |>
+  mutate(type= "red")
+#join the Red and White wine data using the bind_rows() function.
+wine<-dplyr::bind_rows(red_wine,white_wine)
+wine
+```
+
+```{r}
+
+#start our filtering 
+wine<- wine|>
+  filter(quality > 6.5 , alcohol< 13.2)|>
+  arrange(desc(quality))|>
+  select(contains("acid"),alcohol,type,quality)|>
+  group_by(quality)|>
+  mutate(alcohol_mean = mean(alcohol), alcohol_sd = sd(alcohol))
+  
+```
+
+## Task 3: Database Practice
+
+For this task, we connect to the Lahman database using dbConnect() from the DBI and RSQLite packages, then use dbListTables() to view all of the tables it contains. We use tbl() with dplyr syntax to return all data from the Teams table for the year 2015, then repeat this using the sql() function to write the equivalent query directly in SQL. Next, we query the HallOfFame table to return only inducted members, selecting the playerID, yearID, and category columns, and join this with the People table to add each player's first and last name.
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+# Connect to the database
+con <- dbConnect(SQLite(), "data/Lahman.db")
+#look at all of the tables in the database.
+dbListTables(con)
+tbl(con,"Teams")
+
+# using tbl() function and dplyr to return all of the data for the year 2015.
+
+tbl(con, "Teams")|>
+  filter(yearID == 2015)
+
+# Repeat the above using the sql() function within tbl()
+
+tbl(con, sql("SELECT * FROM Teams WHERE yearID = 2015"))
+
+# Filtering using dplyr syntax 
+Hallof_fame<-tbl(con,"HallOfFame")|>
+  filter(inducted == "Y")|>
+  select(playerID,yearID,category)|>
+  left_join(tbl(con, "People"), by = "playerID")|>
+  select(playerID, yearID, category, nameFirst, nameLast)|>
+  collect()
+```
+
+We then query the Managers table to calculate each manager's total games managed, wins, and losses, add a win/loss percentage column, and sort the results from highest to lowest percentage. Finally, we combine these two results using an inner_join() to return information for only the people who were both inducted into the hall of fame and managed a team.
+
+```{r}
+Managers<-tbl(con, "Managers")|> 
+  select(playerID,G,W,L) |>
+  group_by(playerID) |>
+  summarize(G_managed = sum(G, na.rm = TRUE),
+            Total_W = sum(W, na.rm = TRUE),
+            Total_L = sum(L, na.rm = TRUE))|>
+  collect() |>
+  mutate(win_loss_pct = Total_W / G_managed) |>
+  arrange(desc(win_loss_pct))
+
+
+inner_join(Hallof_fame, Managers, by = "playerID")
+```
+
+------------------------------------------------------------------------
