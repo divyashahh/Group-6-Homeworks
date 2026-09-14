@@ -74,13 +74,36 @@ No need to use the Boundary variable or the Latitude and Longitude variables in 
 
 - Read in this data and convert variables to factors as needed.
 
+  ```{r}
+  library(janitor) # used this library to clean up the variables names
+  coasters <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv") |>
+    clean_names() |>
+    mutate(
+      census_region = factor(census_region),
+      age_group = factor(age_group, levels = 1:3, labels = c("Older", "Recent", "Newest")),
+      scale = factor(scale, levels = c("Family", "Thrill", "Extreme")),
+      type = factor(type),
+      design = factor(design),
+      inversions = factor(inversions),
+      make = factor(make)
+    )
+  ```
+
 ### Basic EDA
 
 We’ve talked about the general process of conducting an EDA but haven’t gotten to summarizing numeric variables. But our goal is to understand how our data is stored, what is missing, and we try to summarize the variables both numerically and visually to understand relationships within the data.
 
-4.  Look at how the data is stored and see if everything makes sense
+4.  Look at how the data is stored and see if everything makes sense.
+
+    ```{r t2-p4}
+    glimpse(coasters)
+    ```
 
 5.  Document any missing values in the data.
+
+    ```{r t2-p5}
+    colSums(is.na(coasters))
+    ```
 
 ### Categorical variables
 
@@ -88,12 +111,27 @@ We’ve talked about the general process of conducting an EDA but haven’t gott
 
     - Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)
 
+      ```{r}
+      table(coasters$scale)
+      table(coasters$scale, coasters$type)
+      table(coasters$scale, coasters$type, coasters$age_group)
+      ```
+
 7.  Create a conditional two-way table using `table()`. That is, condition on one variable’s setting and create a two-way table. Do this using two different methods:
 
     - Once, by subsetting the data (say with `filter())` and then creating the two-way table
 
+      ```{r}
+      ```
+
     - Once, by creating a three-way table and subsetting it
 
+      ```{r}
+      ```
+
 8.  Create a two-way contingency table using `group_by()` and `summarize()` from `dplyr`. Then use `pivot_wider()` to make the result look more like the output from `table()`.
+
+    ```{r}
+    ```
 
 9.  Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
