@@ -1,0 +1,99 @@
+---
+title: "Homework 5"
+author: "Javi B"
+editor: visual
+---
+
+## Task 1: Querying an API and a Tidy-Style Function
+
+For this section, you’ll connect to the news API here: newsapi.org. You’ll need to go to register for a key at that web site!
+
+1.  Use `GET()` from the `httr` package to return information about a topic that you are interested in that has been in the news lately (store the result as an R object). Note: We can only look 30 days into the past with a free account.
+
+    ```{r}
+    library(httr)
+    library(tidycensus)
+    library(tidyverse)
+    GET("https://newsapi.org/v2/everything?q=Iran&from=2026-08-02&language=en&
+    pageSize=50&apiKey=KEYGOESHERE")
+    ```
+
+2.  Parse what is returned and find your way to the data frame that has the actual article information in it (check `content`). Note the first column should be a list column!
+
+3.  Now write a quick function that allows the user to easily query this API. The inputs to the function should be the title/subject to search for (string), a time period to search from (string - you’ll search from that time until the present), and an API key.
+
+## Task 2: Summarizing Roller Coaster Data
+
+For this part, we’ll use data about roller coasters. The data is about different aspects of roller coasters and is available at <https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv>
+
+The variables are:
+
+- Coaster - Name of roller coaster
+
+- Park - Amusement park where roller coaster is located
+
+- City
+
+- State
+
+- Census Region
+
+- Year Opened
+
+- AgeGroup - 1 (Older), 2 (Recent), or 3 (Newest)
+
+- TopSpeed - in mph
+
+- MaxHeight - in feet
+
+- Scale - Extreme, Thrill, Family
+
+- Type - Steel, Wood
+
+- Design - Sit Down, Inverted, Bobsled, etc
+
+- Drop - in feet
+
+- Length - in feet
+
+- Duration - in seconds
+
+- Inversions
+
+- Number of Inversions
+
+- Make
+
+- Latitude
+
+- Longitude
+
+- Boundary - for plotting on maps
+
+No need to use the Boundary variable or the Latitude and Longitude variables in your EDA below
+
+- Read in this data and convert variables to factors as needed.
+
+### Basic EDA
+
+We’ve talked about the general process of conducting an EDA but haven’t gotten to summarizing numeric variables. But our goal is to understand how our data is stored, what is missing, and we try to summarize the variables both numerically and visually to understand relationships within the data.
+
+4.  Look at how the data is stored and see if everything makes sense
+
+5.  Document any missing values in the data.
+
+### Categorical variables
+
+6.  Create a one-way contingency table, a two-way contingency table, and a three-way contingency table for some of the factor variables you created previously. Use `table()` to accomplish this.
+
+    - Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)
+
+7.  Create a conditional two-way table using `table()`. That is, condition on one variable’s setting and create a two-way table. Do this using two different methods:
+
+    - Once, by subsetting the data (say with `filter())` and then creating the two-way table
+
+    - Once, by creating a three-way table and subsetting it
+
+8.  Create a two-way contingency table using `group_by()` and `summarize()` from `dplyr`. Then use `pivot_wider()` to make the result look more like the output from `table()`.
+
+9.  Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
