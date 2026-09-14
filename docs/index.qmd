@@ -7,6 +7,6 @@ Welcome to the homepage for Group 6! Below are the links to our completed homewo
 
 ### Assignments
 
-* [Homework 2](docs/HW2/Final_HW2.html)
-* [Homework 3](docs/HW3/Maab_C.html)
-* [Homework 4](docs/HW4/Final_HW4.html)
+* [Homework 2](/docs/HW2/Final_HW2.html)
+* [Homework 3](/docs/HW3/Maab_C.html)
+* [Homework 4](/docs/HW4/Final_HW4.html)
