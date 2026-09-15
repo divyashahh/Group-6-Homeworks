@@ -11,16 +11,65 @@ For this section, you’ll connect to the news API here: newsapi.org. You’ll n
 1.  Use `GET()` from the `httr` package to return information about a topic that you are interested in that has been in the news lately (store the result as an R object). Note: We can only look 30 days into the past with a free account.
 
     ```{r}
-    library(httr)
-    library(tidycensus)
     library(tidyverse)
-    GET("https://newsapi.org/v2/everything?q=Iran&from=2026-08-02&language=en&
-    pageSize=50&apiKey=KEYGOESHERE")
+    library(httr)
+    library(jsonlite)
+    library(tidycensus) # from notes
+
+    from_date <- format(Sys.Date() - 25, "%Y-%m-%d") # make sure we are within 30 days
+
+    news <- GET(
+      "https://newsapi.org/v2/everything",
+      query = list(
+        q = "Iran",
+        from = from_date,
+        language = "en",
+        pageSize = 50,
+        apiKey ="bdc1836747ef446391408c1347869598"
+      )
+    )
+
+    news
     ```
 
 2.  Parse what is returned and find your way to the data frame that has the actual article information in it (check `content`). Note the first column should be a list column!
 
+    ```{r}
+    parsed <- content(news, as = "parsed", simplifyDataFrame = TRUE)
+
+    articles <- parsed$articles
+    articles
+
+    articles_tbl <- as_tibble(articles)
+    str(articles_tbl)
+    ```
+
 3.  Now write a quick function that allows the user to easily query this API. The inputs to the function should be the title/subject to search for (string), a time period to search from (string - you’ll search from that time until the present), and an API key.
+
+    ```{r}
+    get_news <- function(query, from_date, api_key) {
+      response <- GET("https://newsapi.org/v2/everything",
+                       query = list(q = query,
+                                    from = from_date,
+                                    language = "en",
+                                    pageSize = 50,
+                                    apiKey = api_key))
+
+      parsed <- content(response, as = "parsed", simplifyDataFrame = TRUE)
+
+      if (parsed$status != "ok") {
+        stop("NewsAPI request failed: ", parsed$message)
+      }
+
+      as_tibble(parsed$articles)
+    }
+
+    iran_news <- get_news("Iran", "2026-08-15", "bdc1836747ef446391408c1347869598")
+    iran_news
+
+    climate_news <- get_news("climate change", "2026-08-20", "bdc1836747ef446391408c1347869598")
+    climate_news
+    ```
 
 ## Task 2: Summarizing Roller Coaster Data
 
