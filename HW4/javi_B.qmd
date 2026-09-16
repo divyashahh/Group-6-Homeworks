@@ -98,9 +98,9 @@ In HW 3 you read in two data sets on wine. Read those two in and combine them as
     ```{r t2-p7-p9-p10}
     library(readxl)
 
-    white_wine <- read_excel("HW3/data/white-wine.xlsx", sheet = 1)
+    white_wine <- read_excel("../HW3/data/white-wine.xlsx", sheet =1)
     white_wine
-    colnames(white_wine) <- read_excel("HW3/data/white-wine.xlsx", sheet = 2) |>
+    colnames(white_wine) <- read_excel("../HW3/data/white-wine.xlsx", sheet = 2) |>
       pull(1)
     white_wine <- white_wine |>
       mutate(type = "white")
@@ -110,7 +110,7 @@ In HW 3 you read in two data sets on wine. Read those two in and combine them as
       "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
       delim = ";"
     )
-    colnames(red_wine) <- read_excel("HW3/data/white-wine.xlsx", sheet = 2) |> 
+    colnames(red_wine) <- read_excel("../HW3/data/white-wine.xlsx", sheet = 2) |> 
       pull(1)
     red_wine <- red_wine |> 
       mutate(type = "red")
@@ -143,7 +143,7 @@ Download the Lahman.db file associated with the Connecting to Databases notes/vi
     library(RSQLite)
     library(dplyr)
 
-    con <- dbConnect(RSQLite::SQLite(), "HW4/data/lahman.db")
+    con <- dbConnect(RSQLite::SQLite(), "data/lahman.db")
 
     dbListTables(con)
     ```

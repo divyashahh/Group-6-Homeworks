@@ -24,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -114,22 +149,361 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="task-1-conceptual-questions">Task 1: Conceptual Questions</h2>
 <ol type="1">
 <li><p>Rewrite the following nested function call using baseR’s chaining operator:</p>
-<p>library(tidyverse) arrange(filter(select(as_tibble(iris), starts_with(“Petal”), Species), Petal.Length &lt; 1.55), Species)</p></li>
-<li><p>What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?</p></li>
+<p><code>library(tidyverse) arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species), Petal.Length &lt; 1.55), Species)</code></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>iris_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(iris)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>iris_subset <span class="ot">&lt;-</span> iris_df[iris_df<span class="sc">$</span>Petal.Length <span class="sc">&lt;</span> <span class="fl">1.55</span>, <span class="fu">c</span>(<span class="st">"Petal.Length"</span>, <span class="st">"Petal.Width"</span>, <span class="st">"Species"</span>)]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>iris_sorted <span class="ot">&lt;-</span> iris_subset[<span class="fu">order</span>(iris_subset<span class="sc">$</span>Species), ]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>iris_sorted</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Petal.Length Petal.Width Species
+1           1.4         0.2  setosa
+2           1.4         0.2  setosa
+3           1.3         0.2  setosa
+4           1.5         0.2  setosa
+5           1.4         0.2  setosa
+7           1.4         0.3  setosa
+8           1.5         0.2  setosa
+9           1.4         0.2  setosa
+10          1.5         0.1  setosa
+11          1.5         0.2  setosa
+13          1.4         0.1  setosa
+14          1.1         0.1  setosa
+15          1.2         0.2  setosa
+16          1.5         0.4  setosa
+17          1.3         0.4  setosa
+18          1.4         0.3  setosa
+20          1.5         0.3  setosa
+22          1.5         0.4  setosa
+23          1.0         0.2  setosa
+28          1.5         0.2  setosa
+29          1.4         0.2  setosa
+32          1.5         0.4  setosa
+33          1.5         0.1  setosa
+34          1.4         0.2  setosa
+35          1.5         0.2  setosa
+36          1.2         0.2  setosa
+37          1.3         0.2  setosa
+38          1.4         0.1  setosa
+39          1.3         0.2  setosa
+40          1.5         0.2  setosa
+41          1.3         0.3  setosa
+42          1.3         0.3  setosa
+43          1.3         0.2  setosa
+46          1.4         0.3  setosa
+48          1.4         0.2  setosa
+49          1.5         0.2  setosa
+50          1.4         0.2  setosa</code></pre>
+</div>
+</div></li>
+<li><p>What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?</p>
+<ol type="1">
+<li>Long format is known to be the “tidy” format shows each row is a single observation of a single variable, which is prefer for statistical analysis since the data will have every variable being its own column and every observation its own row which makes it easier to filter, group, etc. Wide format instead, refers to each variable gets its own variable and each row is one unit with all its measurements.</li>
+</ol></li>
 </ol>
 </section>
 <section id="task-2-note-use-chaining-where-possible" class="level2">
 <h2 class="anchored" data-anchor-id="task-2-note-use-chaining-where-possible">Task 2: (Note: Use chaining where possible!)</h2>
 <section id="glass-data" class="level3">
 <h3 class="anchored" data-anchor-id="glass-data">Glass Data</h3>
-<p>In HW 3 you read in the glass data from <a href="https://www4.stat.ncsu.edu/~online/datasets/glass.data." class="uri">https://www4.stat.ncsu.edu/~online/datasets/glass.data.</a> Let’s reread that data (use your code from HW 3) that also names the columns. Recall the last variable being Type of Glass with values of – 1 building_windows_float_processed, – 2 building_windows_non_float_processed, – 3 vehicle_windows_float_processed, – 4 vehicle_windows_non_float_processed (none in this database), – 5 containers, – 6 tableware, – 7 headlamps.</p>
+<p>In HW 3 you read in the glass data from <a href="https://www4.stat.ncsu.edu/~online/datasets/glass.data." class="uri">https://www4.stat.ncsu.edu/~online/datasets/glass.data.</a> Let’s reread that data (use your code from HW 3) that also names the columns. Recall the last variable being <code>Type of Glass</code> with values of – 1 building_windows_float_processed, – 2 building_windows_non_float_processed, – 3 vehicle_windows_float_processed, – 4 vehicle_windows_non_float_processed (none in this database), – 5 containers, – 6 tableware, – 7 headlamps.</p>
 <ol start="3" type="1">
 <li><p>Start a chain on your data object that overwrites the Type_of_glass variable using mutate()</p>
 <ul>
 <li><p>Create a factor version of the variable that replaces the numbers with string labels (that is, replace 1 with “building_windows_float_processed”, 2 with “building_win. . . ”, etc. - see the variable descriptions above to give meaningful values).</p></li>
-<li><p>This could also be done by first using an ifelse() type call and then converting to a factor. Either way is fine!</p></li>
+<li><p>This could also be done by first using an <code>ifelse()</code> type call and then converting to a factor. Either way is fine!</p></li>
 </ul></li>
-<li><p>Continue your chain and keep only observations where the Fe variable is less than 0.2 and the Type of Glass is either “tableware” or “headlamp”</p></li>
+<li><p>Continue your chain and keep only observations where the Fe variable is less than 0.2 and the Type of Glass is either “tableware” or “headlamp”</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.2.0
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+✔ purrr     1.2.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>glass_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://www4.stat.ncsu.edu/~online/datasets/glass.data"</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"ID"</span>, <span class="st">"RI"</span>, <span class="st">"Na"</span>, <span class="st">"Mg"</span>, <span class="st">"Al"</span>, <span class="st">"Si"</span>, <span class="st">"K"</span>, <span class="st">"Ca"</span>, <span class="st">"Ba"</span>, <span class="st">"Fe"</span>, <span class="st">"Type_of_glass"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>glass_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     ID      RI    Na   Mg   Al    Si    K    Ca   Ba   Fe Type_of_glass
+1     2 1.51761 13.89 3.60 1.36 72.73 0.48  7.83 0.00 0.00             1
+2     3 1.51618 13.53 3.55 1.54 72.99 0.39  7.78 0.00 0.00             1
+3     4 1.51766 13.21 3.69 1.29 72.61 0.57  8.22 0.00 0.00             1
+4     5 1.51742 13.27 3.62 1.24 73.08 0.55  8.07 0.00 0.00             1
+5     6 1.51596 12.79 3.61 1.62 72.97 0.64  8.07 0.00 0.26             1
+6     7 1.51743 13.30 3.60 1.14 73.09 0.58  8.17 0.00 0.00             1
+7     8 1.51756 13.15 3.61 1.05 73.24 0.57  8.24 0.00 0.00             1
+8     9 1.51918 14.04 3.58 1.37 72.08 0.56  8.30 0.00 0.00             1
+9    10 1.51755 13.00 3.60 1.36 72.99 0.57  8.40 0.00 0.11             1
+10   11 1.51571 12.72 3.46 1.56 73.20 0.67  8.09 0.00 0.24             1
+11   12 1.51763 12.80 3.66 1.27 73.01 0.60  8.56 0.00 0.00             1
+12   13 1.51589 12.88 3.43 1.40 73.28 0.69  8.05 0.00 0.24             1
+13   14 1.51748 12.86 3.56 1.27 73.21 0.54  8.38 0.00 0.17             1
+14   15 1.51763 12.61 3.59 1.31 73.29 0.58  8.50 0.00 0.00             1
+15   16 1.51761 12.81 3.54 1.23 73.24 0.58  8.39 0.00 0.00             1
+16   17 1.51784 12.68 3.67 1.16 73.11 0.61  8.70 0.00 0.00             1
+17   18 1.52196 14.36 3.85 0.89 71.36 0.15  9.15 0.00 0.00             1
+18   19 1.51911 13.90 3.73 1.18 72.12 0.06  8.89 0.00 0.00             1
+19   20 1.51735 13.02 3.54 1.69 72.73 0.54  8.44 0.00 0.07             1
+20   21 1.51750 12.82 3.55 1.49 72.75 0.54  8.52 0.00 0.19             1
+21   22 1.51966 14.77 3.75 0.29 72.02 0.03  9.00 0.00 0.00             1
+22   23 1.51736 12.78 3.62 1.29 72.79 0.59  8.70 0.00 0.00             1
+23   24 1.51751 12.81 3.57 1.35 73.02 0.62  8.59 0.00 0.00             1
+24   25 1.51720 13.38 3.50 1.15 72.85 0.50  8.43 0.00 0.00             1
+25   26 1.51764 12.98 3.54 1.21 73.00 0.65  8.53 0.00 0.00             1
+26   27 1.51793 13.21 3.48 1.41 72.64 0.59  8.43 0.00 0.00             1
+27   28 1.51721 12.87 3.48 1.33 73.04 0.56  8.43 0.00 0.00             1
+28   29 1.51768 12.56 3.52 1.43 73.15 0.57  8.54 0.00 0.00             1
+29   30 1.51784 13.08 3.49 1.28 72.86 0.60  8.49 0.00 0.00             1
+30   31 1.51768 12.65 3.56 1.30 73.08 0.61  8.69 0.00 0.14             1
+31   32 1.51747 12.84 3.50 1.14 73.27 0.56  8.55 0.00 0.00             1
+32   33 1.51775 12.85 3.48 1.23 72.97 0.61  8.56 0.09 0.22             1
+33   34 1.51753 12.57 3.47 1.38 73.39 0.60  8.55 0.00 0.06             1
+34   35 1.51783 12.69 3.54 1.34 72.95 0.57  8.75 0.00 0.00             1
+35   36 1.51567 13.29 3.45 1.21 72.74 0.56  8.57 0.00 0.00             1
+36   37 1.51909 13.89 3.53 1.32 71.81 0.51  8.78 0.11 0.00             1
+37   38 1.51797 12.74 3.48 1.35 72.96 0.64  8.68 0.00 0.00             1
+38   39 1.52213 14.21 3.82 0.47 71.77 0.11  9.57 0.00 0.00             1
+39   40 1.52213 14.21 3.82 0.47 71.77 0.11  9.57 0.00 0.00             1
+40   41 1.51793 12.79 3.50 1.12 73.03 0.64  8.77 0.00 0.00             1
+41   42 1.51755 12.71 3.42 1.20 73.20 0.59  8.64 0.00 0.00             1
+42   43 1.51779 13.21 3.39 1.33 72.76 0.59  8.59 0.00 0.00             1
+43   44 1.52210 13.73 3.84 0.72 71.76 0.17  9.74 0.00 0.00             1
+44   45 1.51786 12.73 3.43 1.19 72.95 0.62  8.76 0.00 0.30             1
+45   46 1.51900 13.49 3.48 1.35 71.95 0.55  9.00 0.00 0.00             1
+46   47 1.51869 13.19 3.37 1.18 72.72 0.57  8.83 0.00 0.16             1
+47   48 1.52667 13.99 3.70 0.71 71.57 0.02  9.82 0.00 0.10             1
+48   49 1.52223 13.21 3.77 0.79 71.99 0.13 10.02 0.00 0.00             1
+49   50 1.51898 13.58 3.35 1.23 72.08 0.59  8.91 0.00 0.00             1
+50   51 1.52320 13.72 3.72 0.51 71.75 0.09 10.06 0.00 0.16             1
+51   52 1.51926 13.20 3.33 1.28 72.36 0.60  9.14 0.00 0.11             1
+52   53 1.51808 13.43 2.87 1.19 72.84 0.55  9.03 0.00 0.00             1
+53   54 1.51837 13.14 2.84 1.28 72.85 0.55  9.07 0.00 0.00             1
+54   55 1.51778 13.21 2.81 1.29 72.98 0.51  9.02 0.00 0.09             1
+55   56 1.51769 12.45 2.71 1.29 73.70 0.56  9.06 0.00 0.24             1
+56   57 1.51215 12.99 3.47 1.12 72.98 0.62  8.35 0.00 0.31             1
+57   58 1.51824 12.87 3.48 1.29 72.95 0.60  8.43 0.00 0.00             1
+58   59 1.51754 13.48 3.74 1.17 72.99 0.59  8.03 0.00 0.00             1
+59   60 1.51754 13.39 3.66 1.19 72.79 0.57  8.27 0.00 0.11             1
+60   61 1.51905 13.60 3.62 1.11 72.64 0.14  8.76 0.00 0.00             1
+61   62 1.51977 13.81 3.58 1.32 71.72 0.12  8.67 0.69 0.00             1
+62   63 1.52172 13.51 3.86 0.88 71.79 0.23  9.54 0.00 0.11             1
+63   64 1.52227 14.17 3.81 0.78 71.35 0.00  9.69 0.00 0.00             1
+64   65 1.52172 13.48 3.74 0.90 72.01 0.18  9.61 0.00 0.07             1
+65   66 1.52099 13.69 3.59 1.12 71.96 0.09  9.40 0.00 0.00             1
+66   67 1.52152 13.05 3.65 0.87 72.22 0.19  9.85 0.00 0.17             1
+67   68 1.52152 13.05 3.65 0.87 72.32 0.19  9.85 0.00 0.17             1
+68   69 1.52152 13.12 3.58 0.90 72.20 0.23  9.82 0.00 0.16             1
+69   70 1.52300 13.31 3.58 0.82 71.99 0.12 10.17 0.00 0.03             1
+70   71 1.51574 14.86 3.67 1.74 71.87 0.16  7.36 0.00 0.12             2
+71   72 1.51848 13.64 3.87 1.27 71.96 0.54  8.32 0.00 0.32             2
+72   73 1.51593 13.09 3.59 1.52 73.10 0.67  7.83 0.00 0.00             2
+73   74 1.51631 13.34 3.57 1.57 72.87 0.61  7.89 0.00 0.00             2
+74   75 1.51596 13.02 3.56 1.54 73.11 0.72  7.90 0.00 0.00             2
+75   76 1.51590 13.02 3.58 1.51 73.12 0.69  7.96 0.00 0.00             2
+76   77 1.51645 13.44 3.61 1.54 72.39 0.66  8.03 0.00 0.00             2
+77   78 1.51627 13.00 3.58 1.54 72.83 0.61  8.04 0.00 0.00             2
+78   79 1.51613 13.92 3.52 1.25 72.88 0.37  7.94 0.00 0.14             2
+79   80 1.51590 12.82 3.52 1.90 72.86 0.69  7.97 0.00 0.00             2
+80   81 1.51592 12.86 3.52 2.12 72.66 0.69  7.97 0.00 0.00             2
+81   82 1.51593 13.25 3.45 1.43 73.17 0.61  7.86 0.00 0.00             2
+82   83 1.51646 13.41 3.55 1.25 72.81 0.68  8.10 0.00 0.00             2
+83   84 1.51594 13.09 3.52 1.55 72.87 0.68  8.05 0.00 0.09             2
+84   85 1.51409 14.25 3.09 2.08 72.28 1.10  7.08 0.00 0.00             2
+85   86 1.51625 13.36 3.58 1.49 72.72 0.45  8.21 0.00 0.00             2
+86   87 1.51569 13.24 3.49 1.47 73.25 0.38  8.03 0.00 0.00             2
+87   88 1.51645 13.40 3.49 1.52 72.65 0.67  8.08 0.00 0.10             2
+88   89 1.51618 13.01 3.50 1.48 72.89 0.60  8.12 0.00 0.00             2
+89   90 1.51640 12.55 3.48 1.87 73.23 0.63  8.08 0.00 0.09             2
+90   91 1.51841 12.93 3.74 1.11 72.28 0.64  8.96 0.00 0.22             2
+91   92 1.51605 12.90 3.44 1.45 73.06 0.44  8.27 0.00 0.00             2
+92   93 1.51588 13.12 3.41 1.58 73.26 0.07  8.39 0.00 0.19             2
+93   94 1.51590 13.24 3.34 1.47 73.10 0.39  8.22 0.00 0.00             2
+94   95 1.51629 12.71 3.33 1.49 73.28 0.67  8.24 0.00 0.00             2
+95   96 1.51860 13.36 3.43 1.43 72.26 0.51  8.60 0.00 0.00             2
+96   97 1.51841 13.02 3.62 1.06 72.34 0.64  9.13 0.00 0.15             2
+97   98 1.51743 12.20 3.25 1.16 73.55 0.62  8.90 0.00 0.24             2
+98   99 1.51689 12.67 2.88 1.71 73.21 0.73  8.54 0.00 0.00             2
+99  100 1.51811 12.96 2.96 1.43 72.92 0.60  8.79 0.14 0.00             2
+100 101 1.51655 12.75 2.85 1.44 73.27 0.57  8.79 0.11 0.22             2
+101 102 1.51730 12.35 2.72 1.63 72.87 0.70  9.23 0.00 0.00             2
+102 103 1.51820 12.62 2.76 0.83 73.81 0.35  9.42 0.00 0.20             2
+103 104 1.52725 13.80 3.15 0.66 70.57 0.08 11.64 0.00 0.00             2
+104 105 1.52410 13.83 2.90 1.17 71.15 0.08 10.79 0.00 0.00             2
+105 106 1.52475 11.45 0.00 1.88 72.19 0.81 13.24 0.00 0.34             2
+106 107 1.53125 10.73 0.00 2.10 69.81 0.58 13.30 3.15 0.28             2
+107 108 1.53393 12.30 0.00 1.00 70.16 0.12 16.19 0.00 0.24             2
+108 109 1.52222 14.43 0.00 1.00 72.67 0.10 11.52 0.00 0.08             2
+109 110 1.51818 13.72 0.00 0.56 74.45 0.00 10.99 0.00 0.00             2
+110 111 1.52664 11.23 0.00 0.77 73.21 0.00 14.68 0.00 0.00             2
+111 112 1.52739 11.02 0.00 0.75 73.08 0.00 14.96 0.00 0.00             2
+112 113 1.52777 12.64 0.00 0.67 72.02 0.06 14.40 0.00 0.00             2
+113 114 1.51892 13.46 3.83 1.26 72.55 0.57  8.21 0.00 0.14             2
+114 115 1.51847 13.10 3.97 1.19 72.44 0.60  8.43 0.00 0.00             2
+115 116 1.51846 13.41 3.89 1.33 72.38 0.51  8.28 0.00 0.00             2
+116 117 1.51829 13.24 3.90 1.41 72.33 0.55  8.31 0.00 0.10             2
+117 118 1.51708 13.72 3.68 1.81 72.06 0.64  7.88 0.00 0.00             2
+118 119 1.51673 13.30 3.64 1.53 72.53 0.65  8.03 0.00 0.29             2
+119 120 1.51652 13.56 3.57 1.47 72.45 0.64  7.96 0.00 0.00             2
+120 121 1.51844 13.25 3.76 1.32 72.40 0.58  8.42 0.00 0.00             2
+121 122 1.51663 12.93 3.54 1.62 72.96 0.64  8.03 0.00 0.21             2
+122 123 1.51687 13.23 3.54 1.48 72.84 0.56  8.10 0.00 0.00             2
+123 124 1.51707 13.48 3.48 1.71 72.52 0.62  7.99 0.00 0.00             2
+124 125 1.52177 13.20 3.68 1.15 72.75 0.54  8.52 0.00 0.00             2
+125 126 1.51872 12.93 3.66 1.56 72.51 0.58  8.55 0.00 0.12             2
+126 127 1.51667 12.94 3.61 1.26 72.75 0.56  8.60 0.00 0.00             2
+127 128 1.52081 13.78 2.28 1.43 71.99 0.49  9.85 0.00 0.17             2
+128 129 1.52068 13.55 2.09 1.67 72.18 0.53  9.57 0.27 0.17             2
+129 130 1.52020 13.98 1.35 1.63 71.76 0.39 10.56 0.00 0.18             2
+130 131 1.52177 13.75 1.01 1.36 72.19 0.33 11.14 0.00 0.00             2
+131 132 1.52614 13.70 0.00 1.36 71.24 0.19 13.44 0.00 0.10             2
+132 133 1.51813 13.43 3.98 1.18 72.49 0.58  8.15 0.00 0.00             2
+133 134 1.51800 13.71 3.93 1.54 71.81 0.54  8.21 0.00 0.15             2
+134 135 1.51811 13.33 3.85 1.25 72.78 0.52  8.12 0.00 0.00             2
+135 136 1.51789 13.19 3.90 1.30 72.33 0.55  8.44 0.00 0.28             2
+136 137 1.51806 13.00 3.80 1.08 73.07 0.56  8.38 0.00 0.12             2
+137 138 1.51711 12.89 3.62 1.57 72.96 0.61  8.11 0.00 0.00             2
+138 139 1.51674 12.79 3.52 1.54 73.36 0.66  7.90 0.00 0.00             2
+139 140 1.51674 12.87 3.56 1.64 73.14 0.65  7.99 0.00 0.00             2
+140 141 1.51690 13.33 3.54 1.61 72.54 0.68  8.11 0.00 0.00             2
+141 142 1.51851 13.20 3.63 1.07 72.83 0.57  8.41 0.09 0.17             2
+142 143 1.51662 12.85 3.51 1.44 73.01 0.68  8.23 0.06 0.25             2
+143 144 1.51709 13.00 3.47 1.79 72.72 0.66  8.18 0.00 0.00             2
+144 145 1.51660 12.99 3.18 1.23 72.97 0.58  8.81 0.00 0.24             2
+145 146 1.51839 12.85 3.67 1.24 72.57 0.62  8.68 0.00 0.35             2
+146 147 1.51769 13.65 3.66 1.11 72.77 0.11  8.60 0.00 0.00             3
+147 148 1.51610 13.33 3.53 1.34 72.67 0.56  8.33 0.00 0.00             3
+148 149 1.51670 13.24 3.57 1.38 72.70 0.56  8.44 0.00 0.10             3
+149 150 1.51643 12.16 3.52 1.35 72.89 0.57  8.53 0.00 0.00             3
+150 151 1.51665 13.14 3.45 1.76 72.48 0.60  8.38 0.00 0.17             3
+151 152 1.52127 14.32 3.90 0.83 71.50 0.00  9.49 0.00 0.00             3
+152 153 1.51779 13.64 3.65 0.65 73.00 0.06  8.93 0.00 0.00             3
+153 154 1.51610 13.42 3.40 1.22 72.69 0.59  8.32 0.00 0.00             3
+154 155 1.51694 12.86 3.58 1.31 72.61 0.61  8.79 0.00 0.00             3
+155 156 1.51646 13.04 3.40 1.26 73.01 0.52  8.58 0.00 0.00             3
+156 157 1.51655 13.41 3.39 1.28 72.64 0.52  8.65 0.00 0.00             3
+157 158 1.52121 14.03 3.76 0.58 71.79 0.11  9.65 0.00 0.00             3
+158 159 1.51776 13.53 3.41 1.52 72.04 0.58  8.79 0.00 0.00             3
+159 160 1.51796 13.50 3.36 1.63 71.94 0.57  8.81 0.00 0.09             3
+160 161 1.51832 13.33 3.34 1.54 72.14 0.56  8.99 0.00 0.00             3
+161 162 1.51934 13.64 3.54 0.75 72.65 0.16  8.89 0.15 0.24             3
+162 163 1.52211 14.19 3.78 0.91 71.36 0.23  9.14 0.00 0.37             3
+163 164 1.51514 14.01 2.68 3.50 69.89 1.68  5.87 2.20 0.00             5
+164 165 1.51915 12.73 1.85 1.86 72.69 0.60 10.09 0.00 0.00             5
+165 166 1.52171 11.56 1.88 1.56 72.86 0.47 11.41 0.00 0.00             5
+166 167 1.52151 11.03 1.71 1.56 73.44 0.58 11.62 0.00 0.00             5
+167 168 1.51969 12.64 0.00 1.65 73.75 0.38 11.53 0.00 0.00             5
+168 169 1.51666 12.86 0.00 1.83 73.88 0.97 10.17 0.00 0.00             5
+169 170 1.51994 13.27 0.00 1.76 73.03 0.47 11.32 0.00 0.00             5
+170 171 1.52369 13.44 0.00 1.58 72.22 0.32 12.24 0.00 0.00             5
+171 172 1.51316 13.02 0.00 3.04 70.48 6.21  6.96 0.00 0.00             5
+172 173 1.51321 13.00 0.00 3.02 70.70 6.21  6.93 0.00 0.00             5
+173 174 1.52043 13.38 0.00 1.40 72.25 0.33 12.50 0.00 0.00             5
+174 175 1.52058 12.85 1.61 2.17 72.18 0.76  9.70 0.24 0.51             5
+175 176 1.52119 12.97 0.33 1.51 73.39 0.13 11.27 0.00 0.28             5
+176 177 1.51905 14.00 2.39 1.56 72.37 0.00  9.57 0.00 0.00             6
+177 178 1.51937 13.79 2.41 1.19 72.76 0.00  9.77 0.00 0.00             6
+178 179 1.51829 14.46 2.24 1.62 72.38 0.00  9.26 0.00 0.00             6
+179 180 1.51852 14.09 2.19 1.66 72.67 0.00  9.32 0.00 0.00             6
+180 181 1.51299 14.40 1.74 1.54 74.55 0.00  7.59 0.00 0.00             6
+181 182 1.51888 14.99 0.78 1.74 72.50 0.00  9.95 0.00 0.00             6
+182 183 1.51916 14.15 0.00 2.09 72.74 0.00 10.88 0.00 0.00             6
+183 184 1.51969 14.56 0.00 0.56 73.48 0.00 11.22 0.00 0.00             6
+184 185 1.51115 17.38 0.00 0.34 75.41 0.00  6.65 0.00 0.00             6
+185 186 1.51131 13.69 3.20 1.81 72.81 1.76  5.43 1.19 0.00             7
+186 187 1.51838 14.32 3.26 2.22 71.25 1.46  5.79 1.63 0.00             7
+187 188 1.52315 13.44 3.34 1.23 72.38 0.60  8.83 0.00 0.00             7
+188 189 1.52247 14.86 2.20 2.06 70.26 0.76  9.76 0.00 0.00             7
+189 190 1.52365 15.79 1.83 1.31 70.43 0.31  8.61 1.68 0.00             7
+190 191 1.51613 13.88 1.78 1.79 73.10 0.00  8.67 0.76 0.00             7
+191 192 1.51602 14.85 0.00 2.38 73.28 0.00  8.76 0.64 0.09             7
+192 193 1.51623 14.20 0.00 2.79 73.46 0.04  9.04 0.40 0.09             7
+193 194 1.51719 14.75 0.00 2.00 73.02 0.00  8.53 1.59 0.08             7
+194 195 1.51683 14.56 0.00 1.98 73.29 0.00  8.52 1.57 0.07             7
+195 196 1.51545 14.14 0.00 2.68 73.39 0.08  9.07 0.61 0.05             7
+196 197 1.51556 13.87 0.00 2.54 73.23 0.14  9.41 0.81 0.01             7
+197 198 1.51727 14.70 0.00 2.34 73.28 0.00  8.95 0.66 0.00             7
+198 199 1.51531 14.38 0.00 2.66 73.10 0.04  9.08 0.64 0.00             7
+199 200 1.51609 15.01 0.00 2.51 73.05 0.05  8.83 0.53 0.00             7
+200 201 1.51508 15.15 0.00 2.25 73.50 0.00  8.34 0.63 0.00             7
+201 202 1.51653 11.95 0.00 1.19 75.18 2.70  8.93 0.00 0.00             7
+202 203 1.51514 14.85 0.00 2.42 73.72 0.00  8.39 0.56 0.00             7
+203 204 1.51658 14.80 0.00 1.99 73.11 0.00  8.28 1.71 0.00             7
+204 205 1.51617 14.95 0.00 2.27 73.30 0.00  8.71 0.67 0.00             7
+205 206 1.51732 14.95 0.00 1.80 72.99 0.00  8.61 1.55 0.00             7
+206 207 1.51645 14.94 0.00 1.87 73.11 0.00  8.67 1.38 0.00             7
+207 208 1.51831 14.39 0.00 1.82 72.86 1.41  6.47 2.88 0.00             7
+208 209 1.51640 14.37 0.00 2.74 72.85 0.00  9.45 0.54 0.00             7
+209 210 1.51623 14.14 0.00 2.88 72.61 0.08  9.18 1.06 0.00             7
+210 211 1.51685 14.92 0.00 1.99 73.06 0.00  8.40 1.59 0.00             7
+211 212 1.52065 14.36 0.00 2.02 73.42 0.00  8.44 1.64 0.00             7
+212 213 1.51651 14.38 0.00 1.94 73.61 0.00  8.48 1.57 0.00             7
+213 214 1.51711 14.23 0.00 2.08 73.36 0.00  8.62 1.67 0.00             7</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>glass_final <span class="ot">&lt;-</span> glass_data <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Type_of_glass =</span> <span class="fu">factor</span>(Type_of_glass,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"building_windows_float_processed"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"building_windows_non_float_processed"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"vehicle_windows_float_processed"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"vehicle_windows_non_float_processed"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"containers"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"tableware"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"headlamps"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Fe <span class="sc">&lt;</span> <span class="fl">0.2</span>, Type_of_glass <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"tableware"</span>, <span class="st">"headlamps"</span>)) <span class="co"># part 4 </span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>glass_final</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    ID      RI    Na   Mg   Al    Si    K    Ca   Ba   Fe Type_of_glass
+1  177 1.51905 14.00 2.39 1.56 72.37 0.00  9.57 0.00 0.00     tableware
+2  178 1.51937 13.79 2.41 1.19 72.76 0.00  9.77 0.00 0.00     tableware
+3  179 1.51829 14.46 2.24 1.62 72.38 0.00  9.26 0.00 0.00     tableware
+4  180 1.51852 14.09 2.19 1.66 72.67 0.00  9.32 0.00 0.00     tableware
+5  181 1.51299 14.40 1.74 1.54 74.55 0.00  7.59 0.00 0.00     tableware
+6  182 1.51888 14.99 0.78 1.74 72.50 0.00  9.95 0.00 0.00     tableware
+7  183 1.51916 14.15 0.00 2.09 72.74 0.00 10.88 0.00 0.00     tableware
+8  184 1.51969 14.56 0.00 0.56 73.48 0.00 11.22 0.00 0.00     tableware
+9  185 1.51115 17.38 0.00 0.34 75.41 0.00  6.65 0.00 0.00     tableware
+10 186 1.51131 13.69 3.20 1.81 72.81 1.76  5.43 1.19 0.00     headlamps
+11 187 1.51838 14.32 3.26 2.22 71.25 1.46  5.79 1.63 0.00     headlamps
+12 188 1.52315 13.44 3.34 1.23 72.38 0.60  8.83 0.00 0.00     headlamps
+13 189 1.52247 14.86 2.20 2.06 70.26 0.76  9.76 0.00 0.00     headlamps
+14 190 1.52365 15.79 1.83 1.31 70.43 0.31  8.61 1.68 0.00     headlamps
+15 191 1.51613 13.88 1.78 1.79 73.10 0.00  8.67 0.76 0.00     headlamps
+16 192 1.51602 14.85 0.00 2.38 73.28 0.00  8.76 0.64 0.09     headlamps
+17 193 1.51623 14.20 0.00 2.79 73.46 0.04  9.04 0.40 0.09     headlamps
+18 194 1.51719 14.75 0.00 2.00 73.02 0.00  8.53 1.59 0.08     headlamps
+19 195 1.51683 14.56 0.00 1.98 73.29 0.00  8.52 1.57 0.07     headlamps
+20 196 1.51545 14.14 0.00 2.68 73.39 0.08  9.07 0.61 0.05     headlamps
+21 197 1.51556 13.87 0.00 2.54 73.23 0.14  9.41 0.81 0.01     headlamps
+22 198 1.51727 14.70 0.00 2.34 73.28 0.00  8.95 0.66 0.00     headlamps
+23 199 1.51531 14.38 0.00 2.66 73.10 0.04  9.08 0.64 0.00     headlamps
+24 200 1.51609 15.01 0.00 2.51 73.05 0.05  8.83 0.53 0.00     headlamps
+25 201 1.51508 15.15 0.00 2.25 73.50 0.00  8.34 0.63 0.00     headlamps
+26 202 1.51653 11.95 0.00 1.19 75.18 2.70  8.93 0.00 0.00     headlamps
+27 203 1.51514 14.85 0.00 2.42 73.72 0.00  8.39 0.56 0.00     headlamps
+28 204 1.51658 14.80 0.00 1.99 73.11 0.00  8.28 1.71 0.00     headlamps
+29 205 1.51617 14.95 0.00 2.27 73.30 0.00  8.71 0.67 0.00     headlamps
+30 206 1.51732 14.95 0.00 1.80 72.99 0.00  8.61 1.55 0.00     headlamps
+31 207 1.51645 14.94 0.00 1.87 73.11 0.00  8.67 1.38 0.00     headlamps
+32 208 1.51831 14.39 0.00 1.82 72.86 1.41  6.47 2.88 0.00     headlamps
+33 209 1.51640 14.37 0.00 2.74 72.85 0.00  9.45 0.54 0.00     headlamps
+34 210 1.51623 14.14 0.00 2.88 72.61 0.08  9.18 1.06 0.00     headlamps
+35 211 1.51685 14.92 0.00 1.99 73.06 0.00  8.40 1.59 0.00     headlamps
+36 212 1.52065 14.36 0.00 2.02 73.42 0.00  8.44 1.64 0.00     headlamps
+37 213 1.51651 14.38 0.00 1.94 73.61 0.00  8.48 1.57 0.00     headlamps
+38 214 1.51711 14.23 0.00 2.08 73.36 0.00  8.62 1.67 0.00     headlamps</code></pre>
+</div>
+</div></li>
 </ol>
 </section>
 <section id="yeast-data" class="level3">
@@ -137,7 +511,74 @@ ul.task-list li input[type="checkbox"] {
 <p>In HW 3 you read in the Yeast data from <a href="https://www4.stat.ncsu.edu/~online/datasets/yeast.data." class="uri">https://www4.stat.ncsu.edu/~online/datasets/yeast.data.</a> Read this data into R directly from the URL, adding column names as well.</p>
 <ol start="5" type="1">
 <li><p>Start a chain that removes the seq_name and nuc columns.</p></li>
-<li><p>Continue your chain to add columns corresponding to the mean and median of each numeric variable (<code>mcg</code>, <code>gvh</code>, <code>alm</code>, <code>mit</code>, <code>erl</code>, <code>pox</code>, and <code>vac</code>) at each class grouping (see the <code>across()</code> function as we did in the <code>dplyr</code> video!).</p></li>
+<li><p>Continue your chain to add columns corresponding to the mean and median of each numeric variable (<code>mcg</code>, <code>gvh</code>, <code>alm</code>, <code>mit</code>, <code>erl</code>, <code>pox</code>, and <code>vac</code>) at each class grouping (see the <code>across()</code> function as we did in the <code>dplyr</code> video!).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>yeast_data <span class="ot">&lt;-</span> <span class="fu">read_table</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://www4.stat.ncsu.edu/~online/datasets/yeast.data"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_names =</span> <span class="fu">c</span>(<span class="st">"seq_name"</span>, <span class="st">"mcg"</span>, <span class="st">"gvh"</span>, <span class="st">"alm"</span>, <span class="st">"mit"</span>, <span class="st">"erl"</span>, <span class="st">"pox"</span>, <span class="st">"vac"</span>, <span class="st">"nuc"</span>, <span class="st">"class"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+── Column specification ────────────────────────────────────────────────────────
+cols(
+  seq_name = col_character(),
+  mcg = col_double(),
+  gvh = col_double(),
+  alm = col_double(),
+  mit = col_double(),
+  erl = col_double(),
+  pox = col_double(),
+  vac = col_double(),
+  nuc = col_double(),
+  class = col_character()
+)</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>yeast_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,484 × 10
+   seq_name     mcg   gvh   alm   mit   erl   pox   vac   nuc class
+   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+ 1 ADT1_YEAST  0.58  0.61  0.47  0.13   0.5   0    0.48  0.22 MIT  
+ 2 ADT2_YEAST  0.43  0.67  0.48  0.27   0.5   0    0.53  0.22 MIT  
+ 3 ADT3_YEAST  0.64  0.62  0.49  0.15   0.5   0    0.53  0.22 MIT  
+ 4 AAR2_YEAST  0.58  0.44  0.57  0.13   0.5   0    0.54  0.22 NUC  
+ 5 AATM_YEAST  0.42  0.44  0.48  0.54   0.5   0    0.48  0.22 MIT  
+ 6 AATC_YEAST  0.51  0.4   0.56  0.17   0.5   0.5  0.49  0.22 CYT  
+ 7 ABC1_YEAST  0.5   0.54  0.48  0.65   0.5   0    0.53  0.22 MIT  
+ 8 BAF1_YEAST  0.48  0.45  0.59  0.2    0.5   0    0.58  0.34 NUC  
+ 9 ABF2_YEAST  0.55  0.5   0.66  0.36   0.5   0    0.49  0.22 MIT  
+10 ABP1_YEAST  0.4   0.39  0.6   0.15   0.5   0    0.58  0.3  CYT  
+# ℹ 1,474 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>yeast_final <span class="ot">&lt;-</span> yeast_data <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>seq_name, <span class="sc">-</span>nuc) <span class="sc">|&gt;</span> <span class="co"># drops the two columns by name</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(class) <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(mcg, gvh, alm, mit, erl, pox, vac),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">list</span>(<span class="at">mean =</span> \(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">median =</span> \(x) <span class="fu">median</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))) <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>yeast_final</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,484 × 22
+     mcg   gvh   alm   mit   erl   pox   vac class mcg_mean mcg_median gvh_mean
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;
+ 1  0.58  0.61  0.47  0.13   0.5   0    0.48 MIT      0.521       0.51    0.533
+ 2  0.43  0.67  0.48  0.27   0.5   0    0.53 MIT      0.521       0.51    0.533
+ 3  0.64  0.62  0.49  0.15   0.5   0    0.53 MIT      0.521       0.51    0.533
+ 4  0.58  0.44  0.57  0.13   0.5   0    0.54 NUC      0.452       0.45    0.456
+ 5  0.42  0.44  0.48  0.54   0.5   0    0.48 MIT      0.521       0.51    0.533
+ 6  0.51  0.4   0.56  0.17   0.5   0.5  0.49 CYT      0.481       0.48    0.470
+ 7  0.5   0.54  0.48  0.65   0.5   0    0.53 MIT      0.521       0.51    0.533
+ 8  0.48  0.45  0.59  0.2    0.5   0    0.58 NUC      0.452       0.45    0.456
+ 9  0.55  0.5   0.66  0.36   0.5   0    0.49 MIT      0.521       0.51    0.533
+10  0.4   0.39  0.6   0.15   0.5   0    0.58 CYT      0.481       0.48    0.470
+# ℹ 1,474 more rows
+# ℹ 11 more variables: gvh_median &lt;dbl&gt;, alm_mean &lt;dbl&gt;, alm_median &lt;dbl&gt;,
+#   mit_mean &lt;dbl&gt;, mit_median &lt;dbl&gt;, erl_mean &lt;dbl&gt;, erl_median &lt;dbl&gt;,
+#   pox_mean &lt;dbl&gt;, pox_median &lt;dbl&gt;, vac_mean &lt;dbl&gt;, vac_median &lt;dbl&gt;</code></pre>
+</div>
+</div></li>
 </ol>
 </section>
 <section id="wine-data" class="level3">
@@ -147,7 +588,104 @@ ul.task-list li input[type="checkbox"] {
 <li><p>Start a chain on your new combined data object to filter the data to only look at high-quality wines (quality &gt; 6.5) and wines that have a reasonable alcohol value (alcohol &lt; 132).</p></li>
 <li><p>Continue your chain to now sort the data from highest quality to lowest.</p></li>
 <li><p>Continue your chain to select only the variables that contain acid, the alcohol variable, the type variable, and the quality variable.</p></li>
-<li><p>Continue your chain to add the mean and standard deviation of the alcohol variable to the data set for each setting of the quality variable.</p></li>
+<li><p>Continue your chain to add the mean and standard deviation of the alcohol variable to the data set for each setting of the quality variable.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>white_wine <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"../HW3/data/white-wine.xlsx"</span>, <span class="at">sheet =</span><span class="dv">1</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>white_wine</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,898 × 12
+   `fixed acidity` `volatile acidity` `citric acid` `residual sugar` chlorides
+             &lt;dbl&gt;              &lt;dbl&gt;         &lt;dbl&gt;            &lt;dbl&gt;     &lt;dbl&gt;
+ 1             7                 0.27          0.36             20.7     0.045
+ 2             6.3               0.3           0.34              1.6     0.049
+ 3             8.1               0.28          0.4               6.9     0.05 
+ 4             7.2               0.23          0.32              8.5     0.058
+ 5             7.2               0.23          0.32              8.5     0.058
+ 6             8.1               0.28          0.4               6.9     0.05 
+ 7             6.2               0.32          0.16              7       0.045
+ 8             7                 0.27          0.36             20.7     0.045
+ 9             6.3               0.3           0.34              1.6     0.049
+10             8.1               0.22          0.43              1.5     0.044
+# ℹ 4,888 more rows
+# ℹ 7 more variables: `free sulfur dioxide` &lt;dbl&gt;,
+#   `total sulfur dioxide` &lt;dbl&gt;, density &lt;dbl&gt;, pH &lt;dbl&gt;, sulphates &lt;dbl&gt;,
+#   alcohol &lt;dbl&gt;, quality &lt;dbl&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(white_wine) <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"../HW3/data/white-wine.xlsx"</span>, <span class="at">sheet =</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(<span class="dv">1</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>white_wine <span class="ot">&lt;-</span> white_wine <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">type =</span> <span class="st">"white"</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>red_wine <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">delim =</span> <span class="st">";"</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1599 Columns: 12
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ";"
+dbl (12): fixed acidity, volatile acidity, citric acid, residual sugar, chlo...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(red_wine) <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"../HW3/data/white-wine.xlsx"</span>, <span class="at">sheet =</span> <span class="dv">2</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(<span class="dv">1</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>red_wine <span class="ot">&lt;-</span> red_wine <span class="sc">|&gt;</span> </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">type =</span> <span class="st">"red"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>wine_data <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(white_wine, red_wine)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>wine_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6,497 × 13
+   fixed_acidity volatile_acidity citric_acid residual_sugar chlorides
+           &lt;dbl&gt;            &lt;dbl&gt;       &lt;dbl&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+ 1           7               0.27        0.36           20.7     0.045
+ 2           6.3             0.3         0.34            1.6     0.049
+ 3           8.1             0.28        0.4             6.9     0.05 
+ 4           7.2             0.23        0.32            8.5     0.058
+ 5           7.2             0.23        0.32            8.5     0.058
+ 6           8.1             0.28        0.4             6.9     0.05 
+ 7           6.2             0.32        0.16            7       0.045
+ 8           7               0.27        0.36           20.7     0.045
+ 9           6.3             0.3         0.34            1.6     0.049
+10           8.1             0.22        0.43            1.5     0.044
+# ℹ 6,487 more rows
+# ℹ 8 more variables: free_sulfur_dioxide &lt;dbl&gt;, total_sulfur_dioxide &lt;dbl&gt;,
+#   density &lt;dbl&gt;, pH &lt;dbl&gt;, sulphates &lt;dbl&gt;, alcohol &lt;dbl&gt;, quality &lt;dbl&gt;,
+#   type &lt;chr&gt;</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>wine_final <span class="ot">&lt;-</span> wine_data <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(quality <span class="sc">&gt;</span> <span class="fl">6.5</span>, alcohol <span class="sc">&lt;</span> <span class="fl">13.2</span>) <span class="sc">|&gt;</span> <span class="co">#filter the data to only look at high-quality wines</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(quality)) <span class="sc">|&gt;</span> <span class="co"># sort the data from highest quality to lowest.</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"acid"</span>), alcohol, type, quality) <span class="sc">|&gt;</span> <span class="co">#  select only the variables that contain acid, the alcohol variable, the type variable, and the quality variable.</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quality) <span class="sc">|&gt;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">alcohol_mean =</span> <span class="fu">mean</span>(alcohol, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="co"># add the mean and standard deviation of the alcohol variable to the data set for each setting of the quality variable.</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">alcohol_sd =</span> <span class="fu">sd</span>(alcohol, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>wine_final</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,211 × 8
+   fixed_acidity volatile_acidity citric_acid alcohol type  quality alcohol_mean
+           &lt;dbl&gt;            &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;        &lt;dbl&gt;
+ 1           9.1             0.27        0.45    10.4 white       9         12.2
+ 2           6.6             0.36        0.29    12.4 white       9         12.2
+ 3           7.4             0.24        0.36    12.5 white       9         12.2
+ 4           6.9             0.36        0.34    12.7 white       9         12.2
+ 5           7.1             0.26        0.49    12.9 white       9         12.2
+ 6           6.2             0.66        0.48    12.8 white       8         11.5
+ 7           6.2             0.66        0.48    12.8 white       8         11.5
+ 8           6.8             0.26        0.42    10.5 white       8         11.5
+ 9           6.7             0.23        0.31    10.7 white       8         11.5
+10           6.7             0.23        0.31    10.7 white       8         11.5
+# ℹ 1,201 more rows
+# ℹ 1 more variable: alcohol_sd &lt;dbl&gt;</code></pre>
+</div>
+</div></li>
 </ol>
 </section>
 </section>
@@ -155,25 +693,182 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="task-3-database-practice">Task 3: Database Practice</h2>
 <p>Download the Lahman.db file associated with the Connecting to Databases notes/video.</p>
 <ol start="11" type="1">
-<li><p>Connect to the database and then look at all of the tables in the database.</p></li>
-<li><p>Use the tbl() function and dplyr to return all of the data from the Teams table for the year 2015.</p></li>
-<li><p>Repeat the above by using the sql() function within tbl() (here you have to write actual SQL!).</p></li>
+<li><p>Connect to the database and then look at all of the tables in the database.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RSQLite)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(RSQLite<span class="sc">::</span><span class="fu">SQLite</span>(), <span class="st">"data/lahman.db"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dbListTables</span>(con)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "AllstarFull"         "Appearances"         "AwardsManagers"     
+ [4] "AwardsPlayers"       "AwardsShareManagers" "AwardsSharePlayers" 
+ [7] "Batting"             "BattingPost"         "CollegePlaying"     
+[10] "Fielding"            "FieldingOF"          "FieldingOFsplit"    
+[13] "FieldingPost"        "HallOfFame"          "HomeGames"          
+[16] "LahmanData"          "Managers"            "ManagersHalf"       
+[19] "Parks"               "People"              "Pitching"           
+[22] "PitchingPost"        "Salaries"            "Schools"            
+[25] "SeriesPost"          "Teams"               "TeamsFranchises"    
+[28] "TeamsHalf"           "battingLabels"       "fieldingLabels"     
+[31] "pitchingLabels"     </code></pre>
+</div>
+</div></li>
+<li><p>Use the tbl() function and dplyr to return all of the data from the Teams table for the year 2015.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="st">"Teams"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(yearID <span class="sc">==</span> <span class="dv">2015</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30 × 48
+   yearID lgID  teamID franchID divID  Rank     G Ghome     W     L DivWin WCWin
+    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;
+ 1   2015 NL    ARI    ARI      W         3   162    81    79    83 N      N    
+ 2   2015 NL    ATL    ATL      E         4   162    81    67    95 N      N    
+ 3   2015 AL    BAL    BAL      E         3   162    78    81    81 N      N    
+ 4   2015 AL    BOS    BOS      E         5   162    81    78    84 N      N    
+ 5   2015 AL    CHA    CHW      C         4   162    81    76    86 N      N    
+ 6   2015 NL    CHN    CHC      C         3   162    81    97    65 N      Y    
+ 7   2015 NL    CIN    CIN      C         5   162    81    64    98 N      N    
+ 8   2015 AL    CLE    CLE      C         3   161    80    81    80 N      N    
+ 9   2015 NL    COL    COL      W         5   162    81    68    94 N      N    
+10   2015 AL    DET    DET      C         5   161    81    74    87 N      N    
+# ℹ 20 more rows
+# ℹ 36 more variables: LgWin &lt;chr&gt;, WSWin &lt;chr&gt;, R &lt;int&gt;, AB &lt;int&gt;, H &lt;int&gt;,
+#   X2B &lt;int&gt;, X3B &lt;int&gt;, HR &lt;int&gt;, BB &lt;int&gt;, SO &lt;int&gt;, SB &lt;int&gt;, CS &lt;int&gt;,
+#   HBP &lt;int&gt;, SF &lt;int&gt;, RA &lt;int&gt;, ER &lt;int&gt;, ERA &lt;dbl&gt;, CG &lt;int&gt;, SHO &lt;int&gt;,
+#   SV &lt;int&gt;, IPouts &lt;int&gt;, HA &lt;int&gt;, HRA &lt;int&gt;, BBA &lt;int&gt;, SOA &lt;int&gt;, E &lt;int&gt;,
+#   DP &lt;int&gt;, FP &lt;dbl&gt;, name &lt;chr&gt;, park &lt;chr&gt;, attendance &lt;int&gt;, BPF &lt;int&gt;,
+#   PPF &lt;int&gt;, teamIDBR &lt;chr&gt;, teamIDlahman45 &lt;chr&gt;, teamIDretro &lt;chr&gt;</code></pre>
+</div>
+</div></li>
+<li><p>Repeat the above by using the sql() function within tbl() (here you have to write actual SQL!).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="fu">sql</span>(<span class="st">"SELECT * FROM Teams WHERE yearID = 2015"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30 × 48
+   yearID lgID  teamID franchID divID  Rank     G Ghome     W     L DivWin WCWin
+    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;
+ 1   2015 NL    ARI    ARI      W         3   162    81    79    83 N      N    
+ 2   2015 NL    ATL    ATL      E         4   162    81    67    95 N      N    
+ 3   2015 AL    BAL    BAL      E         3   162    78    81    81 N      N    
+ 4   2015 AL    BOS    BOS      E         5   162    81    78    84 N      N    
+ 5   2015 AL    CHA    CHW      C         4   162    81    76    86 N      N    
+ 6   2015 NL    CHN    CHC      C         3   162    81    97    65 N      Y    
+ 7   2015 NL    CIN    CIN      C         5   162    81    64    98 N      N    
+ 8   2015 AL    CLE    CLE      C         3   161    80    81    80 N      N    
+ 9   2015 NL    COL    COL      W         5   162    81    68    94 N      N    
+10   2015 AL    DET    DET      C         5   161    81    74    87 N      N    
+# ℹ 20 more rows
+# ℹ 36 more variables: LgWin &lt;chr&gt;, WSWin &lt;chr&gt;, R &lt;int&gt;, AB &lt;int&gt;, H &lt;int&gt;,
+#   X2B &lt;int&gt;, X3B &lt;int&gt;, HR &lt;int&gt;, BB &lt;int&gt;, SO &lt;int&gt;, SB &lt;int&gt;, CS &lt;int&gt;,
+#   HBP &lt;int&gt;, SF &lt;int&gt;, RA &lt;int&gt;, ER &lt;int&gt;, ERA &lt;dbl&gt;, CG &lt;int&gt;, SHO &lt;int&gt;,
+#   SV &lt;int&gt;, IPouts &lt;int&gt;, HA &lt;int&gt;, HRA &lt;int&gt;, BBA &lt;int&gt;, SOA &lt;int&gt;, E &lt;int&gt;,
+#   DP &lt;int&gt;, FP &lt;dbl&gt;, name &lt;chr&gt;, park &lt;chr&gt;, attendance &lt;int&gt;, BPF &lt;int&gt;,
+#   PPF &lt;int&gt;, teamIDBR &lt;chr&gt;, teamIDlahman45 &lt;chr&gt;, teamIDretro &lt;chr&gt;</code></pre>
+</div>
+</div></li>
 </ol>
-<p>Either use dplyr or write SQL queries for the rest of these questions!</p>
+<p>Either use <code>dplyr</code> or write <code>SQL</code> queries for the rest of these questions!</p>
 <ol start="14" type="1">
-<li><p>Return all of the players in the hall of fame, the year they were voted into the hall of fame, and their category (only those three variables!). See the HallOfFame table, the inducted variable is important here.</p></li>
-<li><p>Combine the table from the previous question with the People table in order to have the nameFirst and nameLast names added to what was returned above.</p></li>
+<li><p>Return all of the players in the hall of fame, the year they were voted into the hall of fame, and their category (only those three variables!). See the HallOfFame table, the inducted variable is important here.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using dplyr</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="st">"HallOfFame"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(inducted <span class="sc">==</span> <span class="st">"Y"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID, yearID, category) <span class="sc">|&gt;</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 3
+   playerID  yearID category         
+   &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;            
+ 1 cobbty01    1936 Player           
+ 2 ruthba01    1936 Player           
+ 3 wagneho01   1936 Player           
+ 4 mathech01   1936 Player           
+ 5 johnswa01   1936 Player           
+ 6 lajoina01   1937 Player           
+ 7 speaktr01   1937 Player           
+ 8 youngcy01   1937 Player           
+ 9 bulkemo99   1937 Pioneer/Executive
+10 johnsba99   1937 Pioneer/Executive
+# ℹ 330 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using SQL</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con, <span class="fu">sql</span>(<span class="st">"SELECT playerID, yearid, category FROM HallOfFame WHERE inducted = 'Y'"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 340 × 3
+   playerID  yearID category         
+   &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;            
+ 1 cobbty01    1936 Player           
+ 2 ruthba01    1936 Player           
+ 3 wagneho01   1936 Player           
+ 4 mathech01   1936 Player           
+ 5 johnswa01   1936 Player           
+ 6 lajoina01   1937 Player           
+ 7 speaktr01   1937 Player           
+ 8 youngcy01   1937 Player           
+ 9 bulkemo99   1937 Pioneer/Executive
+10 johnsba99   1937 Pioneer/Executive
+# ℹ 330 more rows</code></pre>
+</div>
+</div></li>
+<li><p>Combine the table from the previous question with the People table in order to have the nameFirst and nameLast names added to what was returned above.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>hof_with_names  <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con, <span class="st">"HallOfFame"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(inducted <span class="sc">==</span> <span class="st">"Y"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID, yearID, category) <span class="sc">|&gt;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">tbl</span>(con, <span class="st">"People"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(playerID, nameFirst, nameLast), <span class="at">by =</span> <span class="st">"playerID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
 <li><p>Return only the playerID (manager ID in this case), G, W, and L columns from the Managers table. Use chaining to then</p>
 <ul>
 <li><p>Determine the overall win/loss records (sum of wins and sum of losses) for each of these hall of fame managers</p>
 <ul>
 <li><p>We haven’t quite covered this so I’ll help out. We want to use group_by() with summarize() rather than mutate(). Something like this:</p>
-<p>tbl(con, “Managers”) |&gt; select(…) |&gt; group_by(playerID) |&gt; summarize(G_managed = sum(G, na.rm = TRUE), Total_W = sum(W, na.rm = TRUE), Total_L = sum(L, na.rm = TRUE))</p></li>
+<p><code>tbl(con, "Managers") |&gt; select(...) |&gt; group_by(playerID) |&gt; summarize(G_managed = sum(G, na.rm = TRUE), Total_W = sum(W, na.rm = TRUE), Total_L = sum(L, na.rm = TRUE))</code></p></li>
 <li><p>Create a new variable that is the career win/loss percentage (Total_W/G_managed). (Note: I did this after collect() otherwise the column type has to be set. . . )</p></li>
 <li><p>Sort the resulting data by the win/loss percentage variable (from largest to smallest).</p></li>
 </ul></li>
-</ul></li>
-<li><p>Use the results from the previous two questions to answer this one! Return information for only the people that managed a team and were inducted into the hall of fame (regardless of their category in the hall of fame - you want to return all people in the hall of fame that ever managed at all). (Just return all of the variables from both of the above two questions - 9 total columns)</p></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>manager_records <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con, <span class="st">"Managers"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID, G, W, L) <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(playerID) <span class="sc">|&gt;</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">G_managed =</span> <span class="fu">sum</span>(G, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_W =</span> <span class="fu">sum</span>(W, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_L =</span> <span class="fu">sum</span>(L, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">win_loss_pct =</span> Total_W <span class="sc">/</span> G_managed) <span class="sc">|&gt;</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_loss_pct))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
+<li><p>Use the results from the previous two questions to answer this one! Return information for only the people that managed a team and were inducted into the hall of fame (regardless of their category in the hall of fame - you want to return all people in the hall of fame that ever managed at all). (Just return all of the variables from both of the above two questions - 9 total columns</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>hof_managers <span class="ot">&lt;-</span> hof_with_names  <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(manager_records, <span class="at">by =</span> <span class="st">"playerID"</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>hof_managers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 97 × 9
+   playerID  yearID category        nameFirst nameLast G_managed Total_W Total_L
+   &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;           &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
+ 1 cobbty01    1936 Player          Ty        Cobb           933     479     444
+ 2 wagneho01   1936 Player          Honus     Wagner           5       1       4
+ 3 mathech01   1936 Player          Christy   Mathews…       346     164     176
+ 4 johnswa01   1936 Player          Walter    Johnson        966     529     432
+ 5 lajoina01   1937 Player          Nap       Lajoie         700     377     309
+ 6 speaktr01   1937 Player          Tris      Speaker       1139     617     520
+ 7 youngcy01   1937 Player          Cy        Young            6       3       3
+ 8 mackco01    1937 Manager         Connie    Mack          7755    3731    3948
+ 9 mcgrajo01   1937 Manager         John      McGraw        4769    2763    1948
+10 wrighge01   1937 Pioneer/Execut… George    Wright          85      59      25
+# ℹ 87 more rows
+# ℹ 1 more variable: win_loss_pct &lt;dbl&gt;</code></pre>
+</div>
+</div></li>
 </ol>
 
 
