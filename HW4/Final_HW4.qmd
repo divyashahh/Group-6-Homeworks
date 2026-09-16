@@ -1,0 +1,316 @@
+---
+title: "Homework 4"
+format: html
+editor: visual
+execute:
+  warning: false
+  message: false
+---
+
+## Task 1: Conceptual Questions
+
+### 1. Rewrite the nested function call using the native pipe
+
+Original nested call:
+
+``` r
+arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species), Petal.Length < 1.55), Species)
+```
+
+Rewritten with chaining:
+
+```{r}
+library(tidyverse)
+
+as_tibble(iris) |>
+  select(starts_with("Petal"), Species) |>
+  filter(Petal.Length < 1.55) |>
+  arrange(Species)
+```
+
+### 2. Long vs. wide format data
+
+In long format, each row is a single observation of a single variable, with a column identifying which variable/group/timestamp it belongs to. In wide format, each subject/unit gets one row, with repeated measurements or variables spread across separate columns.
+
+Long format is generally preferred for statistical analysis, since most plotting, summarizing, and modeling functions in R expect one row per observation — it makes filtering, grouping, and analysis cleaner.
+
+## Task 2: Data Manipulation
+
+### Glass Data
+
+Read the glass data directly from the URL and add the appropriate column names.
+
+```{r}
+glass <- read_csv(
+  "https://www4.stat.ncsu.edu/~online/datasets/glass.data",
+  col_names = c(
+    "Id", "RI", "Na", "Mg", "Al", "Si",
+    "K", "Ca", "Ba", "Fe", "Type_of_glass"
+  ),
+  show_col_types = FALSE
+)
+
+glass
+```
+
+Replace the numeric glass type values with descriptive factor labels (all 7 levels, even though type 4 doesn't appear in this data — safer than dropping a level outright), then keep only observations with Fe \< 0.2 and type tableware or headlamps.
+
+```{r}
+glass_filtered <- glass |>
+  mutate(
+    Type_of_glass = factor(
+      Type_of_glass,
+      levels = 1:7,
+      labels = c(
+        "building_windows_float_processed",
+        "building_windows_non_float_processed",
+        "vehicle_windows_float_processed",
+        "vehicle_windows_non_float_processed",
+        "containers",
+        "tableware",
+        "headlamps"
+      )
+    )
+  ) |>
+  filter(
+    Fe < 0.2,
+    Type_of_glass %in% c("tableware", "headlamps")
+  )
+
+glass_filtered
+```
+
+### Yeast Data
+
+Read the yeast data directly from the URL and add the appropriate column names.
+
+```{r}
+yeast <- read_table(
+  "https://www4.stat.ncsu.edu/~online/datasets/yeast.data",
+  col_names = c(
+    "seq_name", "mcg", "gvh", "alm", "mit",
+    "erl", "pox", "vac", "nuc", "class"
+  ),
+  show_col_types = FALSE
+)
+
+yeast
+```
+
+Remove `seq_name` and `nuc`, group by class, and add the mean and median of each numeric variable (`na.rm = TRUE` to be safe against missing values).
+
+```{r}
+yeast_summary <- yeast |>
+  select(-seq_name, -nuc) |>
+  group_by(class) |>
+  mutate(
+    across(
+      c(mcg, gvh, alm, mit, erl, pox, vac),
+      list(
+        mean = ~mean(.x, na.rm = TRUE),
+        median = ~median(.x, na.rm = TRUE)
+      )
+    )
+  ) |>
+  ungroup()
+
+yeast_summary
+```
+
+### Wine Data
+
+Read the white wine data from the Excel file, using the second sheet for column names, then read the red wine data from the URL and apply the same column names. Combine both into a single dataset with a `type` column.
+
+```{r}
+
+library(readxl)
+
+white_wine <- read_excel(
+  "../HW3/data/white-wine.xlsx",
+  sheet = 1
+)
+
+white_names <- read_excel(
+  "../HW3/data/white-wine.xlsx",
+  sheet = 2
+)
+
+colnames(white_wine) <- white_names[[1]]
+
+white_wine <- white_wine |>
+  mutate(type = "white")
+
+red_wine <- read_delim(
+  "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
+  delim = ";",
+  col_types = cols(.default = col_double())
+)
+
+colnames(red_wine) <- white_names[[1]]
+
+red_wine <- red_wine |>
+  mutate(type = "red")
+
+wine_data <- bind_rows(white_wine, red_wine)
+
+wine_data
+```
+
+Keep only high-quality wines with reasonable alcohol values, sort from highest to lowest quality, select the requested variables, and add the mean and standard deviation of alcohol for each quality level.
+
+```{r}
+wine_filtered <- wine_data |>
+  filter(
+    quality > 6.5,
+    alcohol < 13.2
+  ) |>
+  arrange(desc(quality)) |>
+  select(
+    contains("acid"),
+    alcohol,
+    type,
+    quality
+  ) |>
+  group_by(quality) |>
+  mutate(
+    mean_alcohol = mean(alcohol, na.rm = TRUE),
+    sd_alcohol = sd(alcohol, na.rm = TRUE)
+  ) |>
+  ungroup()
+
+wine_filtered
+```
+
+## Task 3: Database Practice
+
+Connect to the Lahman database.
+
+```{r}
+library(DBI)
+library(RSQLite)
+library(dplyr)
+library(dbplyr)
+
+con <- dbConnect(
+  SQLite(),
+  "data/Lahman.db"
+)
+```
+
+### 11. View the Tables
+
+```{r}
+dbListTables(con)
+```
+
+### 12. Teams from 2015 Using dplyr
+
+```{r}
+teams_2015 <- tbl(con, "Teams") |>
+  filter(yearID == 2015) |>
+  collect()
+
+teams_2015
+```
+
+### 13. Teams from 2015 Using SQL
+
+```{r}
+teams_2015_sql <- tbl(
+  con,
+  sql("SELECT * FROM Teams WHERE yearID = 2015")
+) |>
+  collect()
+
+teams_2015_sql
+```
+
+### 14. Hall of Fame Players
+
+Return playerID, induction year, and category for inducted players only.
+
+```{r}
+hall_of_fame <- tbl(con, "HallOfFame") |>
+  filter(inducted == "Y") |>
+  select(
+    playerID,
+    yearID,
+    category
+  ) |>
+  collect()
+
+hall_of_fame
+```
+
+### 15. Add Player Names
+
+Select only the needed columns from People before joining, rather than pulling the whole table.
+
+```{r}
+people_names <- tbl(con, "People") |>
+  select(
+    playerID,
+    nameFirst,
+    nameLast
+  ) |>
+  collect()
+
+hall_of_fame_names <- hall_of_fame |>
+  left_join(
+    people_names,
+    by = "playerID"
+  )
+
+hall_of_fame_names
+```
+
+### 16. Manager Career Records
+
+```{r}
+manager_records <- tbl(con, "Managers") |>
+  select(
+    playerID,
+    G,
+    W,
+    L
+  ) |>
+  group_by(playerID) |>
+  summarize(
+    G_managed = sum(G, na.rm = TRUE),
+    Total_W = sum(W, na.rm = TRUE),
+    Total_L = sum(L, na.rm = TRUE)
+  ) |>
+  collect() |>
+  mutate(
+    win_loss_pct = Total_W / G_managed
+  ) |>
+  arrange(desc(win_loss_pct))
+
+manager_records
+```
+
+### 17. Hall of Fame Managers
+
+Keep only people who were inducted into the Hall of Fame and also managed a team.
+
+```{r}
+hall_of_fame_managers <- hall_of_fame_names |>
+  inner_join(
+    manager_records,
+    by = "playerID"
+  )
+
+hall_of_fame_managers
+```
+
+The final dataset should contain 9 columns.
+
+```{r}
+ncol(hall_of_fame_managers)
+```
+
+Disconnect from the database.
+
+```{r}
+dbDisconnect(con)
+```
