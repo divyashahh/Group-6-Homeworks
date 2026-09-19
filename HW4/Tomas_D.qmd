@@ -1,0 +1,198 @@
+---
+title: "Tomas_D"
+format: html
+editor: visual
+---
+
+### Homework 4
+
+#### Task 1
+
+In long format, each measurement gets their own row with each distinct group, variable, or timestamp being its own column
+
+In wide format, each subject gets its own row with repeated measurements spread out across different columns.
+
+For analysis, long format is preferred, it makes data manipulation cleaner and easier with deployed packages.
+
+```{r}
+library(tidyverse)
+arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species), Petal.Length <
+                 1.55), Species)
+
+
+```
+
+#### Task 2
+
+```{r}
+#Reading data and creating column names
+data <- read_csv(
+  "https://www4.stat.ncsu.edu/online/datasets/glass.data", col_names = c("Id","RI","Na","Mg","Al","Si","K","Ca","Ba","Fe","Type_of_Glass")) |> 
+  
+    mutate(
+      Type_of_Glass = factor(
+        Type_of_Glass,
+        levels = 1:7,
+        labels = c(
+          "building_windows_float_processed",
+          "building_windows_non_float_processed",
+          "vehicle_windows_float_processed",
+          "vehicle_windows_non_float_processed",
+          "containers",
+          "tableware",
+          "headlamps"
+        )
+      )
+    ) |>
+  
+  filter(Fe < 0.2 & Type_of_Glass %in% c("tableware", "headlamps"))
+data # printing tibble
+```
+
+```{r}
+yeast_data <- read.table(
+  "https://www4.stat.ncsu.edu/online/datasets/yeast.data", 
+  col.names = c("seq_name", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "class")
+) |>
+  select(-seq_name, -nuc) |> # remove seq and nuc columns
+  group_by(class) |> #add in mutate
+  mutate(
+    across(
+      c(mcg, gvh, alm, mit, erl, pox, vac),
+      list(mean = mean, median = median) # add functions
+    )
+  )
+
+yeast_data
+
+
+```
+
+```{r}
+getwd()
+library(readxl) #loading packages
+
+white_wine_s1 <- read_excel("../HW3/data/white-wine.xlsx", sheet =1)#reading data from folder
+
+#white_wine_s1 #viewing tibble
+
+wine_colnames <- read_excel("../HW3/data/white-wine.xlsx",sheet = 2) #Read in second sheet
+
+colnames(white_wine_s1) <- wine_colnames[[1]] #Assign colnames as a vector
+
+
+
+#Adding "white" columns
+
+white_wine_s1$type <- "white"
+
+#white_wine_s1
+
+library(readr)
+library(dplyr)
+
+#Reading in red wine file
+red_wine <- read_delim(
+  "https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv",
+  delim = ";"
+)
+
+#Assigning column names and new "red" column
+colnames(red_wine) <- wine_colnames[[1]]
+red_wine$type <- "red"
+
+# print tibble
+#red_wine
+
+#combine datasets
+
+wine_data <- bind_rows(white_wine_s1, red_wine)
+#wine_data
+
+wine_data_processed <- wine_data |>
+  # high quality (> 6.5) and reasonable alcohol (< 13.2)
+  filter(quality > 6.5 & alcohol < 13.2) |>
+  
+  # sort from highest quality to lowest
+  arrange(desc(quality)) |>
+  
+  # select variables containing "acid", plus alcohol, type, and quality
+  select(contains("acid"), alcohol, type, quality) |>
+  
+  # mean and standard deviation of alcohol grouped by quality
+  group_by(quality) |>
+  mutate(
+    alcohol_mean = mean(alcohol),
+    alcohol_sd = sd(alcohol)
+  ) |>
+  ungroup()
+
+# final tibble
+wine_data_processed
+```
+
+#### Task 3
+
+```{r}
+library(DBI)
+library(RSQLite)
+library(dplyr)
+
+con <- dbConnect(RSQLite::SQLite(), "data/Lahman.db")
+dbListTables(con)
+
+#Teams table filter = 2015
+teams_2015 <- tbl(con, "Teams") |>
+  filter(yearID == 2015) |>
+  collect()
+
+#using the sql() 
+teams_2015_sql <- tbl(
+  con, 
+  sql("SELECT * FROM Teams WHERE yearID = 2015")
+) |>
+  collect()
+
+#playerID, yearID, and category for HoF players
+hof_inducted <- tbl(con, "HallOfFame") |>
+  filter(inducted == "Y") |>
+  select(playerID, yearID, category)
+
+#Combine HoF data with People table, include nameFirst and nameLast
+hof_names <- hof_inducted |>
+  inner_join(
+    tbl(con, "People") |> select(playerID, nameFirst, nameLast), 
+    by = "playerID"
+  )
+
+#win/loss records for managers and compute win percentage
+managers_summary <- tbl(con, "Managers") |>
+  select(playerID, G, W, L) |>
+  group_by(playerID) |>
+  summarize(
+    G_managed = sum(G, na.rm = TRUE),
+    Total_W = sum(W, na.rm = TRUE),
+    Total_L = sum(L, na.rm = TRUE)
+  ) |>
+  collect() |>
+  mutate(win_pct = Total_W / G_managed) |>
+  arrange(desc(win_pct))
+
+#Combine manager records with HoF
+hof_managers <- inner_join(
+  hof_names |> collect(),
+  managers_summary,
+  by = "playerID"
+)
+
+# View final result
+hof_managers
+
+dbDisconnect(con)
+
+```
+
+####  
+
+\
+\

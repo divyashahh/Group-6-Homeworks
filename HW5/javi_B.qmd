@@ -10,17 +10,62 @@ For this section, you’ll connect to the news API here: newsapi.org. You’ll n
 
 1.  Use `GET()` from the `httr` package to return information about a topic that you are interested in that has been in the news lately (store the result as an R object). Note: We can only look 30 days into the past with a free account.
 
-    ```{r}
-    library(httr)
-    library(tidycensus)
+    ```{r t1-p1}
     library(tidyverse)
-    GET("https://newsapi.org/v2/everything?q=Iran&from=2026-08-02&language=en&
-    pageSize=50&apiKey=KEYGOESHERE")
+    library(httr)
+    library(jsonlite)
+    library(tidycensus) # from notes 
+
+    api_key <- Sys.getenv("NEWSAPI_KEY")
+    from_date <- format(Sys.Date() - 25, "%Y-%m-%d") # make sure we are within 30 days
+
+    news <- GET("https://newsapi.org/v2/everything",
+                query = list(q = "Iran",
+                             from = from_date,
+                             language = "en",
+                             pageSize = 50,
+                             apiKey = api_key))
+    news
     ```
 
 2.  Parse what is returned and find your way to the data frame that has the actual article information in it (check `content`). Note the first column should be a list column!
 
+    ```{r t1-p2}
+    parsed <- content(news, as = "parsed", simplifyDataFrame = TRUE) 
+
+    articles <- parsed$articles
+    articles
+
+    articles_tbl <- as_tibble(articles)
+    str(articles_tbl)
+    ```
+
 3.  Now write a quick function that allows the user to easily query this API. The inputs to the function should be the title/subject to search for (string), a time period to search from (string - you’ll search from that time until the present), and an API key.
+
+    ```{r t1-p3}
+    get_news <- function(query, from_date, api_key) {
+      response <- GET("https://newsapi.org/v2/everything",
+                       query = list(q = query,
+                                    from = from_date,
+                                    language = "en",
+                                    pageSize = 50,
+                                    apiKey = api_key))
+
+      parsed <- content(response, as = "parsed", simplifyDataFrame = TRUE)
+
+      if (parsed$status != "ok") {
+        stop("NewsAPI request failed: ", parsed$message)
+      }
+
+      as_tibble(parsed$articles)
+    }
+
+    iran_news <- get_news("Iran", from_date, api_key)
+    iran_news
+
+    climate_news <- get_news("climate change", from_date, api_key)
+    climate_news
+    ```
 
 ## Task 2: Summarizing Roller Coaster Data
 
@@ -74,13 +119,38 @@ No need to use the Boundary variable or the Latitude and Longitude variables in 
 
 - Read in this data and convert variables to factors as needed.
 
+  ```{r task2-reading th}
+  library(janitor) # used this library to clean up the variables names
+  coasters <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv") |>
+  clean_names() |>
+  mutate(
+      census_region = factor(census_region),
+      age_group = factor(age_group,
+                          levels = c("1:Older", "2:Recent", "3:Newest"),
+                          labels = c("Older", "Recent", "Newest")),
+      scale = factor(scale, levels = c("Family", "Thrill", "Extreme")),
+      type = factor(type),
+      design = factor(design),
+      inversions = factor(inversions),
+      make = factor(make)
+    )
+  ```
+
 ### Basic EDA
 
 We’ve talked about the general process of conducting an EDA but haven’t gotten to summarizing numeric variables. But our goal is to understand how our data is stored, what is missing, and we try to summarize the variables both numerically and visually to understand relationships within the data.
 
-4.  Look at how the data is stored and see if everything makes sense
+4.  Look at how the data is stored and see if everything makes sense.
+
+    ```{r t2-p4}
+    glimpse(coasters)
+    ```
 
 5.  Document any missing values in the data.
+
+    ```{r t2-p5}
+    colSums(is.na(coasters))
+    ```
 
 ### Categorical variables
 
@@ -88,12 +158,64 @@ We’ve talked about the general process of conducting an EDA but haven’t gott
 
     - Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)
 
+      ```{r t2-p6}
+      # one-way
+      table(coasters$scale)
+
+      # two-way
+      table(coasters$scale, coasters$type)
+
+      # three-way
+      table(coasters$scale, coasters$type, coasters$census_region)
+      ```
+
 7.  Create a conditional two-way table using `table()`. That is, condition on one variable’s setting and create a two-way table. Do this using two different methods:
 
     - Once, by subsetting the data (say with `filter())` and then creating the two-way table
 
+      ```{r t2-p7a}
+      # method 1: filter and then we build the two-way table
+      newest_coasters <- coasters |> 
+      filter(age_group == "Newest")
+      table(newest_coasters$scale, newest_coasters$type)
+
+      # method 2: build the three-way table first, then subset it
+      three_way <- table(coasters$scale, coasters$type, coasters$age_group)
+      three_way[, , "Newest"]
+      ```
+
     - Once, by creating a three-way table and subsetting it
+
+      ```{r t2-p7b}
+      coasters |>
+      filter(!is.na(scale), !is.na(type)) |>
+      group_by(scale, type) |>
+      summarize(n = n(), .groups = "drop") |>
+      pivot_wider(names_from = type, values_from = n, values_fill = 0)
+      ```
 
 8.  Create a two-way contingency table using `group_by()` and `summarize()` from `dplyr`. Then use `pivot_wider()` to make the result look more like the output from `table()`.
 
+    ```{r t2-p8}
+    coasters |>
+    filter(!is.na(scale), !is.na(type)) |>
+    group_by(scale, type) |>
+    summarize(n = n(), .groups = "drop") |>
+    pivot_wider(names_from = type, values_from = n, values_fill = 0)
+    ```
+
 9.  Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
+
+    ```{r t2-p9}
+    coasters |>
+    ggplot(aes(x = scale, fill = type)) +
+    geom_bar(position = "stack") + # stack = stacked bars
+      labs(x = "Scale (Intensity Category)", y = "Number of Coasters",
+           title = "Roller Coaster Type by Intensity Scale (Stacked)")
+
+    coasters |>
+    ggplot(aes(x = scale, fill = type)) +
+    geom_bar(position = "dodge") + # dogde = side-by-sdies bars
+        labs(x = "Scale (Intensity Category)", y = "Number of Coasters",
+           title = "Roller Coaster Type by Intensity Scale (Side-by-Side)")
+    ```
