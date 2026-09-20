@@ -1,0 +1,405 @@
+---
+title: "Homework 5 - Divya"
+author: "Divya Shah"
+format: html
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+
+api_key <- Sys.getenv("NEWS_API_KEY")
+
+if (api_key == "") {
+  stop("NEWS_API_KEY has not been set.")
+}
+```
+
+
+## Task 1 - Querying an API and a Tidy-Style Function
+
+### 1. Query the News API
+
+For my first query, I searched for recent news about artificial intelligence.
+
+```{r}
+news_request <- GET(
+  "https://newsapi.org/v2/everything",
+  query = list(
+    q = "artificial intelligence",
+    from = "2026-09-01",
+    language = "en",
+    pageSize = 50,
+    apiKey = api_key
+  )
+)
+
+stop_for_status(news_request)
+```
+
+The request is stored in the `news_request` object.
+
+
+### 2. Parse the API Response
+
+I parse the returned data and extract the article information into a tibble. The first column, `source`, is kept as a list column.
+
+```{r}
+parsed_news <- content(
+  news_request,
+  as = "parsed",
+  type = "application/json"
+)
+
+names(parsed_news)
+```
+
+```{r}
+get_value <- function(x) {
+  if (is.null(x)) {
+    NA_character_
+  } else {
+    x
+  }
+}
+
+article_data <- map_dfr(
+  parsed_news$articles,
+  function(article) {
+    tibble(
+      source = list(article$source),
+      author = get_value(article$author),
+      title = get_value(article$title),
+      description = get_value(article$description),
+      url = get_value(article$url),
+      urlToImage = get_value(article$urlToImage),
+      publishedAt = get_value(article$publishedAt),
+      content = get_value(article$content)
+    )
+  }
+)
+
+glimpse(article_data)
+```
+
+I display the first few articles below.
+
+```{r}
+article_data |>
+  select(source, author, title, publishedAt) |>
+  slice_head(n = 5)
+```
+
+
+### 3. Create a Function to Query the API
+
+The following function allows a user to provide a subject, starting date, and API key. It returns the article information as a tibble.
+
+```{r}
+query_news <- function(subject, from_date, api_key) {
+  
+  response <- GET(
+    "https://newsapi.org/v2/everything",
+    query = list(
+      q = subject,
+      from = from_date,
+      language = "en",
+      pageSize = 50,
+      apiKey = api_key
+    )
+  )
+  
+  stop_for_status(response)
+  
+  parsed <- content(
+    response,
+    as = "parsed",
+    type = "application/json"
+  )
+  
+  articles <- map_dfr(
+    parsed$articles,
+    function(article) {
+      tibble(
+        source = list(article$source),
+        author = get_value(article$author),
+        title = get_value(article$title),
+        description = get_value(article$description),
+        url = get_value(article$url),
+        urlToImage = get_value(article$urlToImage),
+        publishedAt = get_value(article$publishedAt),
+        content = get_value(article$content)
+      )
+    }
+  )
+  
+  return(articles)
+}
+```
+
+I use the function once to search for artificial intelligence news.
+
+```{r}
+ai_news <- query_news(
+  subject = "artificial intelligence",
+  from_date = "2026-09-01",
+  api_key = api_key
+)
+
+ai_news |>
+  select(title, publishedAt) |>
+  slice_head(n = 5)
+```
+
+I use the function a second time to search for healthcare news.
+
+```{r}
+health_news <- query_news(
+  subject = "healthcare",
+  from_date = "2026-09-01",
+  api_key = api_key
+)
+
+health_news |>
+  select(title, publishedAt) |>
+  slice_head(n = 5)
+```
+
+
+## Task 2 - Summarizing Roller Coaster Data
+
+### Read and Prepare the Data
+
+I read in the roller coaster data and convert appropriate categorical variables to factors.
+
+```{r}
+coasters <- read_csv(
+  "https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv",
+  na = c("", "NA"),
+  show_col_types = FALSE
+)
+
+names(coasters) <- make.names(
+  names(coasters),
+  unique = TRUE
+)
+
+coasters <- coasters |>
+  mutate(
+    State = as.factor(State),
+    Census.Region = as.factor(Census.Region),
+    AgeGroup = factor(
+      AgeGroup,
+      levels = c("1:Older", "2:Recent", "3:Newest"),
+      labels = c("Older", "Recent", "Newest")
+    ),
+    Scale = as.factor(Scale),
+    Type = as.factor(Type),
+    Design = as.factor(Design),
+    Inversions. = as.factor(Inversions.),
+    Make = as.factor(Make)
+  )
+```
+
+
+### 4. Examine How the Data Is Stored
+
+I inspect the dimensions, variable names, and structure of the data.
+
+```{r}
+dim(coasters)
+```
+
+```{r}
+names(coasters)
+```
+
+```{r}
+glimpse(coasters)
+```
+
+The data contains both numeric and categorical variables. Variables representing categories, such as coaster type, scale, design, and inversion status, have been converted to factors.
+
+
+### 5. Missing Values
+
+I count the number of missing values in every variable.
+
+```{r}
+missing_values <- coasters |>
+  summarise(
+    across(
+      everything(),
+      ~sum(is.na(.))
+    )
+  )
+
+missing_values
+```
+
+This allows us to see which variables contain missing observations and how many values are missing from each variable.
+
+
+## Categorical Variables
+
+### 6. Contingency Tables
+
+#### One-Way Table
+
+I create a one-way contingency table for roller coaster type.
+
+```{r}
+one_way <- table(coasters$Type)
+
+one_way
+```
+
+There are `r one_way["Steel"]` steel roller coasters in the data.
+
+
+#### Two-Way Table
+
+I create a two-way contingency table comparing coaster type and scale.
+
+```{r}
+two_way <- table(
+  coasters$Type,
+  coasters$Scale
+)
+
+two_way
+```
+
+The table shows that `r two_way["Steel", "Extreme"]` roller coasters are both steel and classified as extreme.
+
+
+#### Three-Way Table
+
+I create a three-way contingency table using coaster type, scale, and age group.
+
+```{r}
+three_way <- table(
+  coasters$Type,
+  coasters$Scale,
+  coasters$AgeGroup
+)
+
+three_way
+```
+
+There are `r three_way["Steel", "Extreme", "Newest"]` roller coasters that are steel, classified as extreme, and in the newest age group.
+
+
+### 7. Conditional Two-Way Tables
+
+I condition on only the newest roller coasters and create a two-way table of type and scale.
+
+#### Method 1: Filter the Data First
+
+```{r}
+newest_coasters <- coasters |>
+  filter(AgeGroup == "Newest")
+
+conditional_table_1 <- table(
+  newest_coasters$Type,
+  newest_coasters$Scale
+)
+
+conditional_table_1
+```
+
+#### Method 2: Subset the Three-Way Table
+
+```{r}
+conditional_table_2 <- three_way[, , "Newest"]
+
+conditional_table_2
+```
+
+Both methods return the type-by-scale contingency table for only the newest roller coasters.
+
+
+### 8. Two-Way Table Using dplyr
+
+I recreate a two-way contingency table using `group_by()` and `summarise()`.
+
+```{r}
+two_way_dplyr <- coasters |>
+  filter(
+    !is.na(Type),
+    !is.na(Scale)
+  ) |>
+  group_by(Type, Scale) |>
+  summarise(
+    Count = n(),
+    .groups = "drop"
+  )
+
+two_way_dplyr
+```
+
+I then use `pivot_wider()` to make the result resemble the output from `table()`.
+
+```{r}
+two_way_wide <- two_way_dplyr |>
+  pivot_wider(
+    names_from = Scale,
+    values_from = Count,
+    values_fill = 0
+  )
+
+two_way_wide
+```
+
+
+### 9. Bar Graphs
+
+#### Stacked Bar Graph
+
+```{r}
+coasters |>
+  filter(
+    !is.na(Type),
+    !is.na(Scale)
+  ) |>
+  ggplot(
+    aes(
+      x = Type,
+      fill = Scale
+    )
+  ) +
+  geom_bar(position = "stack") +
+  labs(
+    title = "Roller Coaster Scale by Type",
+    x = "Coaster Type",
+    y = "Number of Roller Coasters",
+    fill = "Scale"
+  )
+```
+
+#### Side-by-Side Bar Graph
+
+```{r}
+coasters |>
+  filter(
+    !is.na(Type),
+    !is.na(Scale)
+  ) |>
+  ggplot(
+    aes(
+      x = Type,
+      fill = Scale
+    )
+  ) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Roller Coaster Scale by Type",
+    x = "Coaster Type",
+    y = "Number of Roller Coasters",
+    fill = "Scale"
+  )
+```

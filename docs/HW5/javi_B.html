@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.28">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Javi B">
+
+<title>Homework 5</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-49e51e44f424ea8c7044b429bdbbbfe2.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ece42c8223ec2bf36298a08f122c9a68.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Homework 5</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Javi B </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="task-1-querying-an-api-and-a-tidy-style-function" class="level2">
+<h2 class="anchored" data-anchor-id="task-1-querying-an-api-and-a-tidy-style-function">Task 1: Querying an API and a Tidy-Style Function</h2>
+<p>For this section, you’ll connect to the news API here: newsapi.org. You’ll need to go to register for a key at that web site!</p>
+<ol type="1">
+<li><p>Use <code>GET()</code> from the <code>httr</code> package to return information about a topic that you are interested in that has been in the news lately (store the result as an R object). Note: We can only look 30 days into the past with a free account.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.2.0
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.3     ✔ tibble    3.3.1
+✔ lubridate 1.9.5     ✔ tidyr     1.3.2
+✔ purrr     1.2.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'jsonlite'
+
+The following object is masked from 'package:purrr':
+
+    flatten</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidycensus) <span class="co"># from notes </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>api_key <span class="ot">&lt;-</span> <span class="fu">Sys.getenv</span>(<span class="st">"NEWSAPI_KEY"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>from_date <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">Sys.Date</span>() <span class="sc">-</span> <span class="dv">25</span>, <span class="st">"%Y-%m-%d"</span>) <span class="co"># make sure we are within 30 days</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>news <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="st">"https://newsapi.org/v2/everything"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">query =</span> <span class="fu">list</span>(<span class="at">q =</span> <span class="st">"Iran"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                         <span class="at">from =</span> from_date,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                         <span class="at">language =</span> <span class="st">"en"</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                         <span class="at">pageSize =</span> <span class="dv">50</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                         <span class="at">apiKey =</span> api_key))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Response [https://newsapi.org/v2/everything?q=Iran&amp;from=2026-08-22&amp;language=en&amp;pageSize=50&amp;apiKey=bdc1836747ef446391408c1347869598]
+  Date: 2026-09-16 19:02
+  Status: 200
+  Content-Type: application/json; charset=utf-8
+  Size: 39.9 kB</code></pre>
+</div>
+</div></li>
+<li><p>Parse what is returned and find your way to the data frame that has the actual article information in it (check <code>content</code>). Note the first column should be a list column!</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>parsed <span class="ot">&lt;-</span> <span class="fu">content</span>(news, <span class="at">as =</span> <span class="st">"parsed"</span>, <span class="at">simplifyDataFrame =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>articles <span class="ot">&lt;-</span> parsed<span class="sc">$</span>articles</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>articles</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          source.id         source.name
+1              &lt;NA&gt;         Gizmodo.com
+2          bbc-news            BBC News
+3          bbc-news            BBC News
+4          bbc-news            BBC News
+5          bbc-news            BBC News
+6          bbc-news            BBC News
+7          bbc-news            BBC News
+8              &lt;NA&gt;         Gizmodo.com
+9          bbc-news            BBC News
+10         bbc-news            BBC News
+11             &lt;NA&gt;         Gizmodo.com
+12         bbc-news            BBC News
+13             &lt;NA&gt;                 NPR
+14         bbc-news            BBC News
+15         bbc-news            BBC News
+16             &lt;NA&gt;                 NPR
+17             &lt;NA&gt;                 NPR
+18             &lt;NA&gt;                 NPR
+19             &lt;NA&gt; Yahoo Entertainment
+20             &lt;NA&gt; Yahoo Entertainment
+21             &lt;NA&gt;                 NPR
+22             &lt;NA&gt;                 NPR
+23             &lt;NA&gt;                 NPR
+24             &lt;NA&gt;                 NPR
+25             &lt;NA&gt;                 NPR
+26 business-insider    Business Insider
+27 business-insider    Business Insider
+28         bbc-news            BBC News
+29              cnn                 CNN
+30         bbc-news            BBC News
+31         bbc-news            BBC News
+32             &lt;NA&gt;                 NPR
+33             &lt;NA&gt;                 NPR
+34             &lt;NA&gt;   Newsnationnow.com
+35             &lt;NA&gt;        Slashdot.org
+36             &lt;NA&gt;                 NPR
+37 business-insider    Business Insider
+38             &lt;NA&gt; Yahoo Entertainment
+39             &lt;NA&gt;         Abcnews.com
+40             &lt;NA&gt; Yahoo Entertainment
+41             &lt;NA&gt; Yahoo Entertainment
+42             &lt;NA&gt; Yahoo Entertainment
+43             &lt;NA&gt; Yahoo Entertainment
+44             &lt;NA&gt; Yahoo Entertainment
+45             &lt;NA&gt; Yahoo Entertainment
+46             &lt;NA&gt; Yahoo Entertainment
+47             &lt;NA&gt; Yahoo Entertainment
+48             &lt;NA&gt;            BBC News
+49             &lt;NA&gt; Yahoo Entertainment
+                                             author
+1                                       Webb Wright
+2                  https://www.facebook.com/bbcnews
+3                  https://www.facebook.com/bbcnews
+4                                              &lt;NA&gt;
+5                  https://www.facebook.com/bbcnews
+6                  https://www.facebook.com/bbcnews
+7                  https://www.facebook.com/bbcnews
+8                                        Matt Novak
+9                  https://www.facebook.com/bbcnews
+10                 https://www.facebook.com/bbcnews
+11                                        Tom McKay
+12                 https://www.facebook.com/bbcnews
+13                                 Fatima Al-Kassab
+14                 https://www.facebook.com/bbcnews
+15                 https://www.facebook.com/bbcnews
+16                                    Michel Martin
+17                                   Franco Ordoñez
+18                                       Jane Arraf
+19                                 By Samia Nakhoul
+20                                              NBC
+21                                   Arezou Rezvani
+22                                  Brittney Melton
+23                             The Associated Press
+24                             The Associated Press
+25                                    Eric McDaniel
+26                       Jake Epstein,Chris Panella
+27                                     Kelsey Baker
+28                 https://www.facebook.com/bbcnews
+29   Analysis by Mostafa Salem and Aida Karimi, CNN
+30                 https://www.facebook.com/bbcnews
+31                 https://www.facebook.com/bbcnews
+32                                      Leila Fadel
+33                                      Willa Rubin
+34                                   Leland Vittert
+35                                      EditorDavid
+36                             The Associated Press
+37                                   Lauren Edmonds
+38                                 Eltaf Najafizada
+39                                    Kevin Shalvey
+40                   By Florence Tan and Trixie Yap
+41                                              NBC
+42 By Ahmad Ghaddar, Enes Tunagur and Robert Harvey
+43                                             &lt;NA&gt;
+44                                             &lt;NA&gt;
+45                                             &lt;NA&gt;
+46                    By Mike Stone and David Jeans
+47                                             &lt;NA&gt;
+48  Lyse Doucet - Chief international correspondent
+49                                              NBC
+                                                                                                                               title
+1                                                              Silicon Valley’s AI Agent Push Has Been Paying Off—for Cybercriminals
+2                                                                 US launches more strikes on Iran as state media reports explosions
+3                                                          'Slim chance' government will hit 1.5m new homes target, Rayner tells BBC
+4                                                                        'Money, not missiles': US launches financial attack on Iran
+5                                                                           US investigating if missile hit Iran wedding, Vance says
+6                                                                                              US diesel prices hit an all-time-high
+7                                              US aviator shot down over Iran recalls 'free-falling' in first interview since rescue
+8                                                              Diesel Hits Record High as Trump’s Forever War Against Iran Grinds On
+9                                                    Lightning Houthi advance in Yemen may bring dangerous new dimension to Iran war
+10                                                          Iran war has led to US munitions shortfalls, Pentagon inspector confirms
+11                                                                                                            Say Hello To $6 Diesel
+12                                           Trump may hope sanctions will pressure Iran's regime, its leaders are betting otherwise
+13                                                         Treasury Secretary Scott Bessent to unveil new economic sanctions on Iran
+14                                                         Saudi Arabia shuts key oil pipeline after drone attack launched from Iraq
+15                                                               Satellite image reveals major damage that shut crucial oil pipeline
+16                                                                                                                Morning news brief
+17                                                         Trump already tried to hurt Iran with sanctions once - and it didn't work
+18                                                                           Attacks flare between U.S., Iran after month-long pause
+19                                              Analysis-After six months, the Iran war has reached its endgame - a costly stalemate
+20                                                                     U.S. strikes Iran oil tankers after Iran fires at Naval ships
+21                                               Can Trump's economic war against Iran do what airstrikes and negotiations couldn't?
+22                                                        Key leaders sound the alarm on AI. And, Iran-Gulf diplomacy hits a setback
+23                                                   US military hits 3 Iranian oil tankers after saying Navy warships were targeted
+24                                               US diesel prices soar past $6 a gallon, deepening strain for hauling everyday goods
+25                                                   Republican Rep. Massie moves to impeach Defense Secretary Hegseth over Iran war
+26 Iran says it captured an 'advanced' American underwater drone. The US says it was older, malfunctioning, and ‘dead in the water.’
+27              'Never let a lack of motivation put you on Iranian TV': US airman shares intense Iran survival story after shootdown
+28                                                        Hegseth is shaking up the Pentagon as the US wages war - but at what cost?
+29                                                                           Trump’s blockade pushes Iran toward military escalation
+30                                           US aircraft carrier to dock near Thai beach resort Pattaya after record 250 days at sea
+31                                                 Israel expanding presence in Lebanon, officials say, as BBC visits occupied areas
+32                                                                                                                Morning news brief
+33                                                                                            The price of diesel hits a record high
+34                                                                      Bring on the ‘economic D-Day’ against Iran, John Bolton says
+35                                                               Iran-linked Cyberattackers Shut Down a UK Power Plant for Four Days
+36                                                                   Iran-backed Houthi rebels seize strategic Red Sea port in Yemen
+37                                     Turns out the trick to lower gas prices is driving less, according to the US energy secretary
+38                                                                          Iran Says Strait of Hormuz Deal With Oman Just Days Away
+39                                                       Iran live updates: Tanker struck by projectile as US and Iran trade threats
+40                                                                             Oil falls as US prepares to unveil new Iran sanctions
+41                                                                      Trump Orders 'Lake America' Renaming; Iran War Hits 6 Months
+42                                                                Blockade succeeds where sanctions failed as Iran oil exports stall
+43                                                              Hormuz traffic slows after Iran threatens retaliation for US attacks
+44                                                                       US strikes Iran, destroys 5 oil tankers amid escalating war
+45                                                             Iran updates: Spokesperson calls US sanctions on Tehran ‘pure parody’
+46                                                                      Iran likely to reverse-engineer captured US underwater drone
+47                                                             Pentagon inspector general says Iran war has caused weapons shortages
+48                                    'I've never been to Afghanistan': Six million deportees forced to start over under the Taliban
+49                                                                             How the new U.S. sanctions on Iran could affect China
+                                                                                                                                                                                                                                                                 description
+1                                                                                                       Threat actors in China, Iran, and Russia have been moving away from simple prompt-and-reply chatbots to more autonomous systems, a new report from Google has found.
+2                                                                                                                                                      US Central Command accused Iran of targeting commercial shipping and American service members deployed in the region.
+3                                                                                                                                                             High construction costs and the Iran war are threatening the key manifesto pledge, the housing secretary says.
+4                                                                                                        Washington announced what it described as an "economic D-Day" against Iran, widening current sanctions and targetting countries with business ties with the regime.
+5                                                                                                                                                   The Iranian Red Crescent Society (IRCS) said shrapnel from a missile hit the ceremony and killed four people on Tuesday.
+6                                                                                                                                                 Fuel prices have soared since the Iran conflict began at the end of February, mirroring the surge in wholesale oil prices.
+7                                                                                                                                 The April rescue operation to recover the downed aircrew saw the first US boots on the ground in Iran in 46 years, American officials say.
+8                                                                                                                                                                                                          "Summer is over. Peace didn't happen. The war is still going on."
+9                                                                                                                                         The capture by the rebels of a stretch Yemen's strategic coastline is the group's most impressive military coup for several years.
+10                                                                                                                                    The inspector also found a bottleneck in resupply, despite President Donald Trump's claims that US supplies are "virtually limitless".
+11                                                                                                                                                                                                                       Diesel is reaching latte prices. Chat is this okay?
+12                                                                                                                                                                 The US says new sanctions ar an "economic D-Day", but Tehran's leaders have survived restrictions before.
+13                                                                                                                                              The Trump administration calls this "economic D-Day" on Iran. Iran vows to respond to fresh sanctions in a "seismic manner."
+14                                                                                                                                         The East-West pipeline has helped the country - the world's largest crude oil exporter - bypass closures in the Strait of Hormuz.
+15                                                                                                                                                          Experts tell BBC Verify the pipeline's closure could cut oil supplies by as much as 3.6 million barrels per day.
+16                                                                   Treasury secretary to detail new round of economic pressure on Iran, Iran warns of 'seismic' retaliation if U.S. follow through with economic threat, Canada vows to impose retaliatory tariffs on U.S.
+17                                                                                                                                                                          President Trump is again hoping to use economic pressure to force Iran to the negotiating table.
+18                                                                                                           U.S. threats erupt into attacks in the Strait of Hormuz; Iran retaliates against U.S. targets in the UAE and Jordan in the first exchange of fire since July 29
+19                                                                                                          BEIRUT, Aug 27 (Reuters) - The Iran war has reached its endgame: a costly stalemate. and Israeli forces attacked Iran, killing its supreme leader and maiming...
+20                                                                                                          The U.S. military destroyed several Iranian oil tankers on Saturday, in retaliation for Iran firing ballistic missiles at U.S. Navy ships. The latest back-an...
+21                                                                                                                                   What a new round of U.S. sanctions could mean after nearly six months of war with Iran — and years of economic pressure on the country.
+22                                                                                                        Some key leaders at artificial intelligence companies call for a slowdown in AI development. And, Iran-Gulf diplomacy hits a setback as talks in Oman are delayed.
+23                                                                                                             The strikes come a day after President Trump appeared to downplay the war with Iran as "small potatoes" during an exchange with reporters in the Oval Office.
+24                                                                                                                 Diesel prices in the U.S. has hit yet another record, soaring past $6 a gallon on average as Washington's war with Iran disrupts the world's flow of fuel
+25                                                                                                                           Kentucky Republican Thomas Massie introduced articles of impeachment against Secretary of Defense Pete Hegseth on Tuesday over the war in Iran.
+26                                                                                                                        A spokesperson for US Central Command said the underwater drone had malfunctioned before Iran claimed to have seized it near the Strait of Hormuz.
+27                                                                                                                                              A US airman recounts surviving a damaged parachute and evading capture for 50 hours after his F-15E was shot down over Iran.
+28                                                                                                                                                                 The upheaval in the military could shape the legacy of Trump's second term, writes the BBC's Tom Bateman.
+29                                                                                                          As Washington abandons talks with Iran for an aggressive economic pressure campaign, a cornered Tehran is now threatening military escalation and a wider war...
+30                                                                                                                                                                               The ship is docking close to Pattaya, known for its raucous nightlife, and for sex tourism.
+31                                                                                                                     A BBC team joined a humanitarian mission of the UN peacekeeping force, which says Israeli troops are fortifying positions and continuing demolitions.
+32                                                                                       U.S. military strikes rock Iran for a second day in a row, Trump attempts to combat rising gas prices as midterm approaches, Sen. Ed Markey wins Massachusetts' Democratic primary.
+33                                                                                                      The price of diesel has reached an all-time high, a result of the war in Iran and Ukraine's attacks on Russian refineries. That will matter across the supply chain.
+34                                                                                                                                                                           President Trump did not offer specifics about the new sanctions he has threatened against Iran.
+35 "Iran shut down a British power plant for four days in an unprecedented cyber attack," reports the Telegraph. \n\nMore details from the BBC:\n\n\nThe government said that at no point was there a risk to the UK's energy system, but the Department for Energy Securit…
+36                                                                      The rebel group took over Yemen's port of Mokha, an area vital to controlling shipping through the Red Sea, Houthi and Yemeni officials said. Mokha is about 50 miles from the Bab el-Mandeb Strait.
+37                                                                                                                      AAA said Labor Day travelers can expect the highest gas prices ever for this time of year. The national average for regular gas was $4.14 on Sunday.
+38                                                                                                                                                                                  Iran said a deal with Oman to manage shipping through the Strait of Hormuz is days away.
+39                                                                                                                                                                           An “economic D-Day is coming for Iran,” U.S. Treasury Secretary Scott Bessent warned on Sunday.
+40                                                                                                          By Florence Tan and Trixie Yap SINGAPORE, Aug 24 (Reuters) - Oil prices slipped more than $1 a barrel on Monday as investors took profits ahead of an expecte...
+41                                                                                                          In the latest escalation in the ongoing trade war with Canada, President Donald Trump signed an executive order to change the official name of Lake Ontario t...
+42                                                                                                          By Ahmad Ghaddar, Enes Tunagur and Robert Harvey LONDON, Sept 1 (Reuters) - For the first time on record, Iran has gone about seven weeks without shipping me...
+43                                                                                                                                                                                                                                                                      &lt;NA&gt;
+44                                                                                                                                                                                                                                                                      &lt;NA&gt;
+45                                                                                                                                                                                                                                                                      &lt;NA&gt;
+46                                                                                                          By Mike Stone and David Jeans WASHINGTON, Sept 9 (Reuters) - Iran's capture of a&nbsp;U.S. military underwater drone gives Tehran an opportunity to study and pote...
+47                                                                                                                                                                                                                                                                      &lt;NA&gt;
+48                                                                                                                                                                   As of August, the number forced to return this year from Pakistan and Iran had reached another million.
+49                                                                                                          Treasury Secretary Scott Bessent announced new sanctions against Iran and said President Trump is imploring world leaders to join in on the "economic asphyxi...
+                                                                                                                                                    url
+1                                                   https://gizmodo.com/silicon-valleys-ai-agent-push-has-been-paying-off-for-cybercriminals-2000808764
+2                                                                                                      https://www.bbc.co.uk/news/articles/cj06q4ynpmjo
+3                                                                                                      https://www.bbc.co.uk/news/articles/cgqdlw0x092o
+4                                                                                                        https://www.bbc.co.uk/news/videos/c07lel35rllo
+5                                                                                                      https://www.bbc.co.uk/news/articles/cy4zvk3z2k1o
+6                                                                                                      https://www.bbc.co.uk/news/articles/c7903r0grx0o
+7                                                                                                      https://www.bbc.co.uk/news/articles/cy7zvxe1jm7o
+8                                                   https://gizmodo.com/diesel-hits-record-high-as-trumps-forever-war-against-iran-grinds-on-2000808763
+9                                                                                                      https://www.bbc.co.uk/news/articles/c3v4zgzr1kxo
+10                                                                                                    https://www.bbc.co.uk/news/articles/c9gk58xgng0vo
+11                                                                                                 https://gizmodo.com/say-hello-to-6-diesel-2000810340
+12                                                                                                     https://www.bbc.co.uk/news/articles/cr50n9gnljgo
+13                                 https://www.npr.org/2026/08/24/g-s1-139743/treasury-secretary-scott-bessent-to-unveil-new-economic-sanctions-on-iran
+14                                                                                                     https://www.bbc.co.uk/news/articles/c62m933465eo
+15                                                                                                    https://www.bbc.co.uk/news/articles/c65yw2gq2nrno
+16                                                                                      https://www.npr.org/2026/08/24/nx-s1-5939834/morning-news-brief
+17                                  https://www.npr.org/2026/09/04/nx-s1-5945582/trump-already-tried-to-hurt-iran-with-sanctions-once-and-it-didnt-work
+18                                                                                     https://www.npr.org/2026/08/31/g-s1-141175/attacks-flare-us-iran
+19                                                                                https://uk.news.yahoo.com/analysis-six-months-iran-war-095659927.html
+20                                                                          https://www.yahoo.com/news/videos/u-strikes-iran-oil-tankers-230028558.html
+21                                                                                    https://www.npr.org/2026/08/25/nx-s1-5943572/trump-iran-sanctions
+22                                    https://www.npr.org/2026/09/14/g-s1-143148/up-first-newsletter-ai-anthropic-openai-midterms-trump-oman-iran-talks
+23                                                                               https://www.npr.org/2026/09/05/nx-s1-5959159/us-iran-warships-targeted
+24                                                                                      https://www.npr.org/2026/09/11/g-s1-142842/us-diesel-6-a-gallon
+25                                                                               https://www.npr.org/2026/09/15/g-s1-143407/massie-impeach-hegseth-iran
+26                                                       https://www.businessinsider.com/iran-found-us-naval-drone-us-says-dead-in-water-2026-9#article
+27                                                 https://www.businessinsider.com/rescued-airman-survival-story-iran-f-15e-strike-eagle-2026-9#article
+28                                                                                                     https://www.bbc.co.uk/news/articles/cd94j8e9n12o
+29                                                         https://www.cnn.com/2026/09/07/middleeast/trump-blockade-iran-military-escalation-intl-latam
+30                                                                                                     https://www.bbc.co.uk/news/articles/cg7k09z4lj9o
+31                                                                                                     https://www.bbc.co.uk/news/articles/cge41d19gq9o
+32                                                                                      https://www.npr.org/2026/09/02/nx-s1-5947220/morning-news-brief
+33                                                                                https://www.npr.org/2026/09/04/nx-s1-5948016/diesel-price-record-high
+34                                                                                   https://www.newsnationnow.com/politics/economic-d-day-john-bolton/
+35                                 https://news.slashdot.org/story/26/08/23/1849216/iran-linked-cyberattackers-shut-down-a-uk-power-plant-for-four-days
+36                                                                                      https://www.npr.org/2026/09/11/g-s1-142822/houthis-red-sea-port
+37                                             https://www.businessinsider.com/gas-prices-labor-day-iran-war-driving-chris-wright-energy-2026-9#article
+38                                                                https://finance.yahoo.com/energy/articles/iran-says-strait-hormuz-deal-082152877.html
+39                                                                       https://abcnews.com/International/live-updates/iran-live-updates/?id=135895428
+40                                                                                   https://finance.yahoo.com/news/oil-falls-1-ahead-us-231835385.html
+41                                                                  https://www.yahoo.com/news/videos/trump-orders-lake-america-renaming-113419921.html
+42                                                            https://ca.finance.yahoo.com/news/blockade-succeeds-where-sanctions-failed-125249295.html
+43                                              https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_82cc038b-9dde-4631-9ada-974c5a2768b4
+44                                              https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_c72bc7b6-60bc-4769-be11-3ab3d9610c40
+45                                              https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_5e80d08c-e276-4308-8957-6c57efe31745
+46                                                             https://www.yahoo.com/news/articles/iran-likely-reverse-engineer-captured-221822618.html
+47                                              https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_eabfead7-f97b-4c5c-9d58-3b5a1d919b18
+48 https://www.bbc.com/news/articles/c2e074nn8eko?xtor=AL-72-%5Bpartner%5D-%5Byahoo.north.america%5D-%5Bheadline%5D-%5Bnews%5D-%5Bbizdev%5D-%5Bisapi%5D
+49                                                                       https://www.yahoo.com/news/videos/u-sanctions-iran-could-affect-174109523.html
+                                                                                                                                                                                                                                                                    urlToImage
+1                                                                                                                                                                                                            https://gizmodo.com/app/uploads/2026/09/AIcybercrime-1200x675.jpg
+2                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/913b/live/5a3308c0-a629-11f1-a291-b542ee92de7c.jpg
+3                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/1f55/live/d372c2e0-af64-11f1-a183-757a3b74b8bd.jpg
+4                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/7775/live/46eb4c80-a08b-11f1-a291-b542ee92de7c.jpg
+5                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/70a5/live/33e75750-a7e3-11f1-a291-b542ee92de7c.jpg
+6                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/f9ea/live/aaff4f90-a843-11f1-b3a7-d5de760fef6e.jpg
+7                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/e579/live/16c18970-afe5-11f1-a540-61c3f7fc4e6c.jpg
+8                                                                                                                                                                                                https://gizmodo.com/app/uploads/2026/09/iran-wedding-child-death-1200x675.jpg
+9                                                                                                                                                                  https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/82b5/live/066e1ff0-ae16-11f1-aa28-67f8824e7b72.jpg
+10                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/3ff7/live/4d4e0d70-b110-11f1-8907-39a652c5e20e.jpg
+11                                                                                                                                                                                              https://gizmodo.com/app/uploads/2026/04/trump-gestures-firing-gun-1200x675.jpg
+12                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/3a97/live/68e58ff0-a057-11f1-b109-879e35c24276.jpg
+13                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/5616x3159+0+293/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F2a%2Fc7%2Fd03614dc43d88cabaee45cf02e8c%2Fap26232565516998.jpg
+14                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/1ea8/live/13141950-ae5a-11f1-96a4-f736214d52e1.jpg
+15                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/6491/live/f14f3560-b10c-11f1-a540-61c3f7fc4e6c.png
+16                                                                                                                                                                                                    https://media.npr.org/include/images/facebook-default-wide-s1400-c85.jpg
+17                                                                                                                                                                                                    https://media.npr.org/include/images/facebook-default-wide-s1400-c85.jpg
+18                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/6000x3375+0+313/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F29%2Ffd%2F5217d77844848219593a4f0b61ba%2Fap26243261413105.jpg
+19             https://s.yimg.com/lo/mysterio/api/de0bb0679a09ccbeb9cb3da1cf085c41dc4aee06d9ba8cc6bca158b23f89d929/lightyear_networkapi/resizefill_w800_h533%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Freuters.com%2F9ce1f9f98f9d8dd2814dfba1e4679c92.jpg
+20                    https://s.yimg.com/lo/mysterio/api/4bf8e74430bfa7a62f6d4d205e23356af8e9b0146c5f55ebc335c0935e623ac1/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fnbcu_713%2Fdc8090fdb729bd6a45db336ea9512c58.jpg
+21                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/8516x4790+0+444/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F6a%2F47%2Fdba05d284318a540221bd45f9cfb%2Fap26122373189543.jpg
+22                                     https://npr.brightspotcdn.com/dims3/default/strip/false/crop/5147x2895+0+431/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Ffb%2F8b%2F92f4c72b49b8aa2e1006753a4132%2Fgettyimages-2285098382.jpg
+23                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/6000x3375+0+313/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F65%2Fec%2F64938f1741d199aebbc31393fde3%2Fap26247569143031.jpg
+24                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/5233x2944+0+273/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F34%2Ffc%2Fddd121964005b309f321abeed8c7%2Fap26247695683233.jpg
+25                                       https://npr.brightspotcdn.com/dims3/default/strip/false/crop/6988x3931+0+0/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F86%2F51%2F901c10eb4ec385ec7e99e086a5cd%2Fgettyimages-2293050779.jpg
+26                                                                                                                                                                                                       https://i.insider.com/6aa064779b8974787b1c9972?width=1200&amp;format=jpeg
+27                                                                                                                                                                                                       https://i.insider.com/6aa869f7cc23a829a3b9157d?width=1200&amp;format=jpeg
+28                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/16f3/live/80b86570-ab8e-11f1-aa04-efbf6a882854.jpg
+29        https://s.yimg.com/lo/mysterio/api/a46dbe6e8b3377f7cec5bc8656bceab28543370a7b7d6b0e24c930a32f888977/lightyear_networkapi/resizefill_w960_h540%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fcnn_articles_875%2Fab1120fde7212c8abc6fce89ec7af2c8.jpg
+30                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/a94d/live/40a72660-a61b-11f1-9ca2-a3e18de91b7b.jpg
+31                                                                                                                                                                 https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/96b7/live/025c25f0-a61a-11f1-9ca2-a3e18de91b7b.jpg
+32                                                                                                                                                                                                    https://media.npr.org/include/images/facebook-default-wide-s1400-c85.jpg
+33                                     https://npr.brightspotcdn.com/dims3/default/strip/false/crop/8667x4875+0+446/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F15%2Ff2%2Fc7d5ee2e4943b68648921d743ae5%2Fgettyimages-2290344340.jpg
+34 https://s.yimg.com/lo/mysterio/api/ee0e9f9efa39e99f17bef080da0798a20f219c547e6964e2979317eec56514c5/lightyear_networkapi/resizefill_w900_h506%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fnewsnation_articles_600%2F0186d513c93138dd15af6b0a300c329e.jpg
+35                                                                                                                                                                                                                                      https://a.fsdn.com/sd/topics/uk_64.png
+36                                           https://npr.brightspotcdn.com/dims3/default/strip/false/crop/6618x3723+0+345/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F97%2F26%2F70548b854bb7801d39d7d604b02f%2Fap26253317964125.jpg
+37                                                                                                                                                                                                       https://i.insider.com/6a9d8f93f320febc610d4eac?width=1200&amp;format=jpeg
+38  https://s.yimg.com/lo/mysterio/api/1d5c1965ec57f71d61b4535e65875fcf4a442add89132926809721f2d56b1ecf/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_webp/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fbloomberg_holding_pen_162%2Fd00c7a6a2ed41b986a996939915b870a.jpg
+39                                                                                                                                                             https://i.abcnewsfe.com/a/11832340-e57d-46f9-9cc3-2478f741f277/hormuz-main_1787563385195_hpMain_16x9.jpg?w=1600
+40                     https://s.yimg.com/lo/mysterio/api/81606CEFF7A77C50B6602365DBFEB4E576387E1858FDE9E0AD1185C8783CD119/subgraphmysterio/resizefill_w1200_h777;quality_80;format_webp/https:%2F%2Fmedia.zenfs.com%2Fen%2Freuters.com%2F770c5842157fd11d46ad1ed353cd6eb2.jpg
+41                    https://s.yimg.com/lo/mysterio/api/917289c067e29b5f180af0c8f392b831d056300446915184f0aa9debdd076c06/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fnbcu_713%2F11fbdda669aef6d6e48c055956718a02.jpg
+42                https://s.yimg.com/lo/mysterio/api/482d496a1efab797114cd7e2ebb33fb0c0e21f78fe4178803cdc4afd8c9bfea9/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_webp/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Freuters.com%2Fa2b9a2c3cbc513c9107921c76230c2b3.jpg
+43                                                                                                                                                                                                                                                                        &lt;NA&gt;
+44                                                                                                                                                                                                                                                                        &lt;NA&gt;
+45                                                                                                                                                                                                                                                                        &lt;NA&gt;
+46             https://s.yimg.com/lo/mysterio/api/c6baf9a2c613256e6407fe729524fe47e162429a79af714dd94fea1b6f8a77b9/lightyear_networkapi/resizefill_w800_h391%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Freuters.com%2F418d54e4c7ddea8189d3d126be81af90.jpg
+47                                                                                                                                                                                                                                                                        &lt;NA&gt;
+48         https://s.yimg.com/lo/mysterio/api/529c58f51b8d86e3fd582152ac427f742c58016586e66c130912669ead223cf3/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fbbc_us_articles_995%2F813dafe6c787aef3f6887c6838758023.jpg
+49                    https://s.yimg.com/lo/mysterio/api/9c9c92806f4a4f844eea4ba866676441fe8e8db5a1e69a38b5500bbfe080d136/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fnbcu_713%2Ff21c07c8cd83bc6799387fdfa2b27003.jpg
+            publishedAt
+1  2026-09-08T19:45:16Z
+2  2026-09-01T17:35:14Z
+3  2026-09-13T11:16:06Z
+4  2026-08-25T13:46:28Z
+5  2026-09-03T22:19:59Z
+6  2026-09-04T09:59:50Z
+7  2026-09-14T01:00:30Z
+8  2026-09-08T22:07:31Z
+9  2026-09-11T19:44:58Z
+10 2026-09-15T15:31:34Z
+11 2026-09-11T02:21:57Z
+12 2026-08-25T12:37:53Z
+13 2026-08-24T12:26:00Z
+14 2026-09-12T04:43:10Z
+15 2026-09-15T14:21:14Z
+16 2026-08-24T08:46:05Z
+17 2026-09-04T08:06:02Z
+18 2026-08-31T10:04:30Z
+19 2026-08-27T10:31:57Z
+20 2026-09-05T23:00:28Z
+21 2026-08-25T09:07:09Z
+22 2026-09-14T11:39:06Z
+23 2026-09-05T15:05:08Z
+24 2026-09-11T10:04:04Z
+25 2026-09-15T17:35:14Z
+26 2026-09-08T20:24:06Z
+27 2026-09-14T22:02:17Z
+28 2026-09-08T23:11:41Z
+29 2026-09-07T17:19:23Z
+30 2026-09-01T23:59:46Z
+31 2026-09-02T05:03:09Z
+32 2026-09-02T08:43:34Z
+33 2026-09-04T07:44:21Z
+34 2026-08-22T01:25:44Z
+35 2026-08-23T18:53:00Z
+36 2026-09-11T05:40:21Z
+37 2026-09-06T18:21:14Z
+38 2026-09-07T08:21:52Z
+39 2026-08-24T10:06:02Z
+40 2026-08-24T03:49:47Z
+41 2026-08-28T11:34:19Z
+42 2026-09-01T12:52:49Z
+43 2026-09-08T02:53:48Z
+44 2026-09-08T23:07:05Z
+45 2026-08-27T10:46:18Z
+46 2026-09-09T22:58:43Z
+47 2026-09-15T10:10:25Z
+48 2026-09-01T06:17:30Z
+49 2026-08-24T17:41:09Z
+                                                                                                                                                                                                                          content
+1          AI companies have made a lot of noise about the technology supercharging healthcare, scientific discovery, education, productivity, and just about everything else worth caring about. But so far, prob… [+3643 chars]
+2         American forces resumed strikes against Iran on Tuesday, US Central Command said in a statement.\r\nIt accused the Islamic Revolutionary Guard Corps (IRGC) of "recent attempted attacks" against commerc… [+623 chars]
+3        There is only a "slim chance" the government will meet its target of building 1.5 million homes in England by the next election, Housing Secretary Angela Rayner has told the BBC.\r\n"Headwinds" includi… [+1072 chars]
+4         On Monday, US Treasury Secretary Scott Bessent, announced an "economic D-day" against Iran, with further sanctions on the regime and countries doing business with it.\r\nIranian Economy Minister Ali Ma… [+432 chars]
+5         "I will say that the Iranian state media has not been a very good scribe about what's happened in the conflict thus far. So I'm extremely sceptical of this," Vance told a White House briefing. \r\n"I k… [+517 chars]
+6        Drivers in the US are paying more than ever for diesel at the pump as the US-Israel war with Iran continues to hit Americans' wallets.\r\nThe average price for one gallon of diesel in the US has hit $5… [+2095 chars]
+7        A US Air Force officer has described "free-falling" to the ground with a damaged parachute after his plane was shot down over Iran, leading to a dangerous rescue operation.\r\n"At one point when I look… [+1088 chars]
+8          Diesel hit a record high on Monday and the price of crude oil climbed higher Tuesday as it’s becoming more clear that President Donald Trump has started a war he can’t win with Iran. Those prices are… [+3787 chars]
+9          "Now that they are there, they're going to be entrenched," Hisham al-Omeisi, senior analyst at the Brussels-based European Institute of Peace, told the BBC. "And it's going to be a lot more costly to… [+1238 chars]
+10         The US defence department's inspector general says the war with Iran has led to "shortfalls" in munitions and a bottleneck in resupply, contradicting President Donald Trump who has repeatly denied th… [+2696 chars]
+11         Cue another milestone in your favorite presidents forever war-youre-not-allowed-to-call-a-war in Iran! The average price of diesel across the country is now $6 a gallon, with no end to the trend in s… [+2070 chars]
+12         It was already in deep trouble before the war, with high inflation and a rapidly weakening currency, and has deteriorated further since the fighting began with US and Israeli air strikes on 28 Februa… [+2683 chars]
+13     Treasury Secretary Scott Bessent is expected to unveil a new round of economic sanctions on Iran on Monday, in what he has described as the "single greatest financial offensive ever\r\n."\r\nPresident Tr… [+4416 chars]
+14       Saudi Arabia has closed a critical oil pipeline after it was attacked by drones launched from Iraq, as conflict in the Middle East widens.\r\nIraq said it had fired a military commander and launched an… [+1613 chars]
+15         Satellite imagery shows a key oil pipeline in Saudi Arabia has been badly damaged after a strike last week, which experts have told BBC Verify could take more than a month to repair and force oil pri… [+1253 chars]
+16                        Treasury secretary to detail new round of economic pressure on Iran, Iran warns of 'seismic' retaliation if U.S. follow through with economic threat, Canada vows to impose retaliatory tariffs on U.S.
+17                                                                     NPR does not offer or accept money for coverage or interviews.Anyone who makes such an offer or request is not an NPR employee and does not represent NPR.
+18         AMMAN, Jordan - The U.S. military struck what it said were Iranian rocket launchers in the Strait of Hormuz on Sunday while Iran retaliated with strikes on U.S. forces in Jordan and the United Arab E… [+3727 chars]
+19     By Samia Nakhoul\r\nBEIRUT, Aug 27 (Reuters) - The Iran war has reached its endgame: a costly stalemate.\r\nSix months after U.S. and Israeli forces attacked Iran, killing its supreme leader and maiming … [+6825 chars]
+20           The U.S. military destroyed several Iranian oil tankers on Saturday, in retaliation for Iran firing ballistic missiles at U.S. Navy ships. The latest back-and-forth adding to economic issues here at … [+72 chars]
+21       When the U.S. and Israel launched their war against Iran in February, President Trump vowed a swift victory.\r\nNow, nearly six months later, and on the heels of a failed 60-day ceasefire deadline that… [+7878 chars]
+22       Good morning. You're reading the Up First newsletter.&nbsp;Subscribe&nbsp;here to get it delivered to your inbox, and&nbsp;listen&nbsp;to the Up First podcast for all the news you need to start your day.\r\nToday's top st… [+4634 chars]
+23         CAIRO The U.S. military on Saturday said it struck three Iranian oil tankers after Navy warships were targeted with missiles, warning that it would "if necessary, destroy Iran's limited and exposed o… [+2541 chars]
+24       Diesel prices in the U.S. hit yet another record on Friday, soaring past $6 a gallon on average as Washington's war with Iran disrupts the world's flow of fuel.\r\nThe national average of $6.05 is up f… [+6759 chars]
+25       Republican Rep. Thomas Massie of Kentucky moved Tuesday to impeach Secretary of Defense Pete Hegseth over the war in Iran.\r\nCongressman Massie, a long-time critic of the Trump administration, read th… [+1770 chars]
+26       US Central Command said the drone had malfunctioned "well before" it was seized by Iran.US Central Command Photo\r\n&lt;ul&gt;&lt;li&gt;Iran said it captured a US underwater drone near the Strait of Hormuz.&lt;/li&gt;&lt;l… [+2838 chars]
+27       A US Air Force F-15E Strike Eagle flying over the US Central Command area of responsibility.US Air Force photo by Tech. Sgt. Daniel Asselta\r\n&lt;ul&gt;&lt;li&gt;The aviator shot down over Iran in April survived … [+4788 chars]
+28         But while the fallout from the Iran war has exacerbated Trump's irritation with Europe and accelerated some US military moves away from the region, it has not been to the immediate benefit of the US … [+2151 chars]
+29       As Washington abandons talks with Iran for an aggressive economic pressure campaign, a cornered Tehran is now threatening military escalation and a wider war to force negotiators back to the table.\r\n… [+7919 chars]
+30         After a record 250 days at sea without a port stop, the nuclear-powered aircraft carrier USS Abraham Lincoln is preparing to dock in Thailand, giving its nearly 5,000 crew members a much-needed break… [+1130 chars]
+31         The drive on the highway by the Mediterranean in southern Lebanon, near the border with Israel, is scenic and, these days, desolate. Crops lie abandoned and buildings destroyed by Israeli air strikes… [+1225 chars]
+32                                            U.S. military strikes rock Iran for a second day in a row, Trump attempts to combat rising gas prices as midterm approaches, Sen. Ed Markey wins Massachusetts' Democratic primary.
+33 Stay up to date with our \r\nUp First\r\n newsletter, sent every weekday morning.\r\nThe price of diesel has reached an all-time high, according to AAA.\r\nThe national average for a gallon is now $5.85. The… [+3379 chars]
+34         (NewsNation) John Bolton, a national security advisor in the first Trump administration, is waiting to see what President Trump has in mind when he promises to unleash an "economic D-Day" on Iran wit… [+1641 chars]
+35        "Iran shut down a British power plant for four days in an unprecedented cyber attack," reports the Telegraph.More details from the BBC:\r\nThe government said that at no point was there a risk to the U… [+463 chars]
+36       ADEN, Yemen The Iran-backed Houthi rebel group on Thursday took over Yemen's port city of Mokha, an area vital to controlling shipping through the Red Sea, Houthi and Yemeni officials said.\r\nThe take… [+6227 chars]
+37       US Department of Energy Secretary Chris Wright says gas prices will decline after Labor Day.Mandel NGAN / AFP via Getty Images\r\n&lt;ul&gt;&lt;li&gt;Americans have been grappling with sky-high gas prices since th… [+2611 chars]
+38      (Bloomberg) -- Iran said a deal with Oman to manage shipping through the Strait of Hormuz is days away.\r\nMost Read from Bloomberg\r\nThe agreement, which the two countries have been negotiating for wee… [+800 chars]
+39        Iran will not export "a single drop of oil" as long as the U.S. continues its "economic war" again the country, an Iranian official said Sunday.\r\n"If the economic war continues, not a single drop of … [+962 chars]
+40       By Florence Tan and Trixie Yap\r\nSINGAPORE, Aug 24 (Reuters) - Oil prices slipped more than $1 a barrel on Monday as investors took profits ahead of an expected announcement from Washington about impo… [+2517 chars]
+41          In the latest escalation in the ongoing trade war with Canada, President Donald Trump signed an executive order to change the official name of Lake Ontario to "Lake America." It comes as the United S… [+220 chars]
+42       By Ahmad Ghaddar, Enes Tunagur and Robert Harvey\r\nLONDON, Sept 1 (Reuters) - For the first time on record, Iran has gone about seven weeks without shipping meaningful crude exports through the Strait… [+4035 chars]
+43         If you click 'Accept all', we and our partners, including 252 who are part of the IAB Transparency &amp;amp; Consent Framework, will also store and / or access information on a device (in other words, us… [+1046 chars]
+44         If you click 'Accept all', we and our partners, including 252 who are part of the IAB Transparency &amp;amp; Consent Framework, will also store and / or access information on a device (in other words, us… [+1046 chars]
+45         If you click 'Accept all', we and our partners, including 251 who are part of the IAB Transparency &amp;amp; Consent Framework, will also store and / or access information on a device (in other words, us… [+1046 chars]
+46       By Mike Stone and David Jeans\r\nWASHINGTON, Sept 9 (Reuters) - Iran's capture of a U.S. military underwater drone gives Tehran an opportunity to study and potentially reverse engineer the vessel, deli… [+3879 chars]
+47         If you click 'Accept all', we and our partners, including 252 who are part of the IAB Transparency &amp;amp; Consent Framework, will also store and / or access information on a device (in other words, us… [+1046 chars]
+48       The elderly grimace, hobbling on crutches, and wide-eyed children stare, cradling chickens carried from homes they were forced to leave behind.\r\n"It feels good to be in my own country," 35-year-old N… [+8388 chars]
+49          Treasury Secretary Scott Bessent announced new sanctions against Iran and said President Trump is imploring world leaders to join in on the "economic asphyxiation" of Tehran. Bessent said there would… [+215 chars]</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>articles_tbl <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(articles)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(articles_tbl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [49 × 8] (S3: tbl_df/tbl/data.frame)
+ $ source     :'data.frame':    49 obs. of  2 variables:
+  ..$ id  : chr [1:49] NA "bbc-news" "bbc-news" "bbc-news" ...
+  ..$ name: chr [1:49] "Gizmodo.com" "BBC News" "BBC News" "BBC News" ...
+ $ author     : chr [1:49] "Webb Wright" "https://www.facebook.com/bbcnews" "https://www.facebook.com/bbcnews" NA ...
+ $ title      : chr [1:49] "Silicon Valley’s AI Agent Push Has Been Paying Off—for Cybercriminals" "US launches more strikes on Iran as state media reports explosions" "'Slim chance' government will hit 1.5m new homes target, Rayner tells BBC" "'Money, not missiles': US launches financial attack on Iran" ...
+ $ description: chr [1:49] "Threat actors in China, Iran, and Russia have been moving away from simple prompt-and-reply chatbots to more au"| __truncated__ "US Central Command accused Iran of targeting commercial shipping and American service members deployed in the region." "High construction costs and the Iran war are threatening the key manifesto pledge, the housing secretary says." "Washington announced what it described as an \"economic D-Day\" against Iran, widening current sanctions and ta"| __truncated__ ...
+ $ url        : chr [1:49] "https://gizmodo.com/silicon-valleys-ai-agent-push-has-been-paying-off-for-cybercriminals-2000808764" "https://www.bbc.co.uk/news/articles/cj06q4ynpmjo" "https://www.bbc.co.uk/news/articles/cgqdlw0x092o" "https://www.bbc.co.uk/news/videos/c07lel35rllo" ...
+ $ urlToImage : chr [1:49] "https://gizmodo.com/app/uploads/2026/09/AIcybercrime-1200x675.jpg" "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/913b/live/5a3308c0-a629-11f1-a291-b542ee92de7c.jpg" "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/1f55/live/d372c2e0-af64-11f1-a183-757a3b74b8bd.jpg" "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/7775/live/46eb4c80-a08b-11f1-a291-b542ee92de7c.jpg" ...
+ $ publishedAt: chr [1:49] "2026-09-08T19:45:16Z" "2026-09-01T17:35:14Z" "2026-09-13T11:16:06Z" "2026-08-25T13:46:28Z" ...
+ $ content    : chr [1:49] "AI companies have made a lot of noise about the technology supercharging healthcare, scientific discovery, educ"| __truncated__ "American forces resumed strikes against Iran on Tuesday, US Central Command said in a statement.\r\nIt accused "| __truncated__ "There is only a \"slim chance\" the government will meet its target of building 1.5 million homes in England by"| __truncated__ "On Monday, US Treasury Secretary Scott Bessent, announced an \"economic D-day\" against Iran, with further sanc"| __truncated__ ...</code></pre>
+</div>
+</div></li>
+<li><p>Now write a quick function that allows the user to easily query this API. The inputs to the function should be the title/subject to search for (string), a time period to search from (string - you’ll search from that time until the present), and an API key.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>get_news <span class="ot">&lt;-</span> <span class="cf">function</span>(query, from_date, api_key) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  response <span class="ot">&lt;-</span> <span class="fu">GET</span>(<span class="st">"https://newsapi.org/v2/everything"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">query =</span> <span class="fu">list</span>(<span class="at">q =</span> query,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">from =</span> from_date,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                                <span class="at">language =</span> <span class="st">"en"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                                <span class="at">pageSize =</span> <span class="dv">50</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                                <span class="at">apiKey =</span> api_key))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  parsed <span class="ot">&lt;-</span> <span class="fu">content</span>(response, <span class="at">as =</span> <span class="st">"parsed"</span>, <span class="at">simplifyDataFrame =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (parsed<span class="sc">$</span>status <span class="sc">!=</span> <span class="st">"ok"</span>) {</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"NewsAPI request failed: "</span>, parsed<span class="sc">$</span>message)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(parsed<span class="sc">$</span>articles)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>iran_news <span class="ot">&lt;-</span> <span class="fu">get_news</span>(<span class="st">"Iran"</span>, from_date, api_key)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>iran_news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 49 × 8
+   source$id $name author title description url   urlToImage publishedAt content
+   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;  
+ 1 &lt;NA&gt;      Gizm… Webb … Sili… "Threat ac… http… https://g… 2026-09-08… "AI co…
+ 2 bbc-news  BBC … https… US l… "US Centra… http… https://i… 2026-09-01… "Ameri…
+ 3 bbc-news  BBC … https… 'Sli… "High cons… http… https://i… 2026-09-13… "There…
+ 4 bbc-news  BBC … &lt;NA&gt;   'Mon… "Washingto… http… https://i… 2026-08-25… "On Mo…
+ 5 bbc-news  BBC … https… US i… "The Irani… http… https://i… 2026-09-03… "\"I w…
+ 6 bbc-news  BBC … https… US d… "Fuel pric… http… https://i… 2026-09-04… "Drive…
+ 7 bbc-news  BBC … https… US a… "The April… http… https://i… 2026-09-14… "A US …
+ 8 &lt;NA&gt;      Gizm… Matt … Dies… "\"Summer … http… https://g… 2026-09-08… "Diese…
+ 9 bbc-news  BBC … https… Ligh… "The captu… http… https://i… 2026-09-11… "\"Now…
+10 bbc-news  BBC … https… Iran… "The inspe… http… https://i… 2026-09-15… "The U…
+# ℹ 39 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>climate_news <span class="ot">&lt;-</span> <span class="fu">get_news</span>(<span class="st">"climate change"</span>, from_date, api_key)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>climate_news</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 50 × 8
+   source$id $name author title description url   urlToImage publishedAt content
+   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;  
+ 1 wired     Wired Molly… How … "Climate c… http… https://m… 2026-08-26… "Rough…
+ 2 &lt;NA&gt;      Gizm… Ellyn… Clim… "An earthq… http… https://g… 2026-09-08… "On Ma…
+ 3 &lt;NA&gt;      Gizm… Ellyn… The … "Global te… http… https://g… 2026-09-02… "Its b…
+ 4 the-verge The … Justi… Trum… "The Envir… http… https://p… 2026-09-14… "&lt;ul&gt;&lt;…
+ 5 &lt;NA&gt;      Gizm… Ellyn… Over… "A new stu… http… https://g… 2026-09-10… "As hu…
+ 6 &lt;NA&gt;      Gizm… Ellyn… The … "A geospat… http… https://g… 2026-09-09… "While…
+ 7 &lt;NA&gt;      Gizm… Matth… Scie… "Synergy b… http… https://g… 2026-09-14… "Somet…
+ 8 &lt;NA&gt;      NPR   The A… At l… "The disas… http… https://n… 2026-08-26… "UDIN …
+ 9 the-verge The … Justi… Bein… "It's 8:52… http… https://p… 2026-08-26… "&lt;ul&gt;&lt;…
+10 business… Busi… bgrif… Hugg… "\"Sorry, … http… https://i… 2026-09-11… "Huggi…
+# ℹ 40 more rows</code></pre>
+</div>
+</div></li>
+</ol>
+</section>
+<section id="task-2-summarizing-roller-coaster-data" class="level2">
+<h2 class="anchored" data-anchor-id="task-2-summarizing-roller-coaster-data">Task 2: Summarizing Roller Coaster Data</h2>
+<p>For this part, we’ll use data about roller coasters. The data is about different aspects of roller coasters and is available at <a href="https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv" class="uri">https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv</a></p>
+<p>The variables are:</p>
+<ul>
+<li><p>Coaster - Name of roller coaster</p></li>
+<li><p>Park - Amusement park where roller coaster is located</p></li>
+<li><p>City</p></li>
+<li><p>State</p></li>
+<li><p>Census Region</p></li>
+<li><p>Year Opened</p></li>
+<li><p>AgeGroup - 1 (Older), 2 (Recent), or 3 (Newest)</p></li>
+<li><p>TopSpeed - in mph</p></li>
+<li><p>MaxHeight - in feet</p></li>
+<li><p>Scale - Extreme, Thrill, Family</p></li>
+<li><p>Type - Steel, Wood</p></li>
+<li><p>Design - Sit Down, Inverted, Bobsled, etc</p></li>
+<li><p>Drop - in feet</p></li>
+<li><p>Length - in feet</p></li>
+<li><p>Duration - in seconds</p></li>
+<li><p>Inversions</p></li>
+<li><p>Number of Inversions</p></li>
+<li><p>Make</p></li>
+<li><p>Latitude</p></li>
+<li><p>Longitude</p></li>
+<li><p>Boundary - for plotting on maps</p></li>
+</ul>
+<p>No need to use the Boundary variable or the Latitude and Longitude variables in your EDA below</p>
+<ul>
+<li><p>Read in this data and convert variables to factors as needed.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor) <span class="co"># used this library to clean up the variables names</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'janitor'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    chisq.test, fisher.test</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>coasters <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">census_region =</span> <span class="fu">factor</span>(census_region),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group =</span> <span class="fu">factor</span>(age_group,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"1:Older"</span>, <span class="st">"2:Recent"</span>, <span class="st">"3:Newest"</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Older"</span>, <span class="st">"Recent"</span>, <span class="st">"Newest"</span>)),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">scale =</span> <span class="fu">factor</span>(scale, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Family"</span>, <span class="st">"Thrill"</span>, <span class="st">"Extreme"</span>)),</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="fu">factor</span>(type),</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">design =</span> <span class="fu">factor</span>(design),</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">inversions =</span> <span class="fu">factor</span>(inversions),</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">make =</span> <span class="fu">factor</span>(make)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 635 Columns: 21</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (12): Coaster, Park, City, State, Census Region, AgeGroup, Scale, Type, ...
+dbl  (9): Year Opened, TopSpeed, MaxHeight, Drop, Length, Duration, # of Inv...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div></li>
+</ul>
+<section id="basic-eda" class="level3">
+<h3 class="anchored" data-anchor-id="basic-eda">Basic EDA</h3>
+<p>We’ve talked about the general process of conducting an EDA but haven’t gotten to summarizing numeric variables. But our goal is to understand how our data is stored, what is missing, and we try to summarize the variables both numerically and visually to understand relationships within the data.</p>
+<ol start="4" type="1">
+<li><p>Look at how the data is stored and see if everything makes sense.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(coasters)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 635
+Columns: 21
+$ coaster              &lt;chr&gt; "Adrenaline Peak", "Adventure Express", "Afterbur…
+$ park                 &lt;chr&gt; "Oaks Amusement Park", "Kings Island", "Carowinds…
+$ city                 &lt;chr&gt; "Portland", "Mason", "Charlotte", "Athol", "Tampa…
+$ state                &lt;chr&gt; "Oregon", "Ohio", "North Carolina", "Idaho", "Flo…
+$ census_region        &lt;fct&gt; West, Midwest, South, West, South, South, Northea…
+$ year_opened          &lt;dbl&gt; 2018, 1991, 1999, 2008, 2010, 1997, 1998, 1981, 2…
+$ age_group            &lt;fct&gt; Newest, Recent, Recent, Newest, Newest, Recent, R…
+$ top_speed            &lt;dbl&gt; 45.0, 35.0, 62.0, 65.6, 22.0, 67.0, 35.0, 66.0, 4…
+$ max_height           &lt;dbl&gt; 72.0, 63.0, 113.0, 191.6, 25.0, 195.0, 64.0, 127.…
+$ scale                &lt;fct&gt; Extreme, Thrill, Extreme, Extreme, Family, Extrem…
+$ type                 &lt;fct&gt; Steel, Steel, Steel, Steel, Steel, Steel, Steel, …
+$ design               &lt;fct&gt; Sit Down, Sit Down, Inverted, Inverted, Sit Down,…
+$ drop                 &lt;dbl&gt; 70.0, 47.0, 110.0, 177.0, 22.5, 170.0, 20.0, 147.…
+$ length               &lt;dbl&gt; 1050.0, 2963.0, 2956.0, 1204.0, 628.0, 3828.0, 14…
+$ duration             &lt;dbl&gt; 66, 140, 167, 92, 47, 190, 100, 143, 110, 110, 18…
+$ inversions           &lt;fct&gt; Yes, No, Yes, Yes, No, Yes, No, No, No, Yes, No, …
+$ number_of_inversions &lt;dbl&gt; 3, 0, 6, 3, 0, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0…
+$ make                 &lt;fct&gt; "Gerstlauer Amusement Rides GmbH", "Arrow Dynamic…
+$ latitude             &lt;dbl&gt; 45.5079, 39.3601, 35.2600, 47.9224, 27.9961, 37.3…
+$ longitude            &lt;dbl&gt; -122.6908, -84.3099, -80.8042, -116.6860, -82.582…
+$ boundary             &lt;chr&gt; "{\"type\":\"Feature\",\"properties\":{\"CENSUSAR…</code></pre>
+</div>
+</div></li>
+<li><p>Document any missing values in the data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(coasters))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             coaster                 park                 city 
+                   0                    0                    0 
+               state        census_region          year_opened 
+                   0                    0                    0 
+           age_group            top_speed           max_height 
+                   0                   74                    8 
+               scale                 type               design 
+                  28                    0                    0 
+                drop               length             duration 
+                 128                   33                   66 
+          inversions number_of_inversions                 make 
+                   0                    0                   36 
+            latitude            longitude             boundary 
+                   0                    0                    0 </code></pre>
+</div>
+</div></li>
+</ol>
+</section>
+<section id="categorical-variables" class="level3">
+<h3 class="anchored" data-anchor-id="categorical-variables">Categorical variables</h3>
+<ol start="6" type="1">
+<li><p>Create a one-way contingency table, a two-way contingency table, and a three-way contingency table for some of the factor variables you created previously. Use <code>table()</code> to accomplish this.</p>
+<ul>
+<li><p>Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># one-way</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(coasters<span class="sc">$</span>scale)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Family  Thrill Extreme 
+    178     160     269 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># two-way</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(coasters<span class="sc">$</span>scale, coasters<span class="sc">$</span>type)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+          Steel Wood
+  Family    163   15
+  Thrill    124   36
+  Extreme   216   53</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># three-way</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(coasters<span class="sc">$</span>scale, coasters<span class="sc">$</span>type, coasters<span class="sc">$</span>census_region)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>, ,  = Midwest
+
+
+          Steel Wood
+  Family     26    6
+  Thrill     24    9
+  Extreme    42   19
+
+, ,  = Northeast
+
+
+          Steel Wood
+  Family     43    6
+  Thrill     27   11
+  Extreme    50   12
+
+, ,  = South
+
+
+          Steel Wood
+  Family     65    3
+  Thrill     46   11
+  Extreme    79   13
+
+, ,  = West
+
+
+          Steel Wood
+  Family     29    0
+  Thrill     27    5
+  Extreme    45    9</code></pre>
+</div>
+</div></li>
+</ul></li>
+<li><p>Create a conditional two-way table using <code>table()</code>. That is, condition on one variable’s setting and create a two-way table. Do this using two different methods:</p>
+<ul>
+<li><p>Once, by subsetting the data (say with <code>filter())</code> and then creating the two-way table</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># method 1: filter and then we build the two-way table</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>newest_coasters <span class="ot">&lt;-</span> coasters <span class="sc">|&gt;</span> </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(age_group <span class="sc">==</span> <span class="st">"Newest"</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(newest_coasters<span class="sc">$</span>scale, newest_coasters<span class="sc">$</span>type)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+          Steel Wood
+  Family    120    5
+  Thrill     79   11
+  Extreme   126   21</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># method 2: build the three-way table first, then subset it</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>three_way <span class="ot">&lt;-</span> <span class="fu">table</span>(coasters<span class="sc">$</span>scale, coasters<span class="sc">$</span>type, coasters<span class="sc">$</span>age_group)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>three_way[, , <span class="st">"Newest"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+          Steel Wood
+  Family    120    5
+  Thrill     79   11
+  Extreme   126   21</code></pre>
+</div>
+</div></li>
+<li><p>Once, by creating a three-way table and subsetting it</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>coasters <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(scale), <span class="sc">!</span><span class="fu">is.na</span>(type)) <span class="sc">|&gt;</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(scale, type) <span class="sc">|&gt;</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(<span class="at">names_from =</span> type, <span class="at">values_from =</span> n, <span class="at">values_fill =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  scale   Steel  Wood
+  &lt;fct&gt;   &lt;int&gt; &lt;int&gt;
+1 Family    163    15
+2 Thrill    124    36
+3 Extreme   216    53</code></pre>
+</div>
+</div></li>
+</ul></li>
+<li><p>Create a two-way contingency table using <code>group_by()</code> and <code>summarize()</code> from <code>dplyr</code>. Then use <code>pivot_wider()</code> to make the result look more like the output from <code>table()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>coasters <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(scale), <span class="sc">!</span><span class="fu">is.na</span>(type)) <span class="sc">|&gt;</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">group_by</span>(scale, type) <span class="sc">|&gt;</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pivot_wider</span>(<span class="at">names_from =</span> type, <span class="at">values_from =</span> n, <span class="at">values_fill =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  scale   Steel  Wood
+  &lt;fct&gt;   &lt;int&gt; &lt;int&gt;
+1 Family    163    15
+2 Thrill    124    36
+3 Extreme   216    53</code></pre>
+</div>
+</div></li>
+<li><p>Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>coasters <span class="sc">|&gt;</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> scale, <span class="at">fill =</span> type)) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"stack"</span>) <span class="sc">+</span> <span class="co"># stack = stacked bars</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Scale (Intensity Category)"</span>, <span class="at">y =</span> <span class="st">"Number of Coasters"</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Roller Coaster Type by Intensity Scale (Stacked)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/t2-p9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>coasters <span class="sc">|&gt;</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> scale, <span class="at">fill =</span> type)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span> <span class="co"># dogde = side-by-sdies bars</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Scale (Intensity Category)"</span>, <span class="at">y =</span> <span class="st">"Number of Coasters"</span>,</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Roller Coaster Type by Intensity Scale (Side-by-Side)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/t2-p9-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
