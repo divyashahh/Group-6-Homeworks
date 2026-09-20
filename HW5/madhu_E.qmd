@@ -1,0 +1,77 @@
+---
+title: "HW 5"
+author: "Madhu"
+format: html
+---
+
+## Task 1
+
+1.  Use Get() from `httr` package to return info
+
+```{r}
+library(httr)
+output <- GET("https://newsapi.org/v2/everything?q=%22black%20hole%22&from=2026-09-01&sortBy=relevancy&language=en&pageSize=50&apiKey=e514ad8a063947e79dc9574de0bb0c7a")
+```
+
+2.  Parse what is
+
+```{r}
+library(jsonlite)
+library(tidyverse)
+
+parsed <- fromJSON(rawToChar(output$content))
+news_info <- as_tibble(parsed$articles)
+
+news_info
+```
+
+3.  Now write a
+
+```{r}
+```
+
+## Task 2
+
+```{r}
+coasters <- read_csv(
+  "https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv"
+)
+
+coasters <- coasters |>
+  mutate(
+    AgeGroup = factor(AgeGroup),
+    `Census Region` = factor(`Census Region`),
+    Scale = factor(Scale),
+    Type = factor(Type),
+    Design = factor(Design),
+    Make = factor(Make)
+  )
+```
+
+4.  Look at how the data is stored and see if everything makes sense
+
+```{r}
+glimpse(coasters)
+summary(coasters)
+```
+
+5.  Document any missing values in the data
+
+``` {r}
+colSums(is.na(coasters))
+```
+
+
+6. Create a one way contingency 
+
+```{r}
+# One-way
+table(coasters$Type)
+
+# Two-way
+table(coasters$Type, coasters$Scale)
+
+# Three-way
+table(coasters$Type, coasters$Scale, coasters$AgeGroup)
+```
+
