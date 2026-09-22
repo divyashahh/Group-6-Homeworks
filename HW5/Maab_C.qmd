@@ -1,0 +1,210 @@
+---
+title: "Homework 5"
+format: html
+editor: visual
+---
+
+## Task 1: Querying an API and a Tidy-Style Function
+
+For this section, we connect to the news API here: newsapi.org.
+
+1. We use `GET()` from the `httr` package to return information about the Strait of Hormuz and store the result as an R object. We can only look 30 days into the past because of the free account restiction.
+
+```{r}
+# loading in needed packages 
+
+library(dplyr)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+
+# masking API
+api_key <- Sys.getenv("NEWS_API_KEY")
+
+if (api_key == "") {
+  stop("NEWS_API_KEY has not been set.")
+}
+```
+
+```{r}
+# making sure we are within 30 days
+from_date <- format(Sys.Date() - 29, "%Y-%m-%d") 
+
+url <- paste0("https://newsapi.org/v2/everything?q=Strait%20of%20Hormuz",
+              "&from=", from_date,
+              "&language=en&pageSize=50&apiKey=", Sys.getenv("NEWS_API_KEY"))
+
+news_result <- GET(url)
+news_result
+content(news_result, "text")
+```
+
+2. We then parse what is returned and find our way to the data frame that has the actual article information in it (check content).
+
+```{r}
+raw_text <- content(news_result, as = "text")
+parsed_json <- fromJSON(raw_text)
+str(parsed_json, max.level = 1)
+
+articles_df <- parsed_json$articles
+#print(articles_df)
+```
+3. We write a quick function that allows the user to easily query this API. The inputs to the function are the title/subject to search for, a time period to search from, and an API key.
+
+```{r}
+get_info <- function(query, from_date, api_key) {
+  response <- GET("https://newsapi.org/v2/everything",
+                   query = list(q = query,
+                                from = from_date,
+                                language = "en",
+                                pageSize = 50,
+                                apiKey = api_key))
+
+  parsed <- content(response, as = "parsed", simplifyDataFrame = TRUE)
+
+  if (parsed$status != "ok") {
+    stop("NewsAPI request failed: ", parsed$message)
+  }
+
+  as_tibble(parsed$articles)
+}
+
+Hormuz_news <- get_info("Strait of Hormuz", from_date, api_key)
+Hormuz_news
+```
+
+Calling function on a different topic to check if it really works. This time the topic is the FDA.
+
+```{r}
+get_info <- function(query, from_date, api_key) {
+  response <- GET("https://newsapi.org/v2/everything",
+                   query = list(q = query,
+                                from = from_date,
+                                language = "en",
+                                pageSize = 50,
+                                apiKey = api_key))
+
+  parsed <- content(response, as = "parsed", simplifyDataFrame = TRUE)
+
+  if (parsed$status != "ok") {
+    stop("NewsAPI request failed: ", parsed$message)
+  }
+
+  as_tibble(parsed$articles)
+}
+
+fda_news <- get_info("FDA", from_date, api_key)
+fda_news
+```
+
+## Task 2 - Summarizing Roller Coaster Data
+
+### Read and Prepare the Data
+
+I read in the roller coaster data and convert the categorical variables to factors. The data is sourced from the following link : https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv
+
+```{r}
+library(readr)
+coasters <- read_csv("https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv")
+#glimpse(coasters)
+
+# trying to figure out which columns make good factors 
+x<- coasters |>
+  summarize(n_distinct(Coaster), n_distinct(Park), n_distinct(City), 
+            n_distinct(State), n_distinct(Make),n_distinct(`Census Region`),
+            n_distinct(AgeGroup),n_distinct(Scale), n_distinct(Type), 
+            n_distinct(Design), n_distinct(`Inversions?`))
+print(x)
+
+# checking the unique characters in agegroup and type 
+unique(coasters$AgeGroup)
+unique(coasters$Type)
+
+# checking for nas or spaces 
+
+sum(is.na(coasters$AgeGroup))
+sum(is.na(coasters$Type))
+table(coasters$AgeGroup)
+table(coasters$Type)
+```
+
+I think that the Factors are: State, Make, Census Region, AgeGroup, Scale, Type, Design, Inversions. The Not factors have too many unique values, and end up acting  like identifiers those are: Coaster, Park, City. 
+```{r}
+coasters <- coasters |>
+  mutate(across(c(State, Make, `Census Region`, AgeGroup, Scale, Type, Design, `Inversions?`), 
+                as.factor))
+
+#str(coasters)
+
+# checking for missing values across every column:
+colSums(is.na(coasters))
+```
+
+Checking the Nas showed us that physical measurement fields which include columns Drop, TopSpeed, Duration, MaxHeight have real gaps. They had many Na values this is probably the information wasn't available for some coasters. the column Drop has the most missing values by far. 
+
+Now we want to creat a one-way contingency table, a two-way contingency table, and a three-way contingency table for variablels type, inversion and scale. this is because i am intrested in seeing if the wood roller costers will have less inversions. The type will show how complex the roller coster is so it will be intresting to see the trend. 
+```{r}
+# one way table :
+table(coasters$Scale)
+```
+
+```{r}
+# two way table :
+table(coasters$Type, coasters$`Inversions?`)
+```
+From the two way table we see that out of the 105 wood coasters in the dataset, only 4 have inversions, compared to 166 out of 530 steel coasters, suggesting wood coaster designs are less likely to include inversions than steel ones. 
+```{r}
+# Three way table :
+table(coasters$Type, coasters$`Inversions?`, coasters$Scale)
+```
+looking at the two way table i found that in the Extreme scale slice, 166 out of 216 steel Extreme coasters have inversions, compared to only 4 out of 53 wood Extreme coasters. which proves what the two way table showed. Suprisingly however  no coasters in the Family, Kiddie, or Thrill categories have any inversions at allsu. This might mean that inversions are a defining feature specifically of Extreme-scale rides. This is cool because i did not expect that to be the case 
+
+```{r}
+# Method 1 
+extreme_only <- coasters |>
+  filter(Scale == "Extreme")
+
+table(extreme_only$Type, extreme_only$`Inversions?`)
+```
+
+```{r}
+# Method 2 
+full_table <- table(coasters$Type, coasters$`Inversions?`, coasters$Scale)
+full_table[, , "Extreme"]
+```
+Step 1 : Group and count 
+
+```{r}
+library(tidyr)
+counts_long <- coasters |>
+  group_by(Type, `Inversions?`) |>
+  summarize(n = n())
+
+counts_long
+
+counts_long |>
+  pivot_wider(names_from = `Inversions?`, values_from = n)
+```
+
+Graphing 
+
+
+```{r}
+ggplot(coasters, aes(x = Type, fill = `Inversions?`)) +
+  geom_bar(position = "stack") +
+  labs(title = "Roller Coaster Inversions by Type (Stacked)",
+       x = "Coaster Type",
+       y = "Count")
+```
+
+```{r}
+library(ggplot2)
+ggplot(coasters, aes(x = Type, fill = `Inversions?`)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Roller Coaster Inversions by Type (Side-by-Side)",
+       x = "Coaster Type",
+       y = "Count")
+```
+Our findings : 
+
+Overall we found that inversions are strongly tied to both coaster type and ride intensity. Steel coasters are considerably more likely to include inversions than Wood coasters, and notably, every coaster with inversions in the dataset falls under the "Extreme" scale category, with none present among Family, Kiddie, or Thrill rides. This suggests that inversions are less a general design feature and more a defining characteristic of the most intense, steel-built coasters.The side-by-side and a stacked bar graph comparing coaster type and inversion status, both visually confirmed that inversions are far more common among Steel coasters than Wood coasters. 
