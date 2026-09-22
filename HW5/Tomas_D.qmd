@@ -1,0 +1,171 @@
+---
+title: "ST558 HW5"
+format: html
+editor: visual
+---
+
+#### Task 1
+
+```{r}
+# Establishing key
+my_api_key <- "2b6d3efcbbe94a2bb0c1aca6d604cf61"
+
+# testing Url
+library(httr)
+library(tidyverse)
+response <- GET("https://newsapi.org/v2/everything?q=GasPrices&from=2026-08-22&language=en&pageSize=50&apiKey=2b6d3efcbbe94a2bb0c1aca6d604cf61")
+
+# Printing Response 
+response
+
+# viewing response structure
+str(response, max.level =1)
+
+library(jsonlite)
+
+# parsing 
+parsed <- fromJSON(rawToChar(response$content))
+
+parsed
+GasArticles <- as.tibble(parsed$articles)
+
+GasArticles
+
+# building function
+Query_News <- function(search, from_date, api_key) {
+  response <- GET(
+    url = "https://newsapi.org/v2/everything",
+    query = list(
+      q = search,
+      from = from_date,
+      language = "en",
+      pageSize = 30,
+      apikey = api_key
+    )
+  )
+}
+
+#testing function
+
+testresponse1 <- Query_News("Midterm", "2026-08-30", my_api_key)
+str(testresponse1, max.level = 1)
+
+
+testresponse2 <- Query_News("Energy", "2026-08-30", my_api_key)
+str(testresponse2, max.level = 1)
+```
+
+### Task 2
+
+```{r}
+library(tidyverse)
+
+# Reading in dataset
+url <- "https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv"
+coasters <- read_csv(url)
+
+
+RollerCoasters <- coasters %>%
+  mutate(
+    State = as.factor(State),
+    'Census Region' = as.factor('Census Region'),
+    AgeGroup = factor(AgeGroup, levels = c(1, 2, 3), labels = c("Older", "Recent", "Newest")),
+    Scale = as.factor(Scale),
+    Type = as.factor(Type),
+    Design = as.factor(Design),
+    Inversions = as.factor("Inversions?"),
+    Make = as.factor(Make)
+  )
+
+#RollerCoasters
+
+
+
+
+```
+
+```{r}
+glimpse(coasters) # viewing data contents
+
+missing_report <- coasters %>%
+  summarize(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Missing_Count") %>%
+  filter(Missing_Count > 0) %>%
+  arrange(desc(Missing_Count))
+
+missing_report #missing values 
+
+# Contingency Tables
+
+#tne-way table: Type
+table_1way <- table(Type = coasters$Type)
+table_1way
+
+# two-way table: Type vs Scale
+table_2way <- table(Type = coasters$Type, Scale = coasters$Scale)
+table_2way
+
+# three-way table: Type vs Scale vs AgeGroup
+table_3way <- table(
+  Type = coasters$Type,
+  Scale = coasters$Scale,
+  AgeGroup = coasters$AgeGroup
+)
+table_3way
+
+```
+Interpretation: From the one way table - this means there are 530 steel roller coasters.
+
+From the two-way table - There are 216 extreme steel coasters.
+
+From the three-way table - There are 8 Older, Extreme, steel coasters.
+
+
+```{r}
+# Method 1:
+coasters %>%
+  filter(Type == "Steel") %>%
+  with(table(Scale, AgeGroup))
+
+# Method 2:
+table_3way <- table(
+  Type = coasters$Type,
+  Scale = coasters$Scale,
+  AgeGroup = coasters$AgeGroup
+)
+table_3way["Steel", , ]
+```
+```{r}
+# Two-way with dplyr
+coasters %>%
+  filter(!is.na(Type), !is.na(Scale)) %>%
+  group_by(Type, Scale) %>%
+  summarize(Count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Scale, values_from = Count, values_fill = 0)
+
+
+# 1. Stacked Bar Graph
+ggplot(data = filter(coasters, !is.na(Type), !is.na(Scale)), aes(x = Scale, fill = Type)) +
+  geom_bar(position = "stack") +
+  labs(
+    title = "Distribution of Coaster Scales by Construction Type (Stacked)",
+    x = "Scale Category",
+    y = "Number of Coasters",
+    fill = "Coaster Type"
+  ) +
+  theme_minimal()
+
+# 2. Side-by-Side (Clustered) Bar Graph
+ggplot(data = filter(coasters, !is.na(Type), !is.na(Scale)), aes(x = Scale, fill = Type)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Comparison of Coaster Types Across Scales (Side-by-Side)",
+    x = "Scale Category",
+    y = "Number of Coasters",
+    fill = "Coaster Type"
+  ) +
+  theme_minimal()
+
+
+```
+
