@@ -68,23 +68,31 @@ Try it out 2
 news_query_function(subject = "nutrition", from_date = "2026-08-31", key = api_key)
 ```
 
-## Task 2
+## Task 2: Summarizing Roller Coaster Data
+
+```{r}
+library(janitor)
+```
 
 ```{r}
 coasters <- read_csv(
   "https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv"
-)
-
-coasters <- coasters |>
+) |> 
+  clean_names() |>
   mutate(
-    AgeGroup = factor(AgeGroup),
-    `Census Region` = factor(`Census Region`),
-    Scale = factor(Scale),
-    Type = factor(Type),
-    Design = factor(Design),
-    Make = factor(Make)
+    age_group = factor(age_group),
+    census_Region = factor(census_region),
+    scale = factor(scale),
+    type = factor(type),
+    design = factor(design),
+    make = factor(make),
+    state = factor(state),
+    inversions = factor (inversions)
   )
+
 ```
+
+State, Make, Design, Type, Scale, Census Region, AgeGroup, Scale, Inversions were converted to factors.
 
 4.  Look at how the data is stored and see if everything makes sense
 
@@ -93,7 +101,7 @@ glimpse(coasters)
 summary(coasters)
 ```
 
-Its easy to see the summary stats (spread etc) and what type of data the columns are using `glimpse()` and `summary()`. Specifically the factors are likley easier to use when creating the contingency tables.
+Its easy to see the summary stats (spread etc) and what type of data the columns are using `glimpse()` and `summary()`. Specifically the factors are likely easier to use when creating the contingency tables.
 
 5\. Document any missing values in the data
 
@@ -101,14 +109,14 @@ Its easy to see the summary stats (spread etc) and what type of data the columns
 colSums(is.na(coasters))
 ```
 
-TopSpeed, MaxHeight, Drop, Length, Duration, Make have missing values
+`TopSpeed`, `MaxHeight`, `Drop`, `Length`, `Duration`, Make have missing values, and the `Drop` column has the most missing values by far.
 
 6.  Create a one way contingency, a two-way contingency table, and a three-way contingency table for some of the factor variables you created previously. Use table() to accomplish this.
     - Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)
 
 ```{r}
 # One-way
-table(coasters$Type)
+table(coasters$type)
 
 ```
 
@@ -116,14 +124,14 @@ There are 105 total wood coasters in the dataset.
 
 ```{r}
 # Two-way
-table(coasters$Type, coasters$`Census Region`)
+table(coasters$type, coasters$census_region)
 ```
 
 There are 30 wooden coasters in the Northeast Census region in the data set.
 
 ```{r}
 # Three-way
-table(coasters$Type, coasters$`Census Region`, coasters$Scale)
+table(coasters$type, coasters$census_region, coasters$scale)
 ```
 
 There are 3 wooden coasters in the Census defined South region classified as family level thrill.
@@ -134,17 +142,17 @@ There are 3 wooden coasters in the Census defined South region classified as fam
 
 ```{r}
 coasters |>
-  filter(Scale == "Thrill") |>
-  with(table(Type, `Census Region`))
+  filter(scale == "Thrill") |>
+  with(table(type, census_region))
 ```
 
 - Once, by creating a three-way table and subsetting it
 
 ```{r}
 three_way_subsect <- table(
-  coasters$Type,
-  coasters$`Census Region`,
-  coasters$Scale
+  coasters$type,
+  coasters$census_region,
+  coasters$scale
 )
 
 three_way_subsect <- three_way_subsect[, , "Thrill"]
@@ -155,10 +163,10 @@ three_way_subsect
 
 ```{r}
 coasters |>
-  group_by(Type, `Census Region`) |>
+  group_by(type, census_region) |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(
-    names_from = `Census Region`,
+    names_from = census_region,
     values_from = count,
     values_fill = 0
   )
@@ -170,7 +178,7 @@ Looks the same as two way contingency table from 6, except it's a tibble
 
 ```{r}
 #stacked
-ggplot(coasters, aes(x = Type, fill = `Census Region`)) +
+ggplot(coasters, aes(x = type, fill = census_region)) +
   geom_bar() +
   labs(
     x = "Roller Coaster Type",
@@ -179,7 +187,7 @@ ggplot(coasters, aes(x = Type, fill = `Census Region`)) +
   )
 
 #side by side
-ggplot(coasters, aes(x = Type, fill = `Census Region`)) +
+ggplot(coasters, aes(x = type, fill = census_region)) +
   geom_bar(position = "dodge") +
   labs(
     x = "Roller Coaster Type",
