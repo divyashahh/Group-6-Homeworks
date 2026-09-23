@@ -1,0 +1,190 @@
+---
+title: "HW 5"
+format: html
+---
+
+## Task 1: Querying an API and a Tidy-Style Function1
+
+1.  Use `GET()` from `httr` package to return information about a topic that you are interested in that has been in the news lately (store the result as an R object). Note: We can only look 30 days into the past with a free account.
+
+```{r}
+library(httr)
+
+api_key <- Sys.getenv("API_KEY")
+
+output <- GET(
+  paste0("https://newsapi.org/v2/everything?q=%22black%20hole%22&from=2026-09-01&language=en&pageSize=50&apiKey=", api_key)
+)
+
+```
+
+2.  Parse what is returned and find your way to the data frame that has the actual article information in it (check content). Note the first column should be a list column!
+
+```{r}
+library(jsonlite)
+library(tidyverse)
+
+parsed <- fromJSON(rawToChar(output$content))
+news_info <- as_tibble(parsed$articles)
+
+str(news_info)
+news_info
+```
+
+3.  Now write a quick function that allows the user to easily query this API. The inputs to the function should be the title/subject to search for (string), a time period to search from (string - you’ll search from that time until the present), and an API key.
+
+```{r}
+news_query_function <- function(subject, from_date, key) {
+  
+  output <- GET(
+    paste0(
+      "https://newsapi.org/v2/everything?q=",
+      URLencode(subject),
+      "&from=",
+      from_date,
+      "&language=en&pageSize=50&apiKey=",
+      key
+      )
+    )
+  
+  parsed <- fromJSON(rawToChar(output$content))
+  
+  as_tibble(parsed$articles)
+}
+
+```
+
+Try it out 1
+
+```{r}
+
+news_query_function(subject = "project 2025", from_date = "2026-08-30", key = api_key)
+
+```
+
+Try it out 2
+
+```{r}
+news_query_function(subject = "nutrition", from_date = "2026-08-31", key = api_key)
+```
+
+## Task 2
+
+```{r}
+coasters <- read_csv(
+  "https://www4.stat.ncsu.edu/online/datasets/635USrollercoasters.csv"
+)
+
+coasters <- coasters |>
+  mutate(
+    AgeGroup = factor(AgeGroup),
+    `Census Region` = factor(`Census Region`),
+    Scale = factor(Scale),
+    Type = factor(Type),
+    Design = factor(Design),
+    Make = factor(Make)
+  )
+```
+
+4.  Look at how the data is stored and see if everything makes sense
+
+```{r}
+glimpse(coasters)
+summary(coasters)
+```
+
+Its easy to see the summary stats (spread etc) and what type of data the columns are using `glimpse()` and `summary()`. Specifically the factors are likley easier to use when creating the contingency tables.
+
+5\. Document any missing values in the data
+
+```{r}
+colSums(is.na(coasters))
+```
+
+TopSpeed, MaxHeight, Drop, Length, Duration, Make have missing values
+
+6.  Create a one way contingency, a two-way contingency table, and a three-way contingency table for some of the factor variables you created previously. Use table() to accomplish this.
+    - Interpret a number from each resulting table (that is, pick out a value produced and explain what that value means.)
+
+```{r}
+# One-way
+table(coasters$Type)
+
+```
+
+There are 105 total wood coasters in the dataset.
+
+```{r}
+# Two-way
+table(coasters$Type, coasters$`Census Region`)
+```
+
+There are 30 wooden coasters in the Northeast Census region in the data set.
+
+```{r}
+# Three-way
+table(coasters$Type, coasters$`Census Region`, coasters$Scale)
+```
+
+There are 3 wooden coasters in the Census defined South region classified as family level thrill.
+
+7.  Create a conditional two-way table using table(). That is, condition on one variable’s setting and create a two-way table. Do this using two different methods:
+
+- Once, by subsetting the data (say with filter()) and then creating the two-way table
+
+```{r}
+coasters |>
+  filter(Scale == "Thrill") |>
+  with(table(Type, `Census Region`))
+```
+
+- Once, by creating a three-way table and subsetting it
+
+```{r}
+three_way_subsect <- table(
+  coasters$Type,
+  coasters$`Census Region`,
+  coasters$Scale
+)
+
+three_way_subsect <- three_way_subsect[, , "Thrill"]
+three_way_subsect
+```
+
+8.  Create a two-way contingency table using group_by() and summarize() from dplyr. Then use pivot_wider() to make the result look more like the output from table().
+
+```{r}
+coasters |>
+  group_by(Type, `Census Region`) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(
+    names_from = `Census Region`,
+    values_from = count,
+    values_fill = 0
+  )
+```
+
+Looks the same as two way contingency table from 6, except it's a tibble
+
+9.  Create a stacked bar graph and a side-by-side bar graph. Give relevant x and y labels, and a title for the plots.
+
+```{r}
+#stacked
+ggplot(coasters, aes(x = Type, fill = `Census Region`)) +
+  geom_bar() +
+  labs(
+    x = "Roller Coaster Type",
+    y = "Number of Roller Coasters",
+    title = "Roller Coaster Type by Census Region"
+  )
+
+#side by side
+ggplot(coasters, aes(x = Type, fill = `Census Region`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    x = "Roller Coaster Type",
+    y = "Number of Roller Coasters",
+    title = "Number of Roller Coasters by Census Region"
+  )
+
+```
