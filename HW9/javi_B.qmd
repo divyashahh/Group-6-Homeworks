@@ -1,0 +1,251 @@
+---
+title: "HW 9: Basic Modeling Practice"
+format:
+  html:
+    toc: true
+execute:
+  message: false
+  warning: false
+---
+
+This homework focuses on fitting multiple linear regression (MLR) models with `tidymodels`. The data record hourly bike rentals in Seoul, together with the weather and calendar conditions for each hour. The goal is to predict the number of bikes rented per day. The steps are: read in the data, explore and clean it, summarize it to one row per day, split it into training and test sets, compare three MLR models with 10-fold cross-validation, and evaluate the best one on the test set.
+
+```{r libraries}
+library(tidyverse)
+library(janitor)
+library(tidymodels)
+```
+
+## Reading Data
+
+The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). However, `readr`'s default UTF-8 assumption, that character can trigger that `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
+
+```{r read-data}
+bike_data <- read_csv(
+  "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv",
+  locale = locale(encoding = "latin1")
+)
+bike_data
+```
+
+The data have 8,760 rows, one per hour for a full year (365 × 24), and 14 columns with variables including the date, the hourly rental count (our response), the hour, eight weather measurements, and three categorical variables (`Seasons`, `Holiday`, and `Functioning Day`).
+
+## EDA
+
+### Checking the Data
+
+**1. Missingness:** Before any cleaning, we checked whether any values are missing to prevent problems later.
+```{r check-missing}
+colSums(is.na(bike_data))
+```
+
+None of the 14 columns has missing values, so no imputing or dropping of rows is needed for that reason.
+
+**2. Column types and values:** Next, we checked that each column was read in as the right type and that its values make sense. For numeric columns that means summary statistics. For categorical columns, `janitor::tabyl()` shows each unique value along with how often it appears. We also used `janitor::get_dupes()` to confirm that no date-hour combination appears more than once, since each row should be exactly one hour.
+
+```{r check-columns}
+# column types
+str(bike_data)
+
+# basic summary stats for the numeric columns
+bike_data |>
+  select(where(is.numeric)) |>
+  summary()
+
+# unique values (and their frequencies) for each categorical column
+bike_data |> tabyl(Seasons)
+bike_data |> tabyl(Holiday)
+bike_data |> tabyl(`Functioning Day`)
+
+# each date/hour combination should appear exactly once
+bike_data |> get_dupes(Date, Hour)
+```
+
+Most of the numeric columns look reasonable. `Hour` runs from 0 to 23, temperature ranges from -17.8°C to 39.4°C, and hourly rentals range from 0 to 3,556. A few things stand out. Humidity has a minimum of 0%, which is physically implausible and likely a sensor error, but it affects very few rows, so we left it in. Visibility tops out at exactly 2000 (20 km), which suggests the measurement is capped. Rainfall and snowfall are 0 in most hours, so both are very right-skewed. On the categorical side, the four seasons each make up about a quarter of the hours. About 5% of hours (432) fall on holidays, and about 3% (295) are marked as non-functioning, which comes up again below. `get_dupes()` found no duplicate date-hour combinations, so every row is a distinct hour. `Date` and the three categorical variables were all read in as character, so they still need to be converted.
+
+**3. Converting the date:** `Date` came in as a character string in day/month/year format (`01/12/2017` is December 1, 2017), so we converted it with `lubridate::dmy()`.
+
+```{r convert-date}
+bike_data <- bike_data |>
+    mutate(Date = dmy(Date))
+range(bike_data$Date)
+```
+
+The data cover exactly one year, from December 1, 2017 through November 30, 2018. That's 365 days × 24 hours, which matches the 8,760 rows.
+
+**4. Converting character variables to factors:** `Seasons`, `Holiday`, and `Functioning Day` are categorical, so we converted them to factors. For `Seasons` I set the levels in calendar order instead of R's default alphabetical order, so tables and plots read Winter, Spring, Summer, Fall.
+
+```{r make-factors}
+bike_data <- bike_data |>
+  mutate(
+    Seasons = factor(Seasons, levels = c("Winter", "Spring", "Summer", "Fall")),
+    Holiday = factor(Holiday),
+    `Functioning Day` = factor(`Functioning Day`)
+  )
+```
+
+**5. Renaming the variables:** Finally, we renamed every column to lower snake case. `janitor::clean_names()` does most of this automatically by lowercasing everything, replaces spaces and punctuation with underscores, and handles symbols like `%` and `°`. The cleaned names keep their units, though (`rented_bike_count`, `humidity_percent`, `rainfall_mm`, ...), so we followed up with `rename()` to shorten the ones we will use most. We matched the columns with `starts_with()` because the exact cleaned name for the two temperature columns depends on how the degree symbol gets transliterated on a given system, and `starts_with()` matches either way.
+
+```{r rename-columns}
+bike_data <- bike_data |>
+  clean_names() |>
+  rename(
+    bike_count      = rented_bike_count,
+    temp            = starts_with("temperature"),
+    dew_point_temp  = starts_with("dew_point"),
+    humidity        = starts_with("humidity"),
+    wind_speed      = starts_with("wind_speed"),
+    visibility      = starts_with("visibility"),
+    solar_radiation = starts_with("solar"),
+    rainfall        = starts_with("rainfall"),
+    snowfall        = starts_with("snowfall")
+  )
+
+names(bike_data)
+```
+
+**6. Summary statistics across the categorical variables:** With the data cleaned up, we looked at summary statistics for the response, `bike_count`, both overall and across each categorical variable.
+
+```{r summary-by-category}
+# overall
+bike_data |>
+  summarize(mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+# across each categorical variable
+bike_data |>
+  group_by(seasons) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(functioning_day) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+```
+
+Rentals vary a lot by season. The average Summer hour has about 1,034 rentals, more than four times the roughly 226 in Winter, with Spring (730) and Fall (820) in between. Holiday hours average fewer rentals than non-holiday hours (500 vs. 715). The `functioning_day` summary is where something is clearly off: every one of the 295 non-functioning hours has exactly 0 rentals.
+
+```{r functioning-day-check}
+# where do the non-functioning hours fall?
+bike_data |>
+  tabyl(seasons, functioning_day) |>
+  adorn_totals("row")
+```
+
+The cross-tabulation shows that non-functioning hours only occur in Spring (48 hours) and Fall (247 hours). They cover 12 full days plus 7 hours of October 6, 2018. During these hours the bike-share system was not operating, so those zeros reflect the service being down, not a lack of demand. Leaving them in would pull down the averages for Spring and Fall and teach the models that certain weather conditions produce zero rentals when they don't. So we removed the non-functioning hours. After that, `functioning_day` has only one value, so we dropped the column too.
+
+```{r remove-nonfunctioning}
+bike_data <- bike_data |>
+  filter(functioning_day == "Yes") |>
+  select(-functioning_day)
+
+bike_data
+```
+
+That leaves 8,465 hours across 353 days. Removing the shutdowns also changes the seasonal picture: Fall's average hourly rentals rise from about 820 to about 924, and Spring's from about 730 to about 746.
+
+**7. Summarizing to one row per day:** To simplify the analysis, we collapsed the hourly data, so each day has a single observation. We grouped by `date`, `seasons`, and `holiday`. Season and holiday status never change within a day, so grouping by them does not split any day into multiple rows, instead just keeps those columns in the summarized data. Within each day, we added up the variables that accumulate over the day (total rentals, total rainfall, and total snowfall). For the other weather variables (temperature, humidity, wind speed, visibility, dew point, and solar radiation) and we took the daily average. `hour` is dropped, since it no longer applies once the hours are combined.
+
+```{r summarize-daily}
+bike_daily <- bike_data |>
+  group_by(date, seasons, holiday) |>
+  summarize(
+    across(c(bike_count, rainfall, snowfall), sum),
+    across(c(temp, humidity, wind_speed, visibility,
+             dew_point_temp, solar_radiation), mean),
+    .groups = "drop"
+  )
+
+bike_daily
+```
+
+The result has 353 rows, one for each remaining day, and 12 columns. This is the data used for the rest of the analysis. One day needs a caveat: October 6, 2018 had 7 non-functioning hours removed above, so its total of 16,037 rentals is based on only 17 hours instead of 24. That day also had 35.5 mm of rain, which may explain the partial shutdown. Since it's a single day out of 353, I kept it.
+
+**8. Summaries, plots, and correlations on the daily data:** With one row per day, we recreated the summary statistics, this time on daily totals instead of hourly counts.
+
+```{r daily-numeric-summary}
+bike_daily |>
+  select(where(is.numeric)) |>
+  summary()
+```
+
+Across the 353 days, daily rentals range from 977 to 36,149, with a mean of about 17,485 and a median of about 18,563. Rainfall and snowfall remain heavily skewed: 253 of the 353 days had no rain at all, and only 27 had any snow.
+
+```{r daily-summary-by-category}
+bike_daily |>
+  group_by(seasons) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_daily |>
+  group_by(holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_daily |>
+  group_by(seasons, holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            .groups = "drop")
+```
+
+The seasonal pattern from the hourly data holds up. An average Winter day has about 5,400 rentals, compared to about 24,800 in Summer, with Fall (about 22,100) and Spring (about 17,900) in between. Spring has the largest spread (SD of about 8,400), which makes sense for a transition season that runs from cold March days into warm May ones. Holidays look much lower at first glance (about 12,700 vs. 17,700 rentals), but the season-by-holiday breakdown shows that comparison is misleading. Of the 17 holidays, 8 fall in Winter, the slowest season, so the holiday average is dragged down by season. Within Summer and Fall, holiday and non-holiday days average nearly the same. With only 17 holidays in total, these within-season comparisons rest on very few days.
+
+```{r plot-histogram}
+ggplot(bike_daily, aes(x = bike_count)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Distribution of daily rentals", x = "Daily rentals", y = "Days")
+```
+
+The distribution of daily rentals is clearly bimodal. One cluster of days sits around 3,000 to 8,000 rentals (mostly Winter) and a second, broader cluster around 20,000 to 30,000. A single overall mean hides that split, which suggests season will be an important predictor.
+
+```{r plot-season-holiday}
+ggplot(bike_daily, aes(x = seasons, y = bike_count, fill = holiday)) +
+  geom_boxplot() +
+  labs(title = "Daily rentals by season and holiday",
+       x = "Season", y = "Daily rentals", fill = "")
+```
+
+The boxplots show the same seasonal ordering, with Winter far below the rest. The holiday gap is clear in Winter and Spring and mostly disappears in Summer and Fall. That hints that the effect of a holiday may depend on the season, which is the seasons × holiday interaction added in the second recipe below.
+
+```{r plot-temp}
+ggplot(bike_daily, aes(x = temp, y = bike_count, color = seasons)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Daily rentals vs. average temperature",
+       x = "Average temperature (°C)", y = "Daily rentals", color = "Season")
+```
+
+Temperature has the strongest visible relationship with rentals, but it isn't a straight line. Rentals climb steadily as days warm up to roughly 22 to 25°C, then fall off on the hottest Summer days above about 28°C. This curve is the main motivation for the quadratic terms in the third recipe: a purely linear temperature effect would overpredict rentals on the hottest days.
+
+```{r plot-rainfall}
+ggplot(bike_daily, aes(x = rainfall, y = bike_count)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "Daily rentals vs. total rainfall",
+       x = "Total rainfall (mm)", y = "Daily rentals")
+```
+
+Most days are stacked at zero rainfall, across the full range of rental counts. Once rain does fall, high-rental days become rare, and days with heavy rain (above roughly 30 mm) almost all have low rentals. The effect of rain may also depend on temperature, since a rainy summer day and a rainy winter day aren't comparable. That's the reasoning behind the temperature × rainfall interaction in the second recipe.
+
+```{r plot-time}
+ggplot(bike_daily, aes(x = date, y = bike_count, color = seasons)) +
+  geom_line() +
+  labs(title = "Daily rentals over the year",
+       x = "Date", y = "Daily rentals", color = "Season")
+```
+
+Over the year, rentals rise from their Winter lows, peak around June, and stay high through early Fall before tapering off in November. The sharp single-day dips throughout Spring, Summer, and Fall line up with the rainfall pattern above.
+
+```{r correlations}
+bike_daily |>
+  select(where(is.numeric)) |>
+  cor() |>
+  round(2)
+```
+
+Among the numeric variables, daily rentals are most strongly correlated with average temperature (r = 0.75), solar radiation (0.74), and dew point temperature (0.65). Snowfall (-0.27), rainfall (-0.24), and wind speed (-0.19) are weakly negatively correlated with rentals, and humidity has essentially no linear relationship (0.04). One relationship to keep in mind for modeling: temperature and dew point temperature are almost perfectly correlated (r = 0.96). Including both in a linear model makes their individual coefficients unstable and hard to interpret, though predictions shouldn't suffer much. Since the goal is prediction, we kept both.
+
