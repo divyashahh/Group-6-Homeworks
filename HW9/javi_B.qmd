@@ -249,3 +249,85 @@ bike_daily |>
 
 Among the numeric variables, daily rentals are most strongly correlated with average temperature (r = 0.75), solar radiation (0.74), and dew point temperature (0.65). Snowfall (-0.27), rainfall (-0.24), and wind speed (-0.19) are weakly negatively correlated with rentals, and humidity has essentially no linear relationship (0.04). One relationship to keep in mind for modeling: temperature and dew point temperature are almost perfectly correlated (r = 0.96). Including both in a linear model makes their individual coefficients unstable and hard to interpret, though predictions shouldn't suffer much. Since the goal is prediction, we kept both.
 
+## Split the Data
+
+Before fitting anything, we split the daily data into a training set (75%) and a test set (25%). We stratified the split on `seasons`, so both sets get about the same mix of seasons. Rentals differ so much by season that an unlucky split, for example one with very few Winter days in the training set, could distort the models. We then split the training set into 10 cross-validation folds, which we use to compare the three candidate models.
+
+```{r split-data}
+set.seed(558)
+bike_split <- initial_split(bike_daily, prop = 0.75, strata = seasons)
+bike_train <- training(bike_split)
+bike_test  <- testing(bike_split)
+
+bike_cv_folds <- vfold_cv(bike_train, v = 10)
+bike_cv_folds
+```
+
+The training set has 263 days and the test set 90, and each season makes up about a quarter of both. Note how each CV fold trains on 236 or 237 days and evaluates on the remaining 26 or 27.
+
+## Fitting MLR Models
+
+### Recipes
+
+```{r recipe-1}
+rec1 <- recipe(bike_count ~ ., data = bike_train) |>
+  update_role(date, new_role = "ID") |>
+  step_date(date, features = "dow") |>
+  step_mutate(day_type = factor(if_else(date_dow %in% c("Sat", "Sun"),
+                                        "Weekend", "Weekday"))) |>
+  step_rm(date_dow) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(seasons, holiday, day_type)
+
+rec1
+```
+This returns 13 predictors, where the 8 standardized weather variables, 3 season dummies (with Winter as the baseline), a holiday indicator, and a weekend indicator.
+
+```{r recipe-2}
+rec2 <- rec1 |>
+  step_interact(terms = ~ starts_with("seasons"):starts_with("holiday") +
+                  starts_with("seasons"):temp) |>
+  step_interact(terms = ~ temp:rainfall)
+
+rec2
+```
+This adds 7 interaction terms (3 season × holiday, 3 season × temperature, and temperature × rainfall), for 20 predictors in total.
+
+```{r recipe-3}
+rec3 <- rec2 |>
+  step_poly(temp, humidity, wind_speed, visibility, dew_point_temp,
+            solar_radiation, rainfall, snowfall, degree = 2)
+
+rec3
+```
+
+Each of the 8 numeric predictors is replaced by a linear and a quadratic term, giving 28 predictors.
+
+### Model Fitting
+
+All three models are ordinary multiple linear regressions fit with the `"lm"` engine. We paired the same model specification with each recipe in a workflow, so each workflow carries its own preprocessing and fitting steps together.
+
+```{r model-spec}
+lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+wf1 <- workflow() |> add_recipe(rec1) |> add_model(lm_spec)
+wf2 <- workflow() |> add_recipe(rec2) |> add_model(lm_spec)
+wf3 <- workflow() |> add_recipe(rec3) |> add_model(lm_spec)
+```
+
+To compare the models we fit each workflow with `fit_resamples()` on the 10 CV folds. In each fold, the model is trained on 9/10 of the training data and evaluated on the remaining 1/10, and the metrics are averaged across the folds.
+
+```{r cv-fits}
+cv_fit1 <- wf1 |> fit_resamples(bike_cv_folds)
+cv_fit2 <- wf2 |> fit_resamples(bike_cv_folds)
+cv_fit3 <- wf3 |> fit_resamples(bike_cv_folds)
+
+bind_rows(
+  collect_metrics(cv_fit1) |> mutate(model = "Recipe 1: main effects"),
+  collect_metrics(cv_fit2) |> mutate(model = "Recipe 2: + interactions"),
+  collect_metrics(cv_fit3) |> mutate(model = "Recipe 3: + quadratics")
+) |>
+  filter(.metric == "rmse") |>
+  arrange(mean)
+```
