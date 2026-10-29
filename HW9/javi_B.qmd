@@ -73,12 +73,14 @@ range(bike_data$Date)
 
 The data cover exactly one year, from December 1, 2017 through November 30, 2018. That's 365 days × 24 hours, which matches the 8,760 rows.
 
-**4. Converting character variables to factors:** `Seasons`, `Holiday`, and `Functioning Day` are categorical, so we converted them to factors. For `Seasons` I set the levels in calendar order instead of R's default alphabetical order, so tables and plots read Winter, Spring, Summer, Fall.
+**4. Converting character variables to factors:** `Seasons`, `Holiday`, and `Functioning Day` are categorical, so we converted them to factors. For `Seasons` I set the levels in calendar order instead of R's default alphabetical order, so tables and plots read Winter, Spring, Summer, Fall. The data spell this season "Autumn", so we matched on that value with `levels` and relabeled it "Fall" with `labels`; listing "Fall" in `levels` alone would turn every Autumn hour into `NA`.
 
 ```{r make-factors}
 bike_data <- bike_data |>
   mutate(
-    Seasons = factor(Seasons, levels = c("Winter", "Spring", "Summer", "Fall")),
+    Seasons = factor(Seasons,
+                     levels = c("Winter", "Spring", "Summer", "Autumn"),
+                     labels = c("Winter", "Spring", "Summer", "Fall")),
     Holiday = factor(Holiday),
     `Functioning Day` = factor(`Functioning Day`)
   )
@@ -269,6 +271,9 @@ The training set has 263 days and the test set 90, and each season makes up abou
 
 ### Recipes
 
+**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `data` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_data()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holidays`, and `day_type`.
+
+
 ```{r recipe-1}
 rec1 <- recipe(bike_count ~ ., data = bike_train) |>
   update_role(date, new_role = "ID") |>
@@ -283,6 +288,8 @@ rec1
 ```
 This returns 13 predictors, where the 8 standardized weather variables, 3 season dummies (with Winter as the baseline), a holiday indicator, and a weekend indicator.
 
+**Recipe 2.** This recipe builds on Recipe 1 by adding three interactions suggested by the EDA such as seasons × holiday, seasons × temperature, and temperature × rainfall. We used `starts_with("seasons")` so that each season dummy gets its own interaction term. 
+
 ```{r recipe-2}
 rec2 <- rec1 |>
   step_interact(terms = ~ starts_with("seasons"):starts_with("holiday") +
@@ -293,6 +300,7 @@ rec2
 ```
 This adds 7 interaction terms (3 season × holiday, 3 season × temperature, and temperature × rainfall), for 20 predictors in total.
 
+**Recipe 3.** This recipe adds quadratic terms for each numeric predictor on top of Recipe 2. The temperature scatterplot showed rentals rising and then dropping on the hottest days, a curve a straight line can’t capture. We listed the numeric predictors by name instead of using all_numeric_predictors(), since that would also square the dummy and interaction columns.
 ```{r recipe-3}
 rec3 <- rec2 |>
   step_poly(temp, humidity, wind_speed, visibility, dew_point_temp,
@@ -331,3 +339,34 @@ bind_rows(
   filter(.metric == "rmse") |>
   arrange(mean)
 ```
+
+Notice how fitting these models produces a "prediction from rank-deficient fit" warning in 2 of the 10 folds for Recipes 2 and 3. Because there are only 2 Summer holidays given in the whole dataset and some folds the training data contain no Summer holiday at all. For those fold cases the Summer × holiday interaction column is identical to the Summer dummy, then `lm()` drops one of the two redundant columns. The remaining coefficients and the predictions are unaffected, so the warning is harmless.
+
+Adding interactions made the biggest difference CV RMSE dropped from about 4,095 rentals per day to approximately 3,064. The quadratic terms used in Recipe 3 lowered further to about 3,005 suggesting that is the best model by CV RMSE. Notice how the difference between Recipe 2 and Recipe 3 is about 60 rentals which is within one standard error, however we still chose Recipe 3 due to its lower CV error and since the temperature scatterplot suggested a curved relationship.
+
+
+## Final Model
+Since we chose Recipe 3, we need to refit it on the whole training set and evaluated it on the test using the `last_fit()`. 
+
+
+```{r final-fit}
+final_fit <- wf3 |>
+  last_fit(bike_split, metric = metric_set(rmse))
+collect_metrics(final_fit)
+```
+
+The chosen model's test-set RMSE is 2,942 rentals per day. Notice how that is in the line with its CV estimate, meaning that the model generalizes to new days about as well as cross-validation predicted. It also does not appear to be overfitting. 
+
+
+```{r final-coefficients}
+final_fit |>
+  extract_fit_parsnip() |>
+  tidy() |>
+  print(n =29)
+```
+
+Notice that since these coefficients are on a standardized scale, they show which predictors matter instead than an exact per-unit effect. Weekends have about 2,400 fewer rentals than weekdays and sunny days have the biggest increase on rentals. Temperature's effect depends on each season as warmer days help in the Spring but during the Summer is not too beneficial as when the weather is too hot. 
+
+## Conclusion
+
+Overall among the three models, the one with interactions and squared terms performed best in cross-validation and achieved a test RMSE of approximately 2,942 daily rentals, which was close to the estimated CV, then it generalizes well to the new data. The best improvement in this model is that it was capable to let temperature's effect vary by season. We noticed how season, temperature, solar radiation, rainfall, and whether it is a weekend were strong predictors of daily bike rentals in Seoul.
