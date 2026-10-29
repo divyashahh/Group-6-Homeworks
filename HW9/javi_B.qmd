@@ -1,11 +1,7 @@
 ---
 title: "HW 9: Basic Modeling Practice"
-format:
-  html:
-    toc: true
-execute:
-  message: false
-  warning: false
+author: "Javi B"
+editor: visual
 ---
 
 This homework focuses on fitting multiple linear regression (MLR) models with `tidymodels`. The data record hourly bike rentals in Seoul, together with the weather and calendar conditions for each hour. The goal is to predict the number of bikes rented per day. The steps are: read in the data, explore and clean it, summarize it to one row per day, split it into training and test sets, compare three MLR models with 10-fold cross-validation, and evaluate the best one on the test set.
@@ -351,7 +347,7 @@ Since we chose Recipe 3, we need to refit it on the whole training set and evalu
 
 ```{r final-fit}
 final_fit <- wf3 |>
-  last_fit(bike_split, metric = metric_set(rmse))
+  last_fit(bike_split, metrics = metric_set(rmse))
 collect_metrics(final_fit)
 ```
 
