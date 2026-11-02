@@ -184,3 +184,28 @@ rmse_results <- tibble(
 
 rmse_results
 ```
+
+#### Fitting thebest model (lowest rmse) - model 3
+
+```{r}
+# Standardize full dataset
+full_data <- add_day_type(daily_bike)
+
+full_means <- sapply(full_data[num_vars], mean)
+full_sds   <- sapply(full_data[num_vars], sd)
+
+full_std <- standardize_vars(full_data, full_means, full_sds, num_vars)
+
+# Model 3
+final_model <- lm(
+  rented_bike_count ~ temperature + humidity + wind_speed + visibility + 
+    dew_point_temperature + solar_radiation + rainfall + snowfall + 
+    seasons + holiday + day_type + 
+    seasons:holiday + seasons:temperature + temperature:rainfall + 
+    I(temperature^2) + I(humidity^2),
+  data = full_std
+)
+
+# Report final coefficients
+summary(final_model)$coefficients
+```
