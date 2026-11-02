@@ -1,0 +1,23 @@
+---
+title: "ST558 HW9"
+format: html
+editor: visual
+---
+
+#### Reading in data
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(rsample)
+
+# Read from URL
+bike_url <- "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv"
+raw_data <- read_csv(bike_url, locale = locale(encoding = "latin1"))
+```
+
+#### Exploratory Analysis and Prep
+
+```{r}
+
+```
