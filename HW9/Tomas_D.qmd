@@ -19,5 +19,168 @@ raw_data <- read_csv(bike_url, locale = locale(encoding = "latin1"))
 #### Exploratory Analysis and Prep
 
 ```{r}
+#Check missingness and structure
+sum(is.na(raw_data))
+glimpse(raw_data)
 
+#Clean names, convert date format, convert factors
+bike_clean <- raw_data |>
+  janitor::clean_names() |>
+
+  mutate(
+    # Forma dataset dd/mm/yyyy
+    date = dmy(date),
+    seasons = as.factor(seasons),
+    holiday = as.factor(holiday),
+    functioning_day = as.factor(functioning_day)
+  )
+
+#Initial summaries =
+bike_clean |>
+  group_by(functioning_day) |>
+  summarize(
+    total_rentals = sum(rented_bike_count),
+    mean_rentals = mean(rented_bike_count),
+    n = n()
+  )
+
+# Filter to keep functional hours only:
+bike_functional <- bike_clean |>
+  filter(functioning_day == "Yes")
+
+# 1 observation per day
+# Sum for bike count, rainfall, snowfall, Mean for all other numeric weather variables
+daily_bike <- bike_functional |>
+  group_by(date, seasons, holiday) |>
+  summarize(
+    rented_bike_count = sum(rented_bike_count),
+    rainfall = sum(rainfall_mm),
+    snowfall = sum(snowfall_cm),
+    temperature = mean(temperature_c),
+    humidity = mean(humidity_percent),
+    wind_speed = mean(wind_speed_m_s),
+    visibility = mean(visibility_10m),
+    dew_point_temperature = mean(dew_point_temperature_c),
+    solar_radiation = mean(solar_radiation_mj_m2),
+    .groups = "drop"
+  )
+
+#Summaries
+summary(daily_bike)
+
+# Correlation matrix 
+numeric_cols <- daily_bike |> select(where(is.numeric))
+cor(numeric_cols)
+
+# Exploratory plot: Rentals vs Temperature colored by Season
+ggplot(daily_bike, aes(x = temperature, y = rented_bike_count, color = seasons)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Daily Bike Rentals vs. Temperature by Season",
+    x = "Mean Daily Temperature (°C)",
+    y = "Total Daily Rentals"
+  )
+```
+
+#### Splitting the data in to 75/25 split train test
+
+```{r}
+set.seed(123) # Set  seed
+
+bike_split <- initial_split(daily_bike, prop = 0.75, strata = seasons)
+train_data <- training(bike_split)
+test_data  <- testing(bike_split)
+```
+
+#### 
+
+#### Features
+
+```{r}
+# Create day factort (1-7)
+add_day_type <- function(df) {
+  df |>
+    mutate(
+      day_type = if_else(wday(date) %in% c(1, 7), "Weekend", "Weekday"),
+      day_type = as.factor(day_type)
+    )
+}
+
+train_data <- add_day_type(train_data)
+test_data  <- add_day_type(test_data)
+
+# Numeric predictors 
+num_vars <- c("temperature", "humidity", "wind_speed", "visibility", 
+              "dew_point_temperature", "solar_radiation", "rainfall", "snowfall")
+
+# Compute training means and std dev
+train_means <- sapply(train_data[num_vars], mean)
+train_sds   <- sapply(train_data[num_vars], sd)
+
+# Standardize
+standardize_vars <- function(df, means, sds, vars) {
+  for (v in vars) {
+    df[[v]] <- (df[[v]] - means[v]) / sds[v]
+  }
+  df
+}
+
+train_std <- standardize_vars(train_data, train_means, train_sds, num_vars)
+test_std  <- standardize_vars(test_data, train_means, train_sds, num_vars)
+
+train_sds
+train_means
+
+
+```
+
+#### Fitting 3 models and evaluating performance
+
+```{r}
+# Model 1 - standardized numeric predictors + categorical variables
+m1 <- lm(
+  rented_bike_count ~ temperature + humidity + wind_speed + visibility + 
+    dew_point_temperature + solar_radiation + rainfall + snowfall + 
+    seasons + holiday + day_type,
+  data = train_std
+)
+
+# Model 2 = Model 1 + specific interaction terms
+m2 <- lm(
+  rented_bike_count ~ temperature + humidity + wind_speed + visibility + 
+    dew_point_temperature + solar_radiation + rainfall + snowfall + 
+    seasons + holiday + day_type + 
+    seasons:holiday + seasons:temperature + temperature:rainfall,
+  data = train_std
+)
+
+# Model 3: Model 2 + quadratic terms for temp and humidity
+m3 <- lm(
+  rented_bike_count ~ temperature + humidity + wind_speed + visibility + 
+    dew_point_temperature + solar_radiation + rainfall + snowfall + 
+    seasons + holiday + day_type + 
+    seasons:holiday + seasons:temperature + temperature:rainfall + 
+    I(temperature^2) + I(humidity^2),
+  data = train_std
+)
+
+# Helper function for test set RMSE
+calc_rmse <- function(model, new_data) {
+  preds <- predict(model, newdata = new_data)
+  sqrt(mean((new_data$rented_bike_count - preds)^2))
+}
+
+#printing results as a tibble for easy view
+rmse_results <- tibble(
+  Model = c("Model 1 (Main Effects)", 
+            "Model 2 (+ Interactions)", 
+            "Model 3 (+ Quadratic Terms)"),
+  Test_RMSE = c(calc_rmse(m1, test_std),
+                calc_rmse(m2, test_std),
+                calc_rmse(m3, test_std))
+)
+
+rmse_results
 ```
