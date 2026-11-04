@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Javi B">
+
+<title>HW 9: Basic Modeling Practice</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-d0cfe7a3482e0d49a74229a8f3b76718.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">HW 9: Basic Modeling Practice</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Javi B </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This homework focuses on fitting multiple linear regression (MLR) models with <code>tidymodels</code>. The data record hourly bike rentals in Seoul, together with the weather and calendar conditions for each hour. The goal is to predict the number of bikes rented per day. The steps are: read in the data, explore and clean it, summarize it to one row per day, split it into training and test sets, compare three MLR models with 10-fold cross-validation, and evaluate the best one on the test set.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.1     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   4.0.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.2
+✔ purrr     1.2.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'janitor' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'janitor'
+
+The following objects are masked from 'package:stats':
+
+    chisq.test, fisher.test</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching packages ────────────────────────────────────── tidymodels 1.5.0 ──
+✔ broom        1.0.13     ✔ rsample      1.3.2 
+✔ dials        1.4.4      ✔ tailor       0.1.0 
+✔ infer        1.1.0      ✔ tune         2.1.0 
+✔ modeldata    1.6.0      ✔ workflows    1.3.0 
+✔ parsnip      1.6.1      ✔ workflowsets 1.1.1 
+✔ recipes      1.4.0      ✔ yardstick    1.4.0 
+── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+✖ scales::discard() masks purrr::discard()
+✖ dplyr::filter()   masks stats::filter()
+✖ recipes::fixed()  masks stringr::fixed()
+✖ dplyr::lag()      masks stats::lag()
+✖ yardstick::spec() masks readr::spec()
+✖ recipes::step()   masks stats::step()</code></pre>
+</div>
+</div>
+<section id="reading-data" class="level2">
+<h2 class="anchored" data-anchor-id="reading-data">Reading Data</h2>
+<p>The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (<code>Temperature(°C)</code> and <code>Dew point temperature(°C)</code>). However, <code>readr</code>’s default UTF-8 assumption, that character can trigger that <code>invalid multibyte string</code> error. Telling <code>read_csv()</code> the file’s encoding through <code>locale()</code> fixes it.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">locale =</span> <span class="fu">locale</span>(<span class="at">encoding =</span> <span class="st">"latin1"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 8760 Columns: 14
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (4): Date, Seasons, Holiday, Functioning Day
+dbl (10): Rented Bike Count, Hour, Temperature(°C), Humidity(%), Wind speed ...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bike_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8,760 × 14
+   Date       `Rented Bike Count`  Hour `Temperature(°C)` `Humidity(%)`
+   &lt;chr&gt;                    &lt;dbl&gt; &lt;dbl&gt;             &lt;dbl&gt;         &lt;dbl&gt;
+ 1 01/12/2017                 254     0              -5.2            37
+ 2 01/12/2017                 204     1              -5.5            38
+ 3 01/12/2017                 173     2              -6              39
+ 4 01/12/2017                 107     3              -6.2            40
+ 5 01/12/2017                  78     4              -6              36
+ 6 01/12/2017                 100     5              -6.4            37
+ 7 01/12/2017                 181     6              -6.6            35
+ 8 01/12/2017                 460     7              -7.4            38
+ 9 01/12/2017                 930     8              -7.6            37
+10 01/12/2017                 490     9              -6.5            27
+# ℹ 8,750 more rows
+# ℹ 9 more variables: `Wind speed (m/s)` &lt;dbl&gt;, `Visibility (10m)` &lt;dbl&gt;,
+#   `Dew point temperature(°C)` &lt;dbl&gt;, `Solar Radiation (MJ/m2)` &lt;dbl&gt;,
+#   `Rainfall(mm)` &lt;dbl&gt;, `Snowfall (cm)` &lt;dbl&gt;, Seasons &lt;chr&gt;, Holiday &lt;chr&gt;,
+#   `Functioning Day` &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>The data have 8,760 rows, one per hour for a full year (365 × 24), and 14 columns with variables including the date, the hourly rental count (our response), the hour, eight weather measurements, and three categorical variables (<code>Seasons</code>, <code>Holiday</code>, and <code>Functioning Day</code>).</p>
+</section>
+<section id="eda" class="level2">
+<h2 class="anchored" data-anchor-id="eda">EDA</h2>
+<section id="checking-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="checking-the-data">Checking the Data</h3>
+<p><strong>1. Missingness:</strong> Before any cleaning, we checked whether any values are missing to prevent problems later.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(bike_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                     Date         Rented Bike Count                      Hour 
+                        0                         0                         0 
+          Temperature(°C)               Humidity(%)          Wind speed (m/s) 
+                        0                         0                         0 
+         Visibility (10m) Dew point temperature(°C)   Solar Radiation (MJ/m2) 
+                        0                         0                         0 
+             Rainfall(mm)             Snowfall (cm)                   Seasons 
+                        0                         0                         0 
+                  Holiday           Functioning Day 
+                        0                         0 </code></pre>
+</div>
+</div>
+<p>None of the 14 columns has missing values, so no imputing or dropping of rows is needed for that reason.</p>
+<p><strong>2. Column types and values:</strong> Next, we checked that each column was read in as the right type and that its values make sense. For numeric columns that means summary statistics. For categorical columns, <code>janitor::tabyl()</code> shows each unique value along with how often it appears. We also used <code>janitor::get_dupes()</code> to confirm that no date-hour combination appears more than once, since each row should be exactly one hour.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># column types</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(bike_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [8,760 × 14] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ Date                     : chr [1:8760] "01/12/2017" "01/12/2017" "01/12/2017" "01/12/2017" ...
+ $ Rented Bike Count        : num [1:8760] 254 204 173 107 78 100 181 460 930 490 ...
+ $ Hour                     : num [1:8760] 0 1 2 3 4 5 6 7 8 9 ...
+ $ Temperature(°C)          : num [1:8760] -5.2 -5.5 -6 -6.2 -6 -6.4 -6.6 -7.4 -7.6 -6.5 ...
+ $ Humidity(%)              : num [1:8760] 37 38 39 40 36 37 35 38 37 27 ...
+ $ Wind speed (m/s)         : num [1:8760] 2.2 0.8 1 0.9 2.3 1.5 1.3 0.9 1.1 0.5 ...
+ $ Visibility (10m)         : num [1:8760] 2000 2000 2000 2000 2000 ...
+ $ Dew point temperature(°C): num [1:8760] -17.6 -17.6 -17.7 -17.6 -18.6 -18.7 -19.5 -19.3 -19.8 -22.4 ...
+ $ Solar Radiation (MJ/m2)  : num [1:8760] 0 0 0 0 0 0 0 0 0.01 0.23 ...
+ $ Rainfall(mm)             : num [1:8760] 0 0 0 0 0 0 0 0 0 0 ...
+ $ Snowfall (cm)            : num [1:8760] 0 0 0 0 0 0 0 0 0 0 ...
+ $ Seasons                  : chr [1:8760] "Winter" "Winter" "Winter" "Winter" ...
+ $ Holiday                  : chr [1:8760] "No Holiday" "No Holiday" "No Holiday" "No Holiday" ...
+ $ Functioning Day          : chr [1:8760] "Yes" "Yes" "Yes" "Yes" ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   Date = col_character(),
+  ..   `Rented Bike Count` = col_double(),
+  ..   Hour = col_double(),
+  ..   `Temperature(°C)` = col_double(),
+  ..   `Humidity(%)` = col_double(),
+  ..   `Wind speed (m/s)` = col_double(),
+  ..   `Visibility (10m)` = col_double(),
+  ..   `Dew point temperature(°C)` = col_double(),
+  ..   `Solar Radiation (MJ/m2)` = col_double(),
+  ..   `Rainfall(mm)` = col_double(),
+  ..   `Snowfall (cm)` = col_double(),
+  ..   Seasons = col_character(),
+  ..   Holiday = col_character(),
+  ..   `Functioning Day` = col_character()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># basic summary stats for the numeric columns</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Rented Bike Count      Hour       Temperature(°C)   Humidity(%)   
+ Min.   :   0.0    Min.   : 0.00   Min.   :-17.80   Min.   : 0.00  
+ 1st Qu.: 191.0    1st Qu.: 5.75   1st Qu.:  3.50   1st Qu.:42.00  
+ Median : 504.5    Median :11.50   Median : 13.70   Median :57.00  
+ Mean   : 704.6    Mean   :11.50   Mean   : 12.88   Mean   :58.23  
+ 3rd Qu.:1065.2    3rd Qu.:17.25   3rd Qu.: 22.50   3rd Qu.:74.00  
+ Max.   :3556.0    Max.   :23.00   Max.   : 39.40   Max.   :98.00  
+ Wind speed (m/s) Visibility (10m) Dew point temperature(°C)
+ Min.   :0.000    Min.   :  27     Min.   :-30.600          
+ 1st Qu.:0.900    1st Qu.: 940     1st Qu.: -4.700          
+ Median :1.500    Median :1698     Median :  5.100          
+ Mean   :1.725    Mean   :1437     Mean   :  4.074          
+ 3rd Qu.:2.300    3rd Qu.:2000     3rd Qu.: 14.800          
+ Max.   :7.400    Max.   :2000     Max.   : 27.200          
+ Solar Radiation (MJ/m2)  Rainfall(mm)     Snowfall (cm)    
+ Min.   :0.0000          Min.   : 0.0000   Min.   :0.00000  
+ 1st Qu.:0.0000          1st Qu.: 0.0000   1st Qu.:0.00000  
+ Median :0.0100          Median : 0.0000   Median :0.00000  
+ Mean   :0.5691          Mean   : 0.1487   Mean   :0.07507  
+ 3rd Qu.:0.9300          3rd Qu.: 0.0000   3rd Qu.:0.00000  
+ Max.   :3.5200          Max.   :35.0000   Max.   :8.80000  </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># unique values (and their frequencies) for each categorical column</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span> <span class="fu">tabyl</span>(Seasons)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Seasons    n   percent
+  Autumn 2184 0.2493151
+  Spring 2208 0.2520548
+  Summer 2208 0.2520548
+  Winter 2160 0.2465753</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span> <span class="fu">tabyl</span>(Holiday)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Holiday    n    percent
+    Holiday  432 0.04931507
+ No Holiday 8328 0.95068493</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span> <span class="fu">tabyl</span>(<span class="st">`</span><span class="at">Functioning Day</span><span class="st">`</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Functioning Day    n   percent
+              No  295 0.0336758
+             Yes 8465 0.9663242</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># each date/hour combination should appear exactly once</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span> <span class="fu">get_dupes</span>(Date, Hour)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>No duplicate combinations found of: Date, Hour</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 15
+# ℹ 15 variables: Date &lt;chr&gt;, Hour &lt;dbl&gt;, dupe_count &lt;int&gt;,
+#   Rented Bike Count &lt;dbl&gt;, Temperature(°C) &lt;dbl&gt;, Humidity(%) &lt;dbl&gt;,
+#   Wind speed (m/s) &lt;dbl&gt;, Visibility (10m) &lt;dbl&gt;,
+#   Dew point temperature(°C) &lt;dbl&gt;, Solar Radiation (MJ/m2) &lt;dbl&gt;,
+#   Rainfall(mm) &lt;dbl&gt;, Snowfall (cm) &lt;dbl&gt;, Seasons &lt;chr&gt;, Holiday &lt;chr&gt;,
+#   Functioning Day &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Most of the numeric columns look reasonable. <code>Hour</code> runs from 0 to 23, temperature ranges from -17.8°C to 39.4°C, and hourly rentals range from 0 to 3,556. A few things stand out. Humidity has a minimum of 0%, which is physically implausible and likely a sensor error, but it affects very few rows, so we left it in. Visibility tops out at exactly 2000 (20 km), which suggests the measurement is capped. Rainfall and snowfall are 0 in most hours, so both are very right-skewed. On the categorical side, the four seasons each make up about a quarter of the hours. About 5% of hours (432) fall on holidays, and about 3% (295) are marked as non-functioning, which comes up again below. <code>get_dupes()</code> found no duplicate date-hour combinations, so every row is a distinct hour. <code>Date</code> and the three categorical variables were all read in as character, so they still need to be converted.</p>
+<p><strong>3. Converting the date:</strong> <code>Date</code> came in as a character string in day/month/year format (<code>01/12/2017</code> is December 1, 2017), so we converted it with <code>lubridate::dmy()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="ot">&lt;-</span> bike_data <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">dmy</span>(Date))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(bike_data<span class="sc">$</span>Date)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2017-12-01" "2018-11-30"</code></pre>
+</div>
+</div>
+<p>The data cover exactly one year, from December 1, 2017 through November 30, 2018. That’s 365 days × 24 hours, which matches the 8,760 rows.</p>
+<p><strong>4. Converting character variables to factors:</strong> <code>Seasons</code>, <code>Holiday</code>, and <code>Functioning Day</code> are categorical, so we converted them to factors. For <code>Seasons</code> I set the levels in calendar order instead of R’s default alphabetical order, so tables and plots read Winter, Spring, Summer, Fall. The data spell this season “Autumn”, so we matched on that value with <code>levels</code> and relabeled it “Fall” with <code>labels</code>; listing “Fall” in <code>levels</code> alone would turn every Autumn hour into <code>NA</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="ot">&lt;-</span> bike_data <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Seasons =</span> <span class="fu">factor</span>(Seasons,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Winter"</span>, <span class="st">"Spring"</span>, <span class="st">"Summer"</span>, <span class="st">"Autumn"</span>),</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Winter"</span>, <span class="st">"Spring"</span>, <span class="st">"Summer"</span>, <span class="st">"Fall"</span>)),</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Holiday =</span> <span class="fu">factor</span>(Holiday),</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Functioning Day</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">factor</span>(<span class="st">`</span><span class="at">Functioning Day</span><span class="st">`</span>)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><strong>5. Renaming the variables:</strong> Finally, we renamed every column to lower snake case. <code>janitor::clean_names()</code> does most of this automatically by lowercasing everything, replaces spaces and punctuation with underscores, and handles symbols like <code>%</code> and <code>°</code>. The cleaned names keep their units, though (<code>rented_bike_count</code>, <code>humidity_percent</code>, <code>rainfall_mm</code>, …), so we followed up with <code>rename()</code> to shorten the ones we will use most. We matched the columns with <code>starts_with()</code> because the exact cleaned name for the two temperature columns depends on how the degree symbol gets transliterated on a given system, and <code>starts_with()</code> matches either way.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="ot">&lt;-</span> bike_data <span class="sc">|&gt;</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">bike_count      =</span> rented_bike_count,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">temp            =</span> <span class="fu">starts_with</span>(<span class="st">"temperature"</span>),</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">dew_point_temp  =</span> <span class="fu">starts_with</span>(<span class="st">"dew_point"</span>),</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">humidity        =</span> <span class="fu">starts_with</span>(<span class="st">"humidity"</span>),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">wind_speed      =</span> <span class="fu">starts_with</span>(<span class="st">"wind_speed"</span>),</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">visibility      =</span> <span class="fu">starts_with</span>(<span class="st">"visibility"</span>),</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">solar_radiation =</span> <span class="fu">starts_with</span>(<span class="st">"solar"</span>),</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">rainfall        =</span> <span class="fu">starts_with</span>(<span class="st">"rainfall"</span>),</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">snowfall        =</span> <span class="fu">starts_with</span>(<span class="st">"snowfall"</span>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(bike_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "date"            "bike_count"      "hour"            "temp"           
+ [5] "humidity"        "wind_speed"      "visibility"      "dew_point_temp" 
+ [9] "solar_radiation" "rainfall"        "snowfall"        "seasons"        
+[13] "holiday"         "functioning_day"</code></pre>
+</div>
+</div>
+<p><strong>6. Summary statistics across the categorical variables:</strong> With the data cleaned up, we looked at summary statistics for the response, <code>bike_count</code>, both overall and across each categorical variable.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># overall</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 5
+   mean median    sd   min   max
+  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1  705.   504.  645.     0  3556</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># across each categorical variable</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(seasons) <span class="sc">|&gt;</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 7
+  seasons     n  mean median    sd   min   max
+  &lt;fct&gt;   &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 Winter   2160  226.   203   150.     3   937
+2 Spring   2208  730.   583   622.     0  3251
+3 Summer   2208 1034.   906.  690.     9  3556
+4 Fall     2184  820.   764.  651.     0  3298</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(holiday) <span class="sc">|&gt;</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  holiday        n  mean median    sd   min   max
+  &lt;fct&gt;      &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 Holiday      432  500.   240   571.     0  2400
+2 No Holiday  8328  715.   524.  647.     0  3556</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(functioning_day) <span class="sc">|&gt;</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  functioning_day     n  mean median    sd   min   max
+  &lt;fct&gt;           &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 No                295    0       0    0      0     0
+2 Yes              8465  729.    542  642.     2  3556</code></pre>
+</div>
+</div>
+<p>Rentals vary a lot by season. The average Summer hour has about 1,034 rentals, more than four times the roughly 226 in Winter, with Spring (730) and Fall (820) in between. Holiday hours average fewer rentals than non-holiday hours (500 vs.&nbsp;715). The <code>functioning_day</code> summary is where something is clearly off: every one of the 295 non-functioning hours has exactly 0 rentals.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># where do the non-functioning hours fall?</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>bike_data <span class="sc">|&gt;</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabyl</span>(seasons, functioning_day) <span class="sc">|&gt;</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">adorn_totals</span>(<span class="st">"row"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> seasons  No  Yes
+  Winter   0 2160
+  Spring  48 2160
+  Summer   0 2208
+    Fall 247 1937
+   Total 295 8465</code></pre>
+</div>
+</div>
+<p>The cross-tabulation shows that non-functioning hours only occur in Spring (48 hours) and Fall (247 hours). They cover 12 full days plus 7 hours of October 6, 2018. During these hours the bike-share system was not operating, so those zeros reflect the service being down, not a lack of demand. Leaving them in would pull down the averages for Spring and Fall and teach the models that certain weather conditions produce zero rentals when they don’t. So we removed the non-functioning hours. After that, <code>functioning_day</code> has only one value, so we dropped the column too.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>bike_data <span class="ot">&lt;-</span> bike_data <span class="sc">|&gt;</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(functioning_day <span class="sc">==</span> <span class="st">"Yes"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>functioning_day)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>bike_data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8,465 × 13
+   date       bike_count  hour  temp humidity wind_speed visibility
+   &lt;date&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+ 1 2017-12-01        254     0  -5.2       37        2.2       2000
+ 2 2017-12-01        204     1  -5.5       38        0.8       2000
+ 3 2017-12-01        173     2  -6         39        1         2000
+ 4 2017-12-01        107     3  -6.2       40        0.9       2000
+ 5 2017-12-01         78     4  -6         36        2.3       2000
+ 6 2017-12-01        100     5  -6.4       37        1.5       2000
+ 7 2017-12-01        181     6  -6.6       35        1.3       2000
+ 8 2017-12-01        460     7  -7.4       38        0.9       2000
+ 9 2017-12-01        930     8  -7.6       37        1.1       2000
+10 2017-12-01        490     9  -6.5       27        0.5       1928
+# ℹ 8,455 more rows
+# ℹ 6 more variables: dew_point_temp &lt;dbl&gt;, solar_radiation &lt;dbl&gt;,
+#   rainfall &lt;dbl&gt;, snowfall &lt;dbl&gt;, seasons &lt;fct&gt;, holiday &lt;fct&gt;</code></pre>
+</div>
+</div>
+<p>That leaves 8,465 hours across 353 days. Removing the shutdowns also changes the seasonal picture: Fall’s average hourly rentals rise from about 820 to about 924, and Spring’s from about 730 to about 746.</p>
+<p><strong>7. Summarizing to one row per day:</strong> To simplify the analysis, we collapsed the hourly data, so each day has a single observation. We grouped by <code>date</code>, <code>seasons</code>, and <code>holiday</code>. Season and holiday status never change within a day, so grouping by them does not split any day into multiple rows, instead just keeps those columns in the summarized data. Within each day, we added up the variables that accumulate over the day (total rentals, total rainfall, and total snowfall). For the other weather variables (temperature, humidity, wind speed, visibility, dew point, and solar radiation) and we took the daily average. <code>hour</code> is dropped, since it no longer applies once the hours are combined.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="ot">&lt;-</span> bike_data <span class="sc">|&gt;</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date, seasons, holiday) <span class="sc">|&gt;</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(bike_count, rainfall, snowfall), sum),</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(temp, humidity, wind_speed, visibility,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>             dew_point_temp, solar_radiation), mean),</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>bike_daily</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 353 × 12
+   date       seasons holiday    bike_count rainfall snowfall    temp humidity
+   &lt;date&gt;     &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+ 1 2017-12-01 Winter  No Holiday       9539      0        0   -2.45       45.9
+ 2 2017-12-02 Winter  No Holiday       8523      0        0    1.32       62.0
+ 3 2017-12-03 Winter  No Holiday       7222      4        0    4.88       81.5
+ 4 2017-12-04 Winter  No Holiday       8729      0.1      0   -0.304      52.5
+ 5 2017-12-05 Winter  No Holiday       8307      0        0   -4.46       36.4
+ 6 2017-12-06 Winter  No Holiday       6669      1.3      8.6  0.0458     70.8
+ 7 2017-12-07 Winter  No Holiday       8549      0       10.4  1.09       67.5
+ 8 2017-12-08 Winter  No Holiday       8032      0        0   -3.82       41.8
+ 9 2017-12-09 Winter  No Holiday       7233      0        0   -0.846      46  
+10 2017-12-10 Winter  No Holiday       3453      4.1     32.5  1.19       69.7
+# ℹ 343 more rows
+# ℹ 4 more variables: wind_speed &lt;dbl&gt;, visibility &lt;dbl&gt;, dew_point_temp &lt;dbl&gt;,
+#   solar_radiation &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>The result has 353 rows, one for each remaining day, and 12 columns. This is the data used for the rest of the analysis. One day needs a caveat: October 6, 2018 had 7 non-functioning hours removed above, so its total of 16,037 rentals is based on only 17 hours instead of 24. That day also had 35.5 mm of rain, which may explain the partial shutdown. Since it’s a single day out of 353, I kept it.</p>
+<p><strong>8. Summaries, plots, and correlations on the daily data:</strong> With one row per day, we recreated the summary statistics, this time on daily totals instead of hourly counts.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="sc">|&gt;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   bike_count       rainfall         snowfall           temp        
+ Min.   :  977   Min.   : 0.000   Min.   : 0.000   Min.   :-14.738  
+ 1st Qu.: 6967   1st Qu.: 0.000   1st Qu.: 0.000   1st Qu.:  3.304  
+ Median :18563   Median : 0.000   Median : 0.000   Median : 13.738  
+ Mean   :17485   Mean   : 3.576   Mean   : 1.863   Mean   : 12.776  
+ 3rd Qu.:26285   3rd Qu.: 0.500   3rd Qu.: 0.000   3rd Qu.: 22.592  
+ Max.   :36149   Max.   :95.500   Max.   :78.700   Max.   : 33.742  
+    humidity       wind_speed       visibility     dew_point_temp   
+ Min.   :22.25   Min.   :0.6625   Min.   : 214.3   Min.   :-27.750  
+ 1st Qu.:47.58   1st Qu.:1.3042   1st Qu.:1087.0   1st Qu.: -5.188  
+ Median :57.17   Median :1.6583   Median :1557.8   Median :  4.612  
+ Mean   :58.17   Mean   :1.7261   Mean   :1434.0   Mean   :  3.954  
+ 3rd Qu.:67.71   3rd Qu.:1.9542   3rd Qu.:1874.3   3rd Qu.: 14.921  
+ Max.   :95.88   Max.   :4.0000   Max.   :2000.0   Max.   : 25.038  
+ solar_radiation  
+ Min.   :0.02917  
+ 1st Qu.:0.28333  
+ Median :0.56500  
+ Mean   :0.56773  
+ 3rd Qu.:0.82000  
+ Max.   :1.21667  </code></pre>
+</div>
+</div>
+<p>Across the 353 days, daily rentals range from 977 to 36,149, with a mean of about 17,485 and a median of about 18,563. Rainfall and snowfall remain heavily skewed: 253 of the 353 days had no rain at all, and only 27 had any snow.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="sc">|&gt;</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(seasons) <span class="sc">|&gt;</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 7
+  seasons     n   mean median    sd   min   max
+  &lt;fct&gt;   &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 Winter     90  5413.  5498  1808.  2014  9539
+2 Spring     90 17910. 17590  8357.   977 31681
+3 Summer     92 24818. 25572. 7297.  3231 36149
+4 Fall       81 22099. 23350  6711.  1721 31809</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="sc">|&gt;</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(holiday) <span class="sc">|&gt;</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(bike_count), <span class="at">min =</span> <span class="fu">min</span>(bike_count), <span class="at">max =</span> <span class="fu">max</span>(bike_count))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 7
+  holiday        n   mean median     sd   min   max
+  &lt;fct&gt;      &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 Holiday       17 12700.  7184  10504.  2014 30498
+2 No Holiday   336 17727. 19104.  9862.   977 36149</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="sc">|&gt;</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(seasons, holiday) <span class="sc">|&gt;</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">mean =</span> <span class="fu">mean</span>(bike_count), <span class="at">median =</span> <span class="fu">median</span>(bike_count),</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 5
+  seasons holiday        n   mean median
+  &lt;fct&gt;   &lt;fct&gt;      &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+1 Winter  Holiday        8  3759   3454.
+2 Winter  No Holiday    82  5574.  5609 
+3 Spring  Holiday        3 15247. 13790 
+4 Spring  No Holiday    87 18002. 17730 
+5 Summer  Holiday        2 24532. 24532.
+6 Summer  No Holiday    90 24824. 25572.
+7 Fall    Holiday        4 22754. 21705 
+8 Fall    No Holiday    77 22065. 23472 </code></pre>
+</div>
+</div>
+<p>The seasonal pattern from the hourly data holds up. An average Winter day has about 5,400 rentals, compared to about 24,800 in Summer, with Fall (about 22,100) and Spring (about 17,900) in between. Spring has the largest spread (SD of about 8,400), which makes sense for a transition season that runs from cold March days into warm May ones. Holidays look much lower at first glance (about 12,700 vs.&nbsp;17,700 rentals), but the season-by-holiday breakdown shows that comparison is misleading. Of the 17 holidays, 8 fall in Winter, the slowest season, so the holiday average is dragged down by season. Within Summer and Fall, holiday and non-holiday days average nearly the same. With only 17 holidays in total, these within-season comparisons rest on very few days.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bike_daily, <span class="fu">aes</span>(<span class="at">x =</span> bike_count)) <span class="sc">+</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>) <span class="sc">+</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of daily rentals"</span>, <span class="at">x =</span> <span class="st">"Daily rentals"</span>, <span class="at">y =</span> <span class="st">"Days"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/plot-histogram-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The distribution of daily rentals is clearly bimodal. One cluster of days sits around 3,000 to 8,000 rentals (mostly Winter) and a second, broader cluster around 20,000 to 30,000. A single overall mean hides that split, which suggests season will be an important predictor.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bike_daily, <span class="fu">aes</span>(<span class="at">x =</span> seasons, <span class="at">y =</span> bike_count, <span class="at">fill =</span> holiday)) <span class="sc">+</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Daily rentals by season and holiday"</span>,</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Season"</span>, <span class="at">y =</span> <span class="st">"Daily rentals"</span>, <span class="at">fill =</span> <span class="st">""</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/plot-season-holiday-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The boxplots show the same seasonal ordering, with Winter far below the rest. The holiday gap is clear in Winter and Spring and mostly disappears in Summer and Fall. That hints that the effect of a holiday may depend on the season, which is the seasons × holiday interaction added in the second recipe below.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bike_daily, <span class="fu">aes</span>(<span class="at">x =</span> temp, <span class="at">y =</span> bike_count, <span class="at">color =</span> seasons)) <span class="sc">+</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Daily rentals vs. average temperature"</span>,</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Average temperature (°C)"</span>, <span class="at">y =</span> <span class="st">"Daily rentals"</span>, <span class="at">color =</span> <span class="st">"Season"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/plot-temp-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Temperature has the strongest visible relationship with rentals, but it isn’t a straight line. Rentals climb steadily as days warm up to roughly 22 to 25°C, then fall off on the hottest Summer days above about 28°C. This curve is the main motivation for the quadratic terms in the third recipe: a purely linear temperature effect would overpredict rentals on the hottest days.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bike_daily, <span class="fu">aes</span>(<span class="at">x =</span> rainfall, <span class="at">y =</span> bike_count)) <span class="sc">+</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Daily rentals vs. total rainfall"</span>,</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Total rainfall (mm)"</span>, <span class="at">y =</span> <span class="st">"Daily rentals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/plot-rainfall-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Most days are stacked at zero rainfall, across the full range of rental counts. Once rain does fall, high-rental days become rare, and days with heavy rain (above roughly 30 mm) almost all have low rentals. The effect of rain may also depend on temperature, since a rainy summer day and a rainy winter day aren’t comparable. That’s the reasoning behind the temperature × rainfall interaction in the second recipe.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(bike_daily, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> bike_count, <span class="at">color =</span> seasons)) <span class="sc">+</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Daily rentals over the year"</span>,</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Date"</span>, <span class="at">y =</span> <span class="st">"Daily rentals"</span>, <span class="at">color =</span> <span class="st">"Season"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="javi_B_files/figure-html/plot-time-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Over the year, rentals rise from their Winter lows, peak around June, and stay high through early Fall before tapering off in November. The sharp single-day dips throughout Spring, Summer, and Fall line up with the rainfall pattern above.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>bike_daily <span class="sc">|&gt;</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor</span>() <span class="sc">|&gt;</span></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                bike_count rainfall snowfall  temp humidity wind_speed
+bike_count            1.00    -0.24    -0.27  0.75     0.04      -0.19
+rainfall             -0.24     1.00    -0.02  0.14     0.53      -0.10
+snowfall             -0.27    -0.02     1.00 -0.27     0.07       0.02
+temp                  0.75     0.14    -0.27  1.00     0.40      -0.26
+humidity              0.04     0.53     0.07  0.40     1.00      -0.23
+wind_speed           -0.19    -0.10     0.02 -0.26    -0.23       1.00
+visibility            0.17    -0.22    -0.10  0.00    -0.56       0.21
+dew_point_temp        0.65     0.26    -0.21  0.96     0.63      -0.29
+solar_radiation       0.74    -0.32    -0.23  0.55    -0.27       0.10
+                visibility dew_point_temp solar_radiation
+bike_count            0.17           0.65            0.74
+rainfall             -0.22           0.26           -0.32
+snowfall             -0.10          -0.21           -0.23
+temp                  0.00           0.96            0.55
+humidity             -0.56           0.63           -0.27
+wind_speed            0.21          -0.29            0.10
+visibility            1.00          -0.15            0.27
+dew_point_temp       -0.15           1.00            0.38
+solar_radiation       0.27           0.38            1.00</code></pre>
+</div>
+</div>
+<p>Among the numeric variables, daily rentals are most strongly correlated with average temperature (r = 0.75), solar radiation (0.74), and dew point temperature (0.65). Snowfall (-0.27), rainfall (-0.24), and wind speed (-0.19) are weakly negatively correlated with rentals, and humidity has essentially no linear relationship (0.04). One relationship to keep in mind for modeling: temperature and dew point temperature are almost perfectly correlated (r = 0.96). Including both in a linear model makes their individual coefficients unstable and hard to interpret, though predictions shouldn’t suffer much. Since the goal is prediction, we kept both.</p>
+</section>
+</section>
+<section id="split-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="split-the-data">Split the Data</h2>
+<p>Before fitting anything, we split the daily data into a training set (75%) and a test set (25%). We stratified the split on <code>seasons</code>, so both sets get about the same mix of seasons. Rentals differ so much by season that an unlucky split, for example one with very few Winter days in the training set, could distort the models. We then split the training set into 10 cross-validation folds, which we use to compare the three candidate models.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">558</span>)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>bike_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(bike_daily, <span class="at">prop =</span> <span class="fl">0.75</span>, <span class="at">strata =</span> seasons)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>bike_train <span class="ot">&lt;-</span> <span class="fu">training</span>(bike_split)</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>bike_test  <span class="ot">&lt;-</span> <span class="fu">testing</span>(bike_split)</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>bike_cv_folds <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(bike_train, <span class="at">v =</span> <span class="dv">10</span>)</span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>bike_cv_folds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#  10-fold cross-validation 
+# A tibble: 10 × 2
+   splits           id    
+   &lt;list&gt;           &lt;chr&gt; 
+ 1 &lt;split [236/27]&gt; Fold01
+ 2 &lt;split [236/27]&gt; Fold02
+ 3 &lt;split [236/27]&gt; Fold03
+ 4 &lt;split [237/26]&gt; Fold04
+ 5 &lt;split [237/26]&gt; Fold05
+ 6 &lt;split [237/26]&gt; Fold06
+ 7 &lt;split [237/26]&gt; Fold07
+ 8 &lt;split [237/26]&gt; Fold08
+ 9 &lt;split [237/26]&gt; Fold09
+10 &lt;split [237/26]&gt; Fold10</code></pre>
+</div>
+</div>
+<p>The training set has 263 days and the test set 90, and each season makes up about a quarter of both. Note how each CV fold trains on 236 or 237 days and evaluates on the remaining 26 or 27.</p>
+</section>
+<section id="fitting-mlr-models" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-mlr-models">Fitting MLR Models</h2>
+<section id="recipes" class="level3">
+<h3 class="anchored" data-anchor-id="recipes">Recipes</h3>
+<p><strong>Recipe 1.</strong> This recipe sets up the preprocessing that all three models share. We gave <code>data</code> an <code>ID</code> role so it stays out of the model, but we still used it to create a <code>Weekday/Weekend</code> variable with <code>step_data()</code> and <code>step_mutate()</code> since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for <code>seasons</code>, <code>holidays</code>, and <code>day_type</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>rec1 <span class="ot">&lt;-</span> <span class="fu">recipe</span>(bike_count <span class="sc">~</span> ., <span class="at">data =</span> bike_train) <span class="sc">|&gt;</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="st">"dow"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_mutate</span>(<span class="at">day_type =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>(date_dow <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Sat"</span>, <span class="st">"Sun"</span>),</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"Weekend"</span>, <span class="st">"Weekday"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_rm</span>(date_dow) <span class="sc">|&gt;</span></span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(seasons, holiday, day_type)</span>
+<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>rec1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Recipe ──────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Inputs </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Number of variables by role</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>outcome:    1
+predictor: 10
+ID:         1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Operations </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Date features from: date</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variable mutation for: factor(if_else(date_dow %in% c("Sat", "Sun"),
+  "Weekend", "Weekday"))</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variables removed: date_dow</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Centering and scaling for: all_numeric_predictors()</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Dummy variables from: seasons, holiday, day_type</code></pre>
+</div>
+</div>
+<p>This returns 13 predictors, where the 8 standardized weather variables, 3 season dummies (with Winter as the baseline), a holiday indicator, and a weekend indicator.</p>
+<p><strong>Recipe 2.</strong> This recipe builds on Recipe 1 by adding three interactions suggested by the EDA such as seasons × holiday, seasons × temperature, and temperature × rainfall. We used <code>starts_with("seasons")</code> so that each season dummy gets its own interaction term.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>rec2 <span class="ot">&lt;-</span> rec1 <span class="sc">|&gt;</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_interact</span>(<span class="at">terms =</span> <span class="sc">~</span> <span class="fu">starts_with</span>(<span class="st">"seasons"</span>)<span class="sc">:</span><span class="fu">starts_with</span>(<span class="st">"holiday"</span>) <span class="sc">+</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">starts_with</span>(<span class="st">"seasons"</span>)<span class="sc">:</span>temp) <span class="sc">|&gt;</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_interact</span>(<span class="at">terms =</span> <span class="sc">~</span> temp<span class="sc">:</span>rainfall)</span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>rec2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Recipe ──────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Inputs </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Number of variables by role</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>outcome:    1
+predictor: 10
+ID:         1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Operations </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Date features from: date</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variable mutation for: factor(if_else(date_dow %in% c("Sat", "Sun"),
+  "Weekend", "Weekday"))</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variables removed: date_dow</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Centering and scaling for: all_numeric_predictors()</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Dummy variables from: seasons, holiday, day_type</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Interactions with: starts_with("seasons"):starts_with("holiday") +
+  starts_with("seasons"):temp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Interactions with: temp:rainfall</code></pre>
+</div>
+</div>
+<p>This adds 7 interaction terms (3 season × holiday, 3 season × temperature, and temperature × rainfall), for 20 predictors in total.</p>
+<p><strong>Recipe 3.</strong> This recipe adds quadratic terms for each numeric predictor on top of Recipe 2. The temperature scatterplot showed rentals rising and then dropping on the hottest days, a curve a straight line can’t capture. We listed the numeric predictors by name instead of using all_numeric_predictors(), since that would also square the dummy and interaction columns.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>rec3 <span class="ot">&lt;-</span> rec2 <span class="sc">|&gt;</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_poly</span>(temp, humidity, wind_speed, visibility, dew_point_temp,</span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>            solar_radiation, rainfall, snowfall, <span class="at">degree =</span> <span class="dv">2</span>)</span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>rec3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Recipe ──────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Inputs </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Number of variables by role</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>outcome:    1
+predictor: 10
+ID:         1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Operations </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Date features from: date</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variable mutation for: factor(if_else(date_dow %in% c("Sat", "Sun"),
+  "Weekend", "Weekday"))</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Variables removed: date_dow</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Centering and scaling for: all_numeric_predictors()</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Dummy variables from: seasons, holiday, day_type</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Interactions with: starts_with("seasons"):starts_with("holiday") +
+  starts_with("seasons"):temp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Interactions with: temp:rainfall</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>• Polynomial expansion on: temp, humidity, wind_speed, visibility, ...</code></pre>
+</div>
+</div>
+<p>Each of the 8 numeric predictors is replaced by a linear and a quadratic term, giving 28 predictors.</p>
+</section>
+<section id="model-fitting" class="level3">
+<h3 class="anchored" data-anchor-id="model-fitting">Model Fitting</h3>
+<p>All three models are ordinary multiple linear regressions fit with the <code>"lm"</code> engine. We paired the same model specification with each recipe in a workflow, so each workflow carries its own preprocessing and fitting steps together.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>lm_spec <span class="ot">&lt;-</span> <span class="fu">linear_reg</span>() <span class="sc">|&gt;</span></span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lm"</span>)</span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>wf1 <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">|&gt;</span> <span class="fu">add_recipe</span>(rec1) <span class="sc">|&gt;</span> <span class="fu">add_model</span>(lm_spec)</span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>wf2 <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">|&gt;</span> <span class="fu">add_recipe</span>(rec2) <span class="sc">|&gt;</span> <span class="fu">add_model</span>(lm_spec)</span>
+<span id="cb110-6"><a href="#cb110-6" aria-hidden="true" tabindex="-1"></a>wf3 <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">|&gt;</span> <span class="fu">add_recipe</span>(rec3) <span class="sc">|&gt;</span> <span class="fu">add_model</span>(lm_spec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>To compare the models we fit each workflow with <code>fit_resamples()</code> on the 10 CV folds. In each fold, the model is trained on 9/10 of the training data and evaluated on the remaining 1/10, and the metrics are averaged across the folds.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>cv_fit1 <span class="ot">&lt;-</span> wf1 <span class="sc">|&gt;</span> <span class="fu">fit_resamples</span>(bike_cv_folds)</span>
+<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>cv_fit2 <span class="ot">&lt;-</span> wf2 <span class="sc">|&gt;</span> <span class="fu">fit_resamples</span>(bike_cv_folds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>→ A | warning: prediction from rank-deficient fit; consider predict(., rankdeficient="NA")</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>There were issues with some computations   A: x1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>There were issues with some computations   A: x2
+There were issues with some computations   A: x2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>cv_fit3 <span class="ot">&lt;-</span> wf3 <span class="sc">|&gt;</span> <span class="fu">fit_resamples</span>(bike_cv_folds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>→ A | warning: prediction from rank-deficient fit; consider predict(., rankdeficient="NA")</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>There were issues with some computations   A: x1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>There were issues with some computations   A: x2
+There were issues with some computations   A: x2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code></code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>(cv_fit1) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Recipe 1: main effects"</span>),</span>
+<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>(cv_fit2) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Recipe 2: + interactions"</span>),</span>
+<span id="cb121-4"><a href="#cb121-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>(cv_fit3) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Recipe 3: + quadratics"</span>)</span>
+<span id="cb121-5"><a href="#cb121-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb121-6"><a href="#cb121-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(.metric <span class="sc">==</span> <span class="st">"rmse"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb121-7"><a href="#cb121-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 7
+  .metric .estimator  mean     n std_err .config         model                  
+  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;                  
+1 rmse    standard   3005.    10    275. pre0_mod0_post0 Recipe 3: + quadratics 
+2 rmse    standard   3064.    10    296. pre0_mod0_post0 Recipe 2: + interactio…
+3 rmse    standard   4095.    10    204. pre0_mod0_post0 Recipe 1: main effects </code></pre>
+</div>
+</div>
+<p>Notice how fitting these models produces a “prediction from rank-deficient fit” warning in 2 of the 10 folds for Recipes 2 and 3. Because there are only 2 Summer holidays given in the whole dataset and some folds the training data contain no Summer holiday at all. For those fold cases the Summer × holiday interaction column is identical to the Summer dummy, then <code>lm()</code> drops one of the two redundant columns. The remaining coefficients and the predictions are unaffected, so the warning is harmless.</p>
+<p>Adding interactions made the biggest difference CV RMSE dropped from about 4,095 rentals per day to approximately 3,064. The quadratic terms used in Recipe 3 lowered further to about 3,005 suggesting that is the best model by CV RMSE. Notice how the difference between Recipe 2 and Recipe 3 is about 60 rentals which is within one standard error, however we still chose Recipe 3 due to its lower CV error and since the temperature scatterplot suggested a curved relationship.</p>
+</section>
+</section>
+<section id="final-model" class="level2">
+<h2 class="anchored" data-anchor-id="final-model">Final Model</h2>
+<p>Since we chose Recipe 3, we need to refit it on the whole training set and evaluated it on the test using the <code>last_fit()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>final_fit <span class="ot">&lt;-</span> wf3 <span class="sc">|&gt;</span></span>
+<span id="cb123-2"><a href="#cb123-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">last_fit</span>(bike_split, <span class="at">metrics =</span> <span class="fu">metric_set</span>(rmse))</span>
+<span id="cb123-3"><a href="#cb123-3" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(final_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  .metric .estimator .estimate .config        
+  &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;          
+1 rmse    standard       2942. pre0_mod0_post0</code></pre>
+</div>
+</div>
+<p>The chosen model’s test-set RMSE is 2,942 rentals per day. Notice how that is in the line with its CV estimate, meaning that the model generalizes to new days about as well as cross-validation predicted. It also does not appear to be overfitting.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>final_fit <span class="sc">|&gt;</span></span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_parsnip</span>() <span class="sc">|&gt;</span></span>
+<span id="cb125-3"><a href="#cb125-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb125-4"><a href="#cb125-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span><span class="dv">29</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 29 × 5
+   term                                estimate std.error statistic  p.value
+   &lt;chr&gt;                                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)                           7969.      2924.    2.73   6.90e- 3
+ 2 seasons_Spring                        6715.      3223.    2.08   3.83e- 2
+ 3 seasons_Summer                       25498.      3862.    6.60   2.68e-10
+ 4 seasons_Fall                          5158.      3148.    1.64   1.03e- 1
+ 5 holiday_No.Holiday                    3679.      1290.    2.85   4.74e- 3
+ 6 day_type_Weekend                     -2402.       402.   -5.97   8.78e- 9
+ 7 seasons_Spring_x_holiday_No.Holiday  -1338.      2269.   -0.590  5.56e- 1
+ 8 seasons_Summer_x_holiday_No.Holiday    652.      3190.    0.204  8.38e- 1
+ 9 seasons_Fall_x_holiday_No.Holiday     5311.      2415.    2.20   2.88e- 2
+10 seasons_Spring_x_temp                 8640.      2483.    3.48   6.00e- 4
+11 seasons_Summer_x_temp               -12621.      4578.   -2.76   6.30e- 3
+12 seasons_Fall_x_temp                   4091.      2689.    1.52   1.29e- 1
+13 temp_x_rainfall                      -1755.       498.   -3.53   5.06e- 4
+14 temp_poly_1                         -52006.     76147.   -0.683  4.95e- 1
+15 temp_poly_2                         -13102.     16929.   -0.774  4.40e- 1
+16 humidity_poly_1                     -32375.     24741.   -1.31   1.92e- 1
+17 humidity_poly_2                      -9093.      5966.   -1.52   1.29e- 1
+18 wind_speed_poly_1                    -9068.      3461.   -2.62   9.36e- 3
+19 wind_speed_poly_2                       78.3     3221.    0.0243 9.81e- 1
+20 visibility_poly_1                     4434.      4459.    0.994  3.21e- 1
+21 visibility_poly_2                    -2787.      3069.   -0.908  3.65e- 1
+22 dew_point_temp_poly_1                90589.     79452.    1.14   2.55e- 1
+23 dew_point_temp_poly_2                 1548.     11688.    0.132  8.95e- 1
+24 solar_radiation_poly_1               50555.      5684.    8.89   1.64e-16
+25 solar_radiation_poly_2               -5295.      3476.   -1.52   1.29e- 1
+26 rainfall_poly_1                     -27066.      6370.   -4.25   3.10e- 5
+27 rainfall_poly_2                      13105.      3449.    3.80   1.85e- 4
+28 snowfall_poly_1                      -2898.      3383.   -0.857  3.93e- 1
+29 snowfall_poly_2                      -1469.      3095.   -0.475  6.35e- 1</code></pre>
+</div>
+</div>
+<p>Notice that since these coefficients are on a standardized scale, they show which predictors matter instead than an exact per-unit effect. Weekends have about 2,400 fewer rentals than weekdays and sunny days have the biggest increase on rentals. Temperature’s effect depends on each season as warmer days help in the Spring but during the Summer is not too beneficial as when the weather is too hot.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Overall among the three models, the one with interactions and squared terms performed best in cross-validation and achieved a test RMSE of approximately 2,942 daily rentals, which was close to the estimated CV, then it generalizes well to the new data. The best improvement in this model is that it was capable to let temperature’s effect vary by season. We noticed how season, temperature, solar radiation, rainfall, and whether it is a weekend were strong predictors of daily bike rentals in Seoul.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
