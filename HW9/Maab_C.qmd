@@ -1,0 +1,269 @@
+---
+title: "HW 9: Basic Modeling Practice"
+author: "Maab Aldulimy "
+editor: visual
+---
+
+In this homework, we try to see if we can predict how many bikes get rented in Seoul on a given day using the weather and the type of day. We build three multiple linear regression (MLR) models and check which one gives the best predictions. To do this, we first read in the data, explore and clean it, and summarize it to one row per day. Then we split it into training and test sets, compare the three models, and fit the best one on the entire data set.
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(rsample)
+
+bike_data <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv",
+                      locale = locale(encoding = "latin1"))
+bike_data
+```
+
+## EDA
+
+### Step 1: Check for missing values
+
+First we checked each column for missing values. There are no missing values in the data set
+
+```{r}
+bike_data |>
+  is.na() |>
+  colSums()
+```
+
+### Step 2: check column types and values
+
+Next we looked at the column types and the values in each column. The numeric columns have reasonable ranges like rainfall and snowfall are never negative. The Date column is stored as character instead of a date, and Seasons, Holiday, and Functioning Day are character variables, so we fix these next.
+
+```{r}
+
+str(bike_data)
+
+bike_data |>
+  select(where(is.numeric)) |>
+  summary()
+
+unique(bike_data$Seasons)
+unique(bike_data$Holiday)
+unique(bike_data$`Functioning Day`)
+```
+
+### Steps 3-5: rename, fix the date, make factors
+
+We then renamed the columns so they are easier to type, since the original names have spaces and symbols. Then we converted the date column to an actual date with `dmy()`, since the dates are in day/month/year format, and turned seasons, holiday, and functioning_day into factors
+
+```{r}
+names(bike_data) <- c("date", "bike_count", "hour", "temp", "humidity",
+                      "wind_speed", "visibility", "dew_point_temp",
+                      "solar_radiation", "rainfall", "snowfall",
+                      "seasons", "holiday", "functioning_day")
+
+bike_data <- bike_data |>
+  mutate(date = dmy(date),
+         seasons = factor(seasons),
+         holiday = factor(holiday),
+         functioning_day = factor(functioning_day))
+
+bike_data
+```
+
+### Step 6: summary stats, overall and by each categorical variable
+
+Here we look at summary statistics for the bike count overall and across each categorical variable. Summer has the highest average hourly rentals and Winter has the lowest. When functioning_day is “No,” the bike count is always 0, because the system was not operating during those hours. Since these rows would make it look like there was zero demand, we removed them and kept only the functioning hours.
+
+```{r}
+bike_data |>
+  summarize(mean_count = mean(bike_count),
+            median_count = median(bike_count),
+            sd_count = sd(bike_count),
+            min_count = min(bike_count),
+            max_count = max(bike_count))
+
+bike_data |>
+  group_by(seasons) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(functioning_day) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count),
+            max_count = max(bike_count))
+```
+
+```{r}
+bike_data <- bike_data |>
+  filter(functioning_day == "Yes")
+```
+
+### Step 7: collapse to one row per day
+
+To simplify the analysis, we collapsed the hourly data so each day has one row. We summed bike count, rainfall, and snowfall since those are daily totals, and took the mean of the other weather variables. This leaves 353 days.
+
+```{r}
+bike_data <- bike_data |>
+  group_by(date, seasons, holiday) |>
+  summarize(bike_count = sum(bike_count),
+            rainfall = sum(rainfall),
+            snowfall = sum(snowfall),
+            temp = mean(temp),
+            humidity = mean(humidity),
+            wind_speed = mean(wind_speed),
+            visibility = mean(visibility),
+            dew_point_temp = mean(dew_point_temp),
+            solar_radiation = mean(solar_radiation)) |>
+  ungroup()
+
+bike_data
+```
+
+### Step 8a: summary stats again on the daily data
+
+```{r}
+bike_data |>
+  summarize(mean_count = mean(bike_count),
+            median_count = median(bike_count),
+            sd_count = sd(bike_count),
+            min_count = min(bike_count),
+            max_count = max(bike_count))
+
+bike_data |>
+  group_by(seasons) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+```
+
+### Step 8b: correlations
+
+```{r}
+bike_data |>
+  select(where(is.numeric)) |>
+  cor() |>
+  round(2)
+```
+
+### Step 8c: plots
+
+```{r}
+ggplot(bike_data, aes(x = temp, y = bike_count, color = seasons)) +
+  geom_point() +
+  labs(title = "Daily Bike Rentals vs. Temperature",
+       x = "Average Temperature (C)", y = "Total Bikes Rented")
+
+ggplot(bike_data, aes(x = seasons, y = bike_count)) +
+  geom_boxplot() +
+  labs(title = "Daily Bike Rentals by Season",
+       x = "Season", y = "Total Bikes Rented")
+
+ggplot(bike_data, aes(x = holiday, y = bike_count)) +
+  geom_boxplot() +
+  labs(title = "Daily Bike Rentals by Holiday",
+       x = "Holiday", y = "Total Bikes Rented")
+```
+
+## Split The Data
+
+We split the data into a training set (75%) and test set (25%), stratifying on seasons so each season is represented in about the same proportion in both sets. We set a seed so the split is the same each time the document is rendered.
+
+```{r}
+set.seed(558)
+bike_split <- initial_split(bike_data, prop = 0.75, strata = seasons)
+bike_train <- training(bike_split)
+bike_test <- testing(bike_split)
+```
+
+# Fitting MLR Models
+
+### Step 1: Weekday/weekend variable
+
+We used the date to create a factor for whether each day is a weekday or weekend, using wday() (where 1 is Sunday and 7 is Saturday).
+```{r}
+bike_train <- bike_train |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")))
+
+bike_test <- bike_test |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")))
+```
+
+### Step 2: Standardize using the TRAINING mean and sd
+
+We standardized the numeric weather variables by subtracting the training set mean and dividing by the training set standard deviation. The test set was standardized with the training set mean and standard deviation too, since the model should not use any information from the test data.
+
+```{r}
+num_vars <- c("temp", "humidity", "wind_speed", "visibility",
+              "dew_point_temp", "solar_radiation", "rainfall", "snowfall")
+
+train_means <- bike_train |> summarize(across(all_of(num_vars), mean))
+train_sds   <- bike_train |> summarize(across(all_of(num_vars), sd))
+
+bike_train <- bike_train |>
+  mutate(across(all_of(num_vars),
+                \(x) (x - train_means[[cur_column()]]) / train_sds[[cur_column()]],
+                .names = "{.col}_std"))
+
+bike_test <- bike_test |>
+  mutate(across(all_of(num_vars),
+                \(x) (x - train_means[[cur_column()]]) / train_sds[[cur_column()]],
+                .names = "{.col}_std"))
+```
+
+### Step 3: The three models
+
+We fit three models. Model 1 includes all standardized numeric variables plus seasons, holiday, and day type. Model 2 adds interactions between seasons and holiday, seasons and temperature, and temperature and rainfall. Model 3 adds squared terms for temperature and humidity on top of what we had for Model 2.
+```{r}
+fit1 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type,
+           data = bike_train)
+
+fit2 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type +
+             seasons:holiday + seasons:temp_std + temp_std:rainfall_std,
+           data = bike_train)
+
+fit3 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type +
+             seasons:holiday + seasons:temp_std + temp_std:rainfall_std +
+             I(temp_std^2) + I(humidity_std^2),
+           data = bike_train)
+```
+
+### Step 4: Test set RMSE
+```{r}
+rmse <- function(fit, data) {
+  preds <- predict(fit, newdata = data)
+  sqrt(mean((data$bike_count - preds)^2))
+}
+
+tibble(model = c("Model 1", "Model 2", "Model 3"),
+       test_rmse = c(rmse(fit1, bike_test), rmse(fit2, bike_test), rmse(fit3, bike_test)))
+```
+Model 3 wins with the lowest test RMSE about 3,059 meaning its predictions were typically off by about 3,060 bikes per day. 
+
+## Final Model
+
+Since Model 3 had the lowest test RMSE, we refit it on the entire data set. This time we standardized the numeric variables using the mean and standard deviation of all the data, and created the weekday/weekend variable again.
+
+```{r}
+bike_full <- bike_data |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")),
+         across(all_of(num_vars), \(x) (x - mean(x)) / sd(x), .names = "{.col}_std"))
+
+final_fit <- update(fit3, data = bike_full)
+
+coef(final_fit)
+```
+
+# Conclusion
+
+In conclusion, we find that adding interactions improved the test RMSE a lot from about 4,205 to 3,098, and adding squared terms improved it slightly more (about 3,059), so Model 3 was chosen as the final model.The effect of temperature depends on the season. In autumn, warmer days increase rentals, but in summer the temperature interaction is large and negative, so hotter summer days actually reduce rentals. 
+Overall, temperature, season, rainfall, and whether it was a weekend were important for predicting how many bikes are rented each day

@@ -1,0 +1,834 @@
+---
+title: "Homework 9 - Basic Modeling Practice"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+editor: visual
+---
+
+# Setup
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(lubridate)
+library(rsample)
+
+set.seed(558)
+```
+
+# Reading the Data
+
+The data come from the UCI Machine Learning Repository and contain hourly bike rental information from Seoul, South Korea. The response variable of interest is the number of rented bikes.
+
+The dataset can be read directly from the URL provided in the assignment. An encoding is specified because the original column names contain special characters.
+
+```{r}
+bike_raw <- readr::read_csv(
+  "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv",
+  locale = locale(encoding = "ISO-8859-1"),
+  show_col_types = FALSE
+)
+```
+
+We first check the dimensions and variable names.
+
+```{r}
+dim(bike_raw)
+names(bike_raw)
+```
+
+# Exploratory Data Analysis
+
+## Missingness
+
+First, we check for missing values in each column.
+
+```{r}
+colSums(is.na(bike_raw))
+```
+
+## Variable Types and Values
+
+We inspect the structure of the dataset and basic summaries of the variables.
+
+```{r}
+glimpse(bike_raw)
+```
+
+```{r}
+summary(bike_raw)
+```
+
+We also inspect the values of the categorical variables.
+
+```{r}
+unique(bike_raw$Seasons)
+```
+
+```{r}
+unique(bike_raw$Holiday)
+```
+
+```{r}
+unique(bike_raw$`Functioning Day`)
+```
+
+# Cleaning the Data
+
+We convert the date variable to an actual date and convert the categorical variables to factors.
+
+```{r}
+bike <- bike_raw |>
+  mutate(
+    Date = dmy(Date),
+    Seasons = factor(Seasons),
+    Holiday = factor(Holiday),
+    `Functioning Day` = factor(`Functioning Day`)
+  )
+```
+
+Next, we rename the variables using shorter lower snake-case names to make them easier to use throughout the analysis.
+
+```{r}
+bike <- bike |>
+  rename(
+    date = Date,
+    bike_count = `Rented Bike Count`,
+    hour = Hour,
+    temp = `Temperature(°C)`,
+    humidity = `Humidity(%)`,
+    wind_speed = `Wind speed (m/s)`,
+    visibility = `Visibility (10m)`,
+    dew_point_temp = `Dew point temperature(°C)`,
+    solar_radiation = `Solar Radiation (MJ/m2)`,
+    rainfall = `Rainfall(mm)`,
+    snowfall = `Snowfall (cm)`,
+    seasons = Seasons,
+    holiday = Holiday,
+    functioning_day = `Functioning Day`
+  )
+```
+
+We check the cleaned data.
+
+```{r}
+glimpse(bike)
+```
+
+# Initial Summary Statistics
+
+## Bike Rentals by Season
+
+```{r}
+bike |>
+  group_by(seasons) |>
+  summarise(
+    count = n(),
+    mean_bike_count = mean(bike_count),
+    median_bike_count = median(bike_count),
+    sd_bike_count = sd(bike_count),
+    .groups = "drop"
+  )
+```
+
+## Bike Rentals by Holiday Status
+
+```{r}
+bike |>
+  group_by(holiday) |>
+  summarise(
+    count = n(),
+    mean_bike_count = mean(bike_count),
+    median_bike_count = median(bike_count),
+    sd_bike_count = sd(bike_count),
+    .groups = "drop"
+  )
+```
+
+## Bike Rentals by Functioning Day
+
+```{r}
+bike |>
+  group_by(functioning_day) |>
+  summarise(
+    count = n(),
+    total_bike_count = sum(bike_count),
+    mean_bike_count = mean(bike_count),
+    median_bike_count = median(bike_count),
+    .groups = "drop"
+  )
+```
+
+The non-functioning days contain no meaningful bike rental activity for our modeling goal. Therefore, we restrict the remaining analysis to functioning days.
+
+```{r}
+bike <- bike |>
+  filter(functioning_day == "Yes")
+```
+
+# Summarizing to Daily Data
+
+The original data contain one observation per hour. To simplify the analysis, we create one observation per day.
+
+We group by date, season, and holiday status. Bike rentals, rainfall, and snowfall are summed across each day, while the remaining weather measurements are averaged.
+
+```{r}
+daily <- bike |>
+  group_by(
+    date,
+    seasons,
+    holiday
+  ) |>
+  summarise(
+    bike_count = sum(bike_count, na.rm = TRUE),
+    rainfall = sum(rainfall, na.rm = TRUE),
+    snowfall = sum(snowfall, na.rm = TRUE),
+    temp = mean(temp, na.rm = TRUE),
+    humidity = mean(humidity, na.rm = TRUE),
+    wind_speed = mean(wind_speed, na.rm = TRUE),
+    visibility = mean(visibility, na.rm = TRUE),
+    dew_point_temp = mean(dew_point_temp, na.rm = TRUE),
+    solar_radiation = mean(solar_radiation, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+We inspect the new daily dataset.
+
+```{r}
+dim(daily)
+glimpse(daily)
+```
+
+# Daily Summary Statistics
+
+```{r}
+summary(daily)
+```
+
+## Daily Rentals by Season
+
+```{r}
+daily |>
+  group_by(seasons) |>
+  summarise(
+    count = n(),
+    mean_rentals = mean(bike_count),
+    median_rentals = median(bike_count),
+    sd_rentals = sd(bike_count),
+    minimum = min(bike_count),
+    maximum = max(bike_count),
+    .groups = "drop"
+  )
+```
+
+## Daily Rentals by Holiday Status
+
+```{r}
+daily |>
+  group_by(holiday) |>
+  summarise(
+    count = n(),
+    mean_rentals = mean(bike_count),
+    median_rentals = median(bike_count),
+    sd_rentals = sd(bike_count),
+    .groups = "drop"
+  )
+```
+
+# Graphical Exploration
+
+## Distribution of Daily Bike Rentals
+
+```{r}
+ggplot(
+  daily,
+  aes(x = bike_count)
+) +
+  geom_histogram(
+    bins = 30
+  ) +
+  labs(
+    title = "Distribution of Daily Bike Rentals",
+    x = "Daily Bike Rentals",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+## Daily Bike Rentals by Season
+
+```{r}
+ggplot(
+  daily,
+  aes(
+    x = seasons,
+    y = bike_count,
+    fill = seasons
+  )
+) +
+  geom_boxplot(
+    show.legend = FALSE
+  ) +
+  labs(
+    title = "Daily Bike Rentals by Season",
+    x = "Season",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+## Temperature and Daily Bike Rentals
+
+```{r}
+ggplot(
+  daily,
+  aes(
+    x = temp,
+    y = bike_count,
+    color = seasons
+  )
+) +
+  geom_point() +
+  geom_smooth(
+    method = "lm",
+    se = FALSE
+  ) +
+  labs(
+    title = "Daily Bike Rentals and Temperature",
+    x = "Average Daily Temperature",
+    y = "Daily Bike Rentals",
+    color = "Season"
+  ) +
+  theme_minimal()
+```
+
+## Daily Bike Rentals by Holiday Status
+
+```{r}
+ggplot(
+  daily,
+  aes(
+    x = holiday,
+    y = bike_count,
+    fill = holiday
+  )
+) +
+  geom_boxplot(
+    show.legend = FALSE
+  ) +
+  labs(
+    title = "Daily Bike Rentals by Holiday Status",
+    x = "Holiday Status",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+## Rainfall and Daily Bike Rentals
+
+```{r}
+ggplot(
+  daily,
+  aes(
+    x = rainfall,
+    y = bike_count,
+    color = seasons
+  )
+) +
+  geom_point() +
+  labs(
+    title = "Daily Bike Rentals and Rainfall",
+    x = "Daily Rainfall",
+    y = "Daily Bike Rentals",
+    color = "Season"
+  ) +
+  theme_minimal()
+```
+
+# Correlations
+
+We calculate correlations among the quantitative variables in the daily dataset.
+
+```{r}
+correlation_matrix <- daily |>
+  select(
+    bike_count,
+    temp,
+    humidity,
+    wind_speed,
+    visibility,
+    dew_point_temp,
+    solar_radiation,
+    rainfall,
+    snowfall
+  ) |>
+  cor(
+    use = "complete.obs"
+  )
+
+round(
+  correlation_matrix,
+  3
+)
+```
+
+The correlation matrix allows us to examine which weather variables have the strongest linear relationships with daily bike rentals and with one another.
+
+# Training and Test Split
+
+We split the daily dataset into a 75% training set and a 25% test set.
+
+The split is stratified by `seasons` so that the seasonal distribution is represented in both datasets.
+
+```{r}
+set.seed(558)
+
+bike_split <- rsample::initial_split(
+  daily,
+  prop = 0.75,
+  strata = seasons
+)
+
+train <- rsample::training(
+  bike_split
+)
+
+test <- rsample::testing(
+  bike_split
+)
+```
+
+We check the sizes of the two datasets.
+
+```{r}
+nrow(train)
+nrow(test)
+```
+
+We can also check the seasonal proportions.
+
+```{r}
+prop.table(
+  table(train$seasons)
+)
+```
+
+```{r}
+prop.table(
+  table(test$seasons)
+)
+```
+
+# Preparing the Data for Modeling
+
+## Weekday vs. Weekend
+
+The date variable itself will not be included directly in the models. Instead, we use it to create a weekday/weekend factor.
+
+```{r}
+train <- train |>
+  mutate(
+    day_type = if_else(
+      wday(
+        date,
+        week_start = 1
+      ) >= 6,
+      "Weekend",
+      "Weekday"
+    ),
+    day_type = factor(day_type)
+  )
+
+test <- test |>
+  mutate(
+    day_type = if_else(
+      wday(
+        date,
+        week_start = 1
+      ) >= 6,
+      "Weekend",
+      "Weekday"
+    ),
+    day_type = factor(day_type)
+  )
+```
+
+# Standardizing Numeric Predictors
+
+The numeric weather predictors are standardized using the mean and standard deviation from the **training set**.
+
+The same training-set means and standard deviations must also be used to standardize the test set.
+
+```{r}
+weather_vars <- c(
+  "temp",
+  "humidity",
+  "wind_speed",
+  "visibility",
+  "dew_point_temp",
+  "solar_radiation",
+  "rainfall",
+  "snowfall"
+)
+```
+
+Calculate the training means and standard deviations.
+
+```{r}
+train_means <- sapply(
+  train[weather_vars],
+  mean,
+  na.rm = TRUE
+)
+
+train_sds <- sapply(
+  train[weather_vars],
+  sd,
+  na.rm = TRUE
+)
+
+train_means
+train_sds
+```
+
+We create a small helper function so that the same standardization can be applied to both datasets.
+
+```{r}
+standardize_data <- function(
+  data,
+  means,
+  sds
+) {
+
+  data |>
+    mutate(
+      across(
+        all_of(weather_vars),
+        ~ (
+          .x -
+            means[cur_column()]
+        ) /
+          sds[cur_column()],
+        .names = "{.col}_z"
+      )
+    )
+}
+```
+
+Standardize the training set.
+
+```{r}
+train_std <- standardize_data(
+  train,
+  train_means,
+  train_sds
+)
+```
+
+Standardize the test set using the **training set** mean and standard deviation.
+
+```{r}
+test_std <- standardize_data(
+  test,
+  train_means,
+  train_sds
+)
+```
+
+# Multiple Linear Regression Models
+
+The response variable for all three models is daily bike rental count.
+
+## Model 1
+
+The first model contains all standardized numeric weather predictors along with season, holiday status, and weekday/weekend status.
+
+```{r}
+model1_formula <- bike_count ~
+  temp_z +
+  humidity_z +
+  wind_speed_z +
+  visibility_z +
+  dew_point_temp_z +
+  solar_radiation_z +
+  rainfall_z +
+  snowfall_z +
+  seasons +
+  holiday +
+  day_type
+```
+
+```{r}
+model1 <- lm(
+  model1_formula,
+  data = train_std
+)
+
+summary(model1)
+```
+
+# Model 2
+
+The second model contains all terms from Model 1 and adds the required interactions:
+
+- season × holiday
+- season × temperature
+- temperature × rainfall
+
+```{r}
+model2_formula <- bike_count ~
+  temp_z +
+  humidity_z +
+  wind_speed_z +
+  visibility_z +
+  dew_point_temp_z +
+  solar_radiation_z +
+  rainfall_z +
+  snowfall_z +
+  seasons +
+  holiday +
+  day_type +
+  seasons:holiday +
+  seasons:temp_z +
+  temp_z:rainfall_z
+```
+
+```{r}
+model2 <- lm(
+  model2_formula,
+  data = train_std
+)
+
+summary(model2)
+```
+
+# Model 3
+
+The third model contains everything from Model 2 and adds quadratic terms for standardized temperature and humidity.
+
+```{r}
+model3_formula <- bike_count ~
+  temp_z +
+  humidity_z +
+  wind_speed_z +
+  visibility_z +
+  dew_point_temp_z +
+  solar_radiation_z +
+  rainfall_z +
+  snowfall_z +
+  seasons +
+  holiday +
+  day_type +
+  seasons:holiday +
+  seasons:temp_z +
+  temp_z:rainfall_z +
+  I(temp_z^2) +
+  I(humidity_z^2)
+```
+
+```{r}
+model3 <- lm(
+  model3_formula,
+  data = train_std
+)
+
+summary(model3)
+```
+
+# Test Set Predictions
+
+We now use each fitted model to predict the daily bike rental count for the test set.
+
+```{r}
+pred1 <- predict(
+  model1,
+  newdata = test_std
+)
+
+pred2 <- predict(
+  model2,
+  newdata = test_std
+)
+
+pred3 <- predict(
+  model3,
+  newdata = test_std
+)
+```
+
+# Test RMSE
+
+We define RMSE as
+
+\[
+RMSE =
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^{n}
+(y_i - \hat{y}_i)^2
+}
+\]
+
+```{r}
+rmse <- function(
+  truth,
+  prediction
+) {
+
+  sqrt(
+    mean(
+      (truth - prediction)^2,
+      na.rm = TRUE
+    )
+  )
+}
+```
+
+Calculate test RMSE for each model.
+
+```{r}
+rmse1 <- rmse(
+  test_std$bike_count,
+  pred1
+)
+
+rmse2 <- rmse(
+  test_std$bike_count,
+  pred2
+)
+
+rmse3 <- rmse(
+  test_std$bike_count,
+  pred3
+)
+```
+
+```{r}
+rmse_results <- tibble(
+  model = c(
+    "Model 1",
+    "Model 2",
+    "Model 3"
+  ),
+  test_rmse = c(
+    rmse1,
+    rmse2,
+    rmse3
+  )
+) |>
+  arrange(test_rmse)
+
+rmse_results
+```
+
+The model with the **smallest test RMSE** provides the best predictive performance among the three models considered.
+
+```{r}
+best_model_name <- rmse_results$model[1]
+
+best_model_name
+```
+
+# Final Model
+
+The homework asks us to refit the model with the lowest test RMSE using the **entire dataset**.
+
+When doing this, the numeric predictors must now be standardized using the means and standard deviations calculated from the entire daily dataset.
+
+First, create the weekday/weekend variable for the complete dataset.
+
+```{r}
+full_data <- daily |>
+  mutate(
+    day_type = if_else(
+      wday(
+        date,
+        week_start = 1
+      ) >= 6,
+      "Weekend",
+      "Weekday"
+    ),
+    day_type = factor(day_type)
+  )
+```
+
+Calculate the full-data means and standard deviations.
+
+```{r}
+full_means <- sapply(
+  full_data[weather_vars],
+  mean,
+  na.rm = TRUE
+)
+
+full_sds <- sapply(
+  full_data[weather_vars],
+  sd,
+  na.rm = TRUE
+)
+```
+
+Standardize the complete dataset.
+
+```{r}
+full_std <- standardize_data(
+  full_data,
+  full_means,
+  full_sds
+)
+```
+
+We store the three candidate formulas and select the formula corresponding to the model with the lowest test RMSE.
+
+```{r}
+model_formulas <- list(
+  "Model 1" = model1_formula,
+  "Model 2" = model2_formula,
+  "Model 3" = model3_formula
+)
+
+best_formula <- model_formulas[
+  [best_model_name]
+]
+
+best_formula
+```
+
+Fit the selected model using the complete dataset.
+
+```{r}
+final_model <- lm(
+  best_formula,
+  data = full_std
+)
+
+summary(final_model)
+```
+
+# Final Model Coefficients
+
+The estimated coefficients from the final fitted model are reported below.
+
+```{r}
+final_coefficients <- as.data.frame(
+  coef(
+    summary(final_model)
+  )
+)
+
+final_coefficients
+```
+
+# Conclusion
+
+Three multiple linear regression models were fit using the training data and evaluated using RMSE on the held-out test data.
+
+The models increased in complexity by first using the main effects, then adding interaction terms, and finally adding quadratic terms for standardized temperature and humidity.
+
+The model with the smallest test RMSE was selected and refit using the entire daily dataset. The final fitted coefficients are reported above.
