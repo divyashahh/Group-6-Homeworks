@@ -1,0 +1,236 @@
+---
+title: "HW 9: Basic Modeling Practice"
+author: "Maab Aldulimy "
+editor: visual
+---
+In this homework we try  to see if we can predict how many bikes get rented in Seoul on a given day, using the weather and the type of day ? we build a few models to do that and check which one gives the best predictions.To do this we first read in the data, explore and clean it, then we summarize it to one row per day, split it into training and test sets, compare the three MLR models. 
+
+```{r}
+library(tidyverse)
+library(lubridate)
+
+bike_data <- read_csv("https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv",
+                      locale = locale(encoding = "latin1"))
+bike_data
+```
+
+
+
+
+```{r}
+bike_data |>
+  is.na() |>
+  colSums()
+```
+
+
+
+
+```{r}
+
+str(bike_data)
+
+bike_data |>
+  select(where(is.numeric)) |>
+  summary()
+
+unique(bike_data$Seasons)
+unique(bike_data$Holiday)
+unique(bike_data$`Functioning Day`)
+```
+
+
+
+
+```{r}
+names(bike_data) <- c("date", "bike_count", "hour", "temp", "humidity",
+                      "wind_speed", "visibility", "dew_point_temp",
+                      "solar_radiation", "rainfall", "snowfall",
+                      "seasons", "holiday", "functioning_day")
+
+bike_data <- bike_data |>
+  mutate(date = dmy(date),
+         seasons = factor(seasons),
+         holiday = factor(holiday),
+         functioning_day = factor(functioning_day))
+
+bike_data
+```
+
+```{r}
+bike_data |>
+  summarize(mean_count = mean(bike_count),
+            median_count = median(bike_count),
+            sd_count = sd(bike_count),
+            min_count = min(bike_count),
+            max_count = max(bike_count))
+
+bike_data |>
+  group_by(seasons) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(functioning_day) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count),
+            max_count = max(bike_count))
+```
+
+```{r}
+bike_data <- bike_data |>
+  filter(functioning_day == "Yes")
+```
+
+```{r}
+bike_data <- bike_data |>
+  group_by(date, seasons, holiday) |>
+  summarize(bike_count = sum(bike_count),
+            rainfall = sum(rainfall),
+            snowfall = sum(snowfall),
+            temp = mean(temp),
+            humidity = mean(humidity),
+            wind_speed = mean(wind_speed),
+            visibility = mean(visibility),
+            dew_point_temp = mean(dew_point_temp),
+            solar_radiation = mean(solar_radiation)) |>
+  ungroup()
+
+bike_data
+```
+
+```{r}
+bike_data |>
+  summarize(mean_count = mean(bike_count),
+            median_count = median(bike_count),
+            sd_count = sd(bike_count),
+            min_count = min(bike_count),
+            max_count = max(bike_count))
+
+bike_data |>
+  group_by(seasons) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(mean_count = mean(bike_count),
+            sd_count = sd(bike_count))
+```
+
+```{r}
+bike_data |>
+  select(where(is.numeric)) |>
+  cor() |>
+  round(2)
+```
+
+```{r}
+ggplot(bike_data, aes(x = temp, y = bike_count, color = seasons)) +
+  geom_point() +
+  labs(title = "Daily Bike Rentals vs. Temperature",
+       x = "Average Temperature (C)", y = "Total Bikes Rented")
+
+ggplot(bike_data, aes(x = seasons, y = bike_count)) +
+  geom_boxplot() +
+  labs(title = "Daily Bike Rentals by Season",
+       x = "Season", y = "Total Bikes Rented")
+
+ggplot(bike_data, aes(x = holiday, y = bike_count)) +
+  geom_boxplot() +
+  labs(title = "Daily Bike Rentals by Holiday",
+       x = "Holiday", y = "Total Bikes Rented")
+```
+
+```{r}
+library(rsample)
+
+set.seed(558)
+bike_split <- initial_split(bike_data, prop = 0.75, strata = seasons)
+bike_train <- training(bike_split)
+bike_test <- testing(bike_split)
+```
+
+1. Weekday/weekend variable
+
+```{r}
+bike_train <- bike_train |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")))
+
+bike_test <- bike_test |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")))
+```
+
+2. Standardize using the TRAINING mean and sd
+
+```{r}
+num_vars <- c("temp", "humidity", "wind_speed", "visibility",
+              "dew_point_temp", "solar_radiation", "rainfall", "snowfall")
+
+train_means <- bike_train |> summarize(across(all_of(num_vars), mean))
+train_sds   <- bike_train |> summarize(across(all_of(num_vars), sd))
+
+bike_train <- bike_train |>
+  mutate(across(all_of(num_vars),
+                \(x) (x - train_means[[cur_column()]]) / train_sds[[cur_column()]],
+                .names = "{.col}_std"))
+
+bike_test <- bike_test |>
+  mutate(across(all_of(num_vars),
+                \(x) (x - train_means[[cur_column()]]) / train_sds[[cur_column()]],
+                .names = "{.col}_std"))
+```
+
+
+3. The three models
+
+
+```{r}
+fit1 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type,
+           data = bike_train)
+
+fit2 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type +
+             seasons:holiday + seasons:temp_std + temp_std:rainfall_std,
+           data = bike_train)
+
+fit3 <- lm(bike_count ~ temp_std + humidity_std + wind_speed_std + visibility_std +
+             dew_point_temp_std + solar_radiation_std + rainfall_std + snowfall_std +
+             seasons + holiday + day_type +
+             seasons:holiday + seasons:temp_std + temp_std:rainfall_std +
+             I(temp_std^2) + I(humidity_std^2),
+           data = bike_train)
+```
+
+4. Test set RMSE
+
+```{r}
+rmse <- function(fit, data) {
+  preds <- predict(fit, newdata = data)
+  sqrt(mean((data$bike_count - preds)^2))
+}
+
+tibble(model = c("Model 1", "Model 2", "Model 3"),
+       test_rmse = c(rmse(fit1, bike_test), rmse(fit2, bike_test), rmse(fit3, bike_test)))
+```
+Model 3 wins with the lowest test RMSE about 3,059
+Final fit on the full data
+
+```{r}
+bike_full <- bike_data |>
+  mutate(day_type = factor(if_else(wday(date) %in% c(1, 7), "weekend", "weekday")),
+         across(all_of(num_vars), \(x) (x - mean(x)) / sd(x), .names = "{.col}_std"))
+
+final_fit <- update(fit3, data = bike_full)
+
+coef(final_fit)
+```
+
