@@ -14,7 +14,7 @@ library(tidymodels)
 
 ## Reading Data
 
-The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). However, `readr`'s default UTF-8 assumption, that character can trigger that `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
+The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). With `readr`'s default UTF-8 assumption, that character can trigger an `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
 
 ```{r read-data}
 bike_data <- read_csv(
@@ -268,7 +268,7 @@ The training set has 263 days and the test set 90, and each season makes up abou
 
 ### Recipes
 
-**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `data` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_data()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holidays`, and `day_type`.
+**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `date` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_date()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holiday`, and `day_type`.
 
 ```{r recipe-1}
 rec1 <- recipe(bike_count ~ ., data = bike_train) |>
