@@ -10,12 +10,11 @@ This homework focused on fitting multiple linear regression (MLR) models with `t
 library(tidyverse)
 library(janitor)
 library(tidymodels)
-library(glmnet)
 ```
 
 ## Reading Data
 
-The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). However, `readr`'s default UTF-8 assumption, that character can trigger that `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
+The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). With `readr`'s default UTF-8 assumption, that character can trigger an `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
 
 ```{r read-data}
 bike_data <- read_csv(
@@ -269,7 +268,7 @@ The training set has 263 days and the test set 90, and each season makes up abou
 
 ### Recipes
 
-**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `data` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_data()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holidays`, and `day_type`.
+**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `date` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_date()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holiday`, and `day_type`.
 
 ```{r recipe-1}
 rec1 <- recipe(bike_count ~ ., data = bike_train) |>
@@ -365,17 +364,26 @@ final_fit |>
 
 Notice that since these coefficients are on a standardized scale, they show which predictors matter instead than an exact per-unit effect. Weekends have about 2,400 fewer rentals than weekdays and sunny days have the biggest increase on rentals. Temperature's effect depends on each season as warmer days help in the Spring but during the Summer is not too beneficial as when the weather is too hot.
 
-## Conclusion
+## MLR Conclusion
 
 Overall among the three models, the one with interactions and squared terms performed best in cross-validation and achieved a test RMSE of approximately 2,942 daily rentals, which was close to the estimated CV, then it generalizes well to the new data. The best improvement in this model is that it was capable to let temperature's effect vary by season. We noticed how season, temperature, solar radiation, rainfall, and whether it is a weekend were strong predictors of daily bike rentals in Seoul.
 
 ## Additional Models
 
-To verify whether more flexible models can beat linear regression, we fit four more model types such as LASSO, a regression tree, a bagged tree, and a random forest. All four use Recipe 1 given above as its contains main effects only, with no interactions or quadratic terms. And the same 10 CV folds, so we can compare results directly to the MLR models. Each model has tuning parameters, meaning that for each one we try to grid of values with `tune_grid()`, choose the value with the lowest CV RMSE, and then fit that final model on the full training set with `last_fit()`.
+```{r libraries-pt2}
+library(glmnet)
+library(rpart.plot)
+library(baguette)
+library(ranger)
+library(future)
+plan(multisession)
+```
+
+To verify whether more flexible models can beat linear regression, we fit four more model types such as LASSO, a regression tree, a bagged tree, and a random forest. All four use Recipe 1 given above as its contains main effects only, with no interactions or quadratic terms. And the same 10 CV folds, so we can compare results directly to the MLR models. Each model has tuning parameters, meaning that for each one we try a grid of values with `tune_grid()`, choose the value with the lowest CV RMSE, and then fit that final model on the full training set with `last_fit()`.
 
 ### LASSO
 
-LASSO is defined as a linear regression which contains a penalty that shrinks coefficients towards zero. When there exists a large enough penalty sets some exactly to zero, removing those predictors from the model. This penalty is controlled by the tuning parameter `mixture = 1`, which makes it a LASSO, as opposed to Ridge regression or mix of the two.
+LASSO is defined as a linear regression which contains a penalty that shrinks coefficients towards zero. When there exists a large enough penalty sets some exactly to zero, removing those predictors from the model. The strength of the penalty is the tuning parameter, and setting `mixture = 1` makes it a LASSO, as opposed to ridge regression or a mix of the two.
 
 ```{r lasso-tune}
 lasso_spec <- linear_reg(penalty = tune(), mixture = 1) |>
@@ -394,7 +402,7 @@ lasso_grid |>
   print(n = 200)
 ```
 
-So every penalty value returns the same CV RMSE with about 4,121 rentals per day.
+Every penalty value returns the same CV RMSE, about 4,121 rentals per day. The default `penalty()` grid only goes from 10^-10^ up to 1, which is tiny compared to a response measured in the thousands, so every value in the grid ends up with essentially the same fit. That RMSE is close to the MLR version of Recipe 1 (about 4,095), which makes sense, since a LASSO with almost no penalty is nearly ordinary regression.
 
 ```{r lasso-final}
 best_lasso <- lasso_grid |>
@@ -408,3 +416,185 @@ lasso_final_fit |>
   extract_fit_parsnip() |>
   tidy()
 ```
+
+Even with a small penalty, the LASSO made one meaningful change: it set the temperature coefficient to exactly 0 and kept dew point temperature instead. That fits what we saw in the EDA, where the two are almost perfectly correlated (r = 0.96). The LASSO dropped one of the redundant predictors, while ordinary regression kept both. The remaining coefficients point in the same directions as before: rain, humidity, and weekends lower rentals, while solar radiation, the non-Winter seasons, and non-holidays raise them.
+
+### Regression Tree
+
+A regression tree is a non-linear model that splits the predictor space into rectangular regions, then fits a constant value in each region. The tuning parameters are `tree_depth`, which controls how many splits the tree can make, and `cost_complexity`, which controls how much the tree is pruned. A larger `cost_complexity` produces a smaller tree.
+
+```{r tree-tune}
+tree_spec <- decision_tree(tree_depth = tune(),
+                           min_n = 20,
+                           cost_complexity = tune()) |>
+  set_engine("rpart") |>
+  set_mode("regression")
+
+tree_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(tree_spec)
+
+tree_grid <- tree_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(cost_complexity(), tree_depth(),
+                                levels = c(10, 5)))
+
+tree_grid |>
+  show_best(metric = "rmse")
+```
+
+Depth mattered much more than the pruning penalty. A tree with a single split (depth 1) has a CV RMSE of about 7,200. Allowing depth 4 brings that down to about 4,500, and the best trees, at depth 11 or more, reach about 4,153. Beyond that, extra depth makes no difference, because the tree stops splitting on its own once groups get smaller than 20 days. The penalty only had an effect at its largest values (0.001 and above). At 0.1, it pruned the tree back so far that the RMSE rose to about 5,760. Several settings tie for the best CV RMSE because they all produce the same tree, so it doesn't matter which one `select_best()` picks.
+
+```{r tree-final}
+tree_best <- tree_grid |>
+  select_best(metric = "rmse")
+
+tree_final_fit <- tree_wf |>
+  finalize_workflow(tree_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+tree_final_fit |>
+  extract_fit_engine() |>
+  rpart.plot::rpart.plot(roundint = FALSE)
+```
+
+The final tree has 23 final groups (leaves), so the plot is busy, but the top splits tell the main story. The splits are on the standardized scale from Recipe 1, so values like -0.28 are in standard deviations rather than °C. The very first split is on temperature, at about 9.5°C. On colder days, the tree next separates Fall days from the rest, and then the darker days with less sun. On warmer days, it splits first on solar radiation, separating out very dark days, and then on rainfall (about 1.75 mm), before splitting further on temperature, humidity, and visibility. Temperature, dew point, and solar radiation are the predictors the tree relies on most, which matches the correlations from the EDA.
+
+### Bagged Tree
+
+A single regression tree is unstable, implying that small changes in the data can produce a very different tree. Bagging stabilizes the predictions by averaging many trees fit to bootstrap samples of the training data. The tuning parameter `cost_complexity` controls how much each tree is pruned, with larger values producing smaller trees.
+
+```{r bagged-tree-tune}
+bag_spec <- bag_tree(min_n = 10, cost_complexity = tune()) |>
+  set_engine("rpart", times = 50) |>
+  set_mode("regression")
+
+bag_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(bag_spec)
+
+set.seed(558)
+bag_grid <- bag_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(cost_complexity(), levels = 15))
+
+bag_grid |>
+  show_best(metric = "rmse")
+```
+
+Bagging is a big improvement over the single tree. For small penalty values, the CV RMSE stays around 3,100 rentals per day, compared to about 4,153 for the single tree, which puts it close to the best MLR model (about 3,005). The small differences between neighboring penalty values are mostly random noise from the bootstrap samples. Only the largest penalties clearly hurt, because they prune each tree back so far that it can't capture much: at 0.1, the CV RMSE jumps to about 5,000.
+
+```{r bagged-tree-final}
+bag_best <- bag_grid |>
+  select_best(metric = "rmse")
+
+set.seed(558)
+bag_final_fit <- bag_wf |>
+  finalize_workflow(bag_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+bag_final_fit |>
+  extract_fit_engine() |>
+  pluck("imp") |>
+  mutate(term = fct_reorder(term, value)) |>
+  ggplot(aes(x = value, y = term)) + 
+  geom_col() +
+  labs(title = "Bagged tree variable importance", x = "Importance", y = NULL)
+```
+
+The variable importance plot shows how much each predictor improved the fit, summed over all its splits and averaged across the 50 trees. Temperature is the most important predictor, followed closely by dew point temperature and solar radiation, then humidity and rainfall. The season, holiday, and weekend indicators are near the bottom. That's different from the MLR and LASSO models, where the weekend effect was clearly significant. Trees get most of their improvement from splitting on the continuous weather variables, so a 0/1 variable with a moderate effect rarely gets chosen for a split.
+
+### Random Forest
+
+A random forest is a bagged tree model which adds randomness to the tree-building process. Each tree is fit to a bootstrap sample of the training data, and at each split only a random subset of predictors is considered. The tuning parameter `mtry` controls how many predictors are considered at each split. A smaller `mtry` increases the randomness and reduces correlation between trees, which can improve predictions. Recipe 1 has 13 predictors, so we tried every value of `mtry` from 1 to 13, with 500 trees per forest.
+
+```{r rf-tune}
+rf_spec <- rand_forest(mtry = tune(), trees = 500) |>
+  set_engine("ranger", importance = "impurity") |>
+  set_mode("regression")
+
+rf_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(rf_spec)
+
+set.seed(558)
+
+rf_grid <- rf_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(mtry(range = c(1, 13)), levels = 13))
+rf_grid |>
+  show_best(metric = "rmse")
+```
+
+`mtry` matters a lot at the low end. With only 1 predictor available per split, the trees are often forced to split on weak variables, and the CV RMSE is about 5,100. It drops quickly to about 3,600 at 2 and 3,200 at 4, then levels off at around 3,040 to 3,070 from 8 predictors on. The best forests perform about as well in cross-validation as the bagged tree and the best MLR model, and the differences among the top `mtry` values are small enough to be mostly random noise.
+
+```{r rf-final}
+rf_best <- rf_grid |>
+  select_best(metric = "rmse")
+
+set.seed(558)
+
+rf_final_fit <- rf_wf |>
+  finalize_workflow(rf_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+rf_final_fit |>
+  extract_fit_engine() |>
+  pluck("variable.importance") |>
+  enframe(name = "term", value = "importance") |>
+  mutate(term = fct_reorder(term, importance)) |>
+  ggplot(aes(x = importance, y = term)) +
+  geom_col() +
+  labs(title = "Random forest variable importance",
+       x = "Importance", y = NULL)
+```
+
+Getting variable importance out of a random forest takes an extra step: `ranger` doesn't calculate it unless asked, so we set `importance = "impurity"` in `set_engine()` and pulled the scores from the underlying `ranger` fit with `extract_fit_engine()`. Temperature dominates, and solar radiation is a clear second at roughly half of temperature's importance, with everything else far behind. Dew point ranks much lower here than in the bagged tree because the two methods measure importance differently: `rpart` also gives credit to variables that were close runners-up for a split, so dew point shares credit with the nearly identical temperature, while the random forest only credits the splits that were actually made.
+
+## Comparing all the Final Models
+
+With the best version of each model type chosen by cross-validation, the final step is to compare them on the test set, which none of them has seen yet. The best MLR model from HW 9 (Recipe 3) was only evaluated on RMSE, so we refit it with `last_fit()` to also get the MAE (mean absolute error). RMSE squares each error before averaging, so it penalizes a few large misses heavily. MAE is the average size of a miss in rentals per day, which makes it easier to interpret and less sensitive to the occasional very bad prediction.
+
+```{r mlr-final-rmse-mae}
+mlr_final_fit <- wf3 |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+```
+
+```{r compare-models}
+bind_rows(
+  collect_metrics(mlr_final_fit)   |> mutate(model = "MLR (Recipe 3)"),
+  collect_metrics(lasso_final_fit) |> mutate(model = "LASSO"),
+  collect_metrics(tree_final_fit)  |> mutate(model = "Regression tree"),
+  collect_metrics(bag_final_fit)   |> mutate(model = "Bagged tree"),
+  collect_metrics(rf_final_fit)    |> mutate(model = "Random forest")
+) |>
+  select(model, .metric, .estimate) |>
+  pivot_wider(names_from = .metric, values_from = .estimate) |>
+  arrange(rmse)
+```
+
+The random forest has the best test-set performance on both metrics, with an RMSE of about 2,240 and an MAE of about 1,760 rentals per day. The bagged tree is a close second (about 2,350 and 1,920), and both tree ensembles beat the best MLR model (about 2,942 and 2,157). The single regression tree (about 3,514 and 2,543) and the LASSO (about 4,138 and 3,077) trail well behind. Both are limited to the main-effects recipe in their own way: the LASSO can't capture the curved and season-dependent effects the MLR model got from its interactions and quadratic terms, and a single tree's predictions jump between a few fixed values. The ensembles get around both problems, since averaging hundreds of trees lets them pick up nonlinear and interacting effects automatically. In cross-validation the forest, the bagged tree, and the MLR model were all close (about 3,000 to 3,100), so with only 90 test days part of the ensembles' lead may be luck, but they come out ahead on both metrics.
+
+The final fits for the other models were summarized in their own sections above: the LASSO coefficient table, the regression tree plot, and the variable importance plots for the bagged tree and random forest. For completeness, here is the coefficient table for the final MLR model, which is identical to the one in the Final Model section.
+
+```{r mlr-coefficients-hw10}
+mlr_final_fit |>
+  extract_fit_parsnip() |>
+  tidy()
+```
+
+Since the random forest performed best, the last step is to refit it, with the `mtry` value chosen by cross-validation, on the entire data set: all 353 days, training and test combined. That's the version we'd use to predict future days, since it learns from every observation we have.
+
+```{r best-model-full-data}
+set.seed(558)
+
+best_overall_fit <- rf_wf |>
+  finalize_workflow(rf_best) |>
+  fit(data = bike_daily)
+
+best_overall_fit
+```
+
+## Overall Conclusion
+
+Building on the MLR models from HW 9, we added tuned LASSO, regression tree, bagged tree, and random forest models, all using the main-effects recipe. The tree ensembles did best, and the random forest came out on top on the test set by both RMSE and MAE, so it is our final model. A single tree and the LASSO did noticeably worse, which shows that this data needs a model that can capture nonlinear and interacting effects. The ensembles learn these on their own, while the MLR model only did well once we added them by hand. Across every model, temperature and solar radiation stood out as the most important drivers of daily bike rentals in Seoul.
