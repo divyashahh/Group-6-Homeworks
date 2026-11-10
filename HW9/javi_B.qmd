@@ -14,7 +14,7 @@ library(tidymodels)
 
 ## Reading Data
 
-The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). However, `readr`'s default UTF-8 assumption, that character can trigger that `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
+The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). With `readr`'s default UTF-8 assumption, that character can trigger an `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
 
 ```{r read-data}
 bike_data <- read_csv(
@@ -31,6 +31,7 @@ The data have 8,760 rows, one per hour for a full year (365 × 24), and 14 colum
 ### Checking the Data
 
 **1. Missingness:** Before any cleaning, we checked whether any values are missing to prevent problems later.
+
 ```{r check-missing}
 colSums(is.na(bike_data))
 ```
@@ -267,8 +268,7 @@ The training set has 263 days and the test set 90, and each season makes up abou
 
 ### Recipes
 
-**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `data` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_data()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holidays`, and `day_type`.
-
+**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `date` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_date()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holiday`, and `day_type`.
 
 ```{r recipe-1}
 rec1 <- recipe(bike_count ~ ., data = bike_train) |>
@@ -282,9 +282,10 @@ rec1 <- recipe(bike_count ~ ., data = bike_train) |>
 
 rec1
 ```
+
 This returns 13 predictors, where the 8 standardized weather variables, 3 season dummies (with Winter as the baseline), a holiday indicator, and a weekend indicator.
 
-**Recipe 2.** This recipe builds on Recipe 1 by adding three interactions suggested by the EDA such as seasons × holiday, seasons × temperature, and temperature × rainfall. We used `starts_with("seasons")` so that each season dummy gets its own interaction term. 
+**Recipe 2.** This recipe builds on Recipe 1 by adding three interactions suggested by the EDA such as seasons × holiday, seasons × temperature, and temperature × rainfall. We used `starts_with("seasons")` so that each season dummy gets its own interaction term.
 
 ```{r recipe-2}
 rec2 <- rec1 |>
@@ -294,9 +295,11 @@ rec2 <- rec1 |>
 
 rec2
 ```
+
 This adds 7 interaction terms (3 season × holiday, 3 season × temperature, and temperature × rainfall), for 20 predictors in total.
 
 **Recipe 3.** This recipe adds quadratic terms for each numeric predictor on top of Recipe 2. The temperature scatterplot showed rentals rising and then dropping on the hottest days, a curve a straight line can’t capture. We listed the numeric predictors by name instead of using all_numeric_predictors(), since that would also square the dummy and interaction columns.
+
 ```{r recipe-3}
 rec3 <- rec2 |>
   step_poly(temp, humidity, wind_speed, visibility, dew_point_temp,
@@ -340,10 +343,9 @@ Notice how fitting these models produces a "prediction from rank-deficient fit" 
 
 Adding interactions made the biggest difference CV RMSE dropped from about 4,095 rentals per day to approximately 3,064. The quadratic terms used in Recipe 3 lowered further to about 3,005 suggesting that is the best model by CV RMSE. Notice how the difference between Recipe 2 and Recipe 3 is about 60 rentals which is within one standard error, however we still chose Recipe 3 due to its lower CV error and since the temperature scatterplot suggested a curved relationship.
 
-
 ## Final Model
-Since we chose Recipe 3, we need to refit it on the whole training set and evaluated it on the test using the `last_fit()`. 
 
+Since we chose Recipe 3, we need to refit it on the whole training set and evaluated it on the test using the `last_fit()`.
 
 ```{r final-fit}
 final_fit <- wf3 |>
@@ -351,8 +353,7 @@ final_fit <- wf3 |>
 collect_metrics(final_fit)
 ```
 
-The chosen model's test-set RMSE is 2,942 rentals per day. Notice how that is in the line with its CV estimate, meaning that the model generalizes to new days about as well as cross-validation predicted. It also does not appear to be overfitting. 
-
+The chosen model's test-set RMSE is 2,942 rentals per day. Notice how that is in the line with its CV estimate, meaning that the model generalizes to new days about as well as cross-validation predicted. It also does not appear to be overfitting.
 
 ```{r final-coefficients}
 final_fit |>
@@ -361,7 +362,7 @@ final_fit |>
   print(n =29)
 ```
 
-Notice that since these coefficients are on a standardized scale, they show which predictors matter instead than an exact per-unit effect. Weekends have about 2,400 fewer rentals than weekdays and sunny days have the biggest increase on rentals. Temperature's effect depends on each season as warmer days help in the Spring but during the Summer is not too beneficial as when the weather is too hot. 
+Notice that since these coefficients are on a standardized scale, they show which predictors matter instead than an exact per-unit effect. Weekends have about 2,400 fewer rentals than weekdays and sunny days have the biggest increase on rentals. Temperature's effect depends on each season as warmer days help in the Spring but during the Summer is not too beneficial as when the weather is too hot.
 
 ## Conclusion
 

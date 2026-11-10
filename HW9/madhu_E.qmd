@@ -1,0 +1,380 @@
+---
+title: "madhu_E"
+format: html
+---
+## Libraries and Read In Data
+```{r}
+library(tidyverse)
+library(lubridate)
+library(rsample)
+library(dplyr)
+library(janitor)
+
+# Read from URL
+bike_url <- "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv"
+raw_data <- read_csv(bike_url, locale = locale(encoding = "latin1"))
+```
+
+## EDA
+
+1. Check for missingness
+```{r}
+sum(is.na(raw_data))
+sum(is.null(raw_data))
+```
+
+No NAs or Null found, so the data set seems complete.
+
+2. Check the column types and the values within the columns
+
+```{r}
+head(raw_data)
+
+print("Structure:") 
+str(raw_data)
+
+print("Glimpse:")
+glimpse(raw_data)
+
+print("Categorical Var:")
+lapply(list(raw_data$Seasons, raw_data$`Functioning Day`, raw_data$Holiday), unique)
+```
+
+- Date needs to be fixed from character
+- Bike count, Hour is int not double
+- Maybe normalize Visibility scale (m) instead of (10m)
+- Factorize seasons, holiday, Functioning Day
+
+3. to 5.
+
+```{r}
+
+bike_data <- raw_data |>
+  clean_names() |>                                         #5. Rename all variables to have easy to use names
+  mutate(date = dmy(date),                                 #3. Convert the Date column into an actual date
+         seasons = as.factor(seasons),                     #4. Factorize categorical variables
+         holiday = as.factor(holiday),
+         functioning_day = as.factor(functioning_day)) |>
+  rename(
+    bike_count = rented_bike_count,
+    temperature = temperature_c,
+    humidity = humidity_percent,
+    wind_speed = wind_speed_m_s,
+    visibility = visibility_10m,
+    dew_point = dew_point_temperature_c,
+    solar = solar_radiation_mj_m2,
+    rainfall = rainfall_mm,
+    snowfall = snowfall_cm,
+    func_day = functioning_day
+  )
+  
+
+```
+
+6. Create summary statistics
+
+Numeric summaries can be done simply using base r `summary()`
+```{r}
+summary(bike_data)
+```
+Categorical summaries listed below (and rental bike count again for emphasis)
+```{r}
+bike_data |>
+  group_by(seasons) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(func_day) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+```
+
+```{r}
+table(bike_data$bike_count, bike_data$func_day)[1:3,]
+```
+This makes sense because when the bike rentals are not functioning, there are no bikes rented out so total bike count on those days is 0.
+
+```{r}
+table(bike_data$holiday, bike_data$func_day)
+```
+Just to be sure I checked to see if its on holiday days that the bike rentals don't work but it doesn't seem to be the case.
+
+```{r}
+bike_data <- bike_data |>
+  filter(func_day == "Yes") |>
+  select(-func_day)
+
+bike_data
+```
+I subset the data to only days that the bike rental service was functioning.
+
+7. 
+```{r}
+daily_data <- bike_data %>%
+  group_by(date, seasons, holiday) %>%
+  summarise(
+    bike_count = sum(bike_count),
+    rainfall = sum(rainfall),
+    snowfall = sum(snowfall),
+    across(
+      c(temperature, humidity, wind_speed, visibility,
+        dew_point, solar),
+      mean
+    ),
+    .groups = "drop"
+  )
+
+dim(daily_data)
+head(daily_data)
+summary(daily_data)
+```
+
+
+8.
+
+numeric
+
+```{r}
+daily_data %>%
+  summarise(
+    across(
+      where(is.numeric),
+      list(
+        mean = ~mean(.x, na.rm = TRUE),
+        median = ~median(.x, na.rm = TRUE),
+        sd = ~sd(.x, na.rm = TRUE),
+        min = ~min(.x, na.rm = TRUE),
+        max = ~max(.x, na.rm = TRUE)
+      )
+    )
+  )
+daily_data %>%
+  group_by(holiday) %>%
+  summarise(
+    n = n(),
+    mean_rentals = mean(bike_count),
+    median_rentals = median(bike_count)
+  )
+```
+
+```{r}
+ggplot(daily_data, aes(x = seasons, y = bike_count)) +
+  geom_boxplot() +
+  labs(
+    title = "Daily Bike Rentals Across Seasons",
+    x = "Season",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(daily_data, aes(x = temperature, y = bike_count)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Temperature vs. Daily Bike Rentals",
+    x = "Average Temperature",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(daily_data, aes(x = humidity, y = bike_count)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Humidity vs. Daily Bike Rentals",
+    x = "Average Humidity",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(daily_data, aes(x = rainfall, y = bike_count)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Rainfall vs. Daily Bike Rentals",
+    x = "Total Daily Rainfall",
+    y = "Daily Bike Rentals"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+library(ggplot2)
+library(tidyr)
+
+cor_matrix <- daily_data %>%
+  select(where(is.numeric)) %>%
+  cor(use = "pairwise.complete.obs")
+
+round(cor_matrix, 2)
+
+cor_matrix %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("variable1") %>%
+  pivot_longer(
+    -variable1,
+    names_to = "variable2",
+    values_to = "correlation"
+  ) %>%
+  ggplot(aes(variable1, variable2, fill = correlation)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    low = "blue",
+    mid = "white",
+    high = "red",
+    midpoint = 0
+  ) +
+  labs(
+    title = "Correlation Between Numeric Variables",
+    x = NULL,
+    y = NULL,
+    fill = "Correlation"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+After aggregating the data, we recreated summary statistics for the numeric variables and examined bike rentals across seasons and holidays. We also created visualizations to explore the relationships between daily bike rentals and weather conditions, including temperature, humidity, and rainfall.
+
+We calculated a correlation matrix to examine the relationships between the numeric variables. The results help identify which weather conditions have the strongest positive or negative linear relationships with daily bike rentals. It seems as though temperature and dew point have the strongest (positive) correlation
+
+## Split the data
+
+```{r}
+set.seed(123)
+split <- initial_split(daily_data, prop = 0.75, strata = seasons)
+bike_train <- training(split)
+bike_test  <- testing(split)
+
+cv_folds <- vfold_cv(bike_train, v = 10)
+cv_folds
+```
+
+## Fitting MLR Models
+
+
+```{r}
+# preprocessing wday vs weekend
+
+bike_train <- bike_train %>%
+  mutate(
+    weekday_weekend = factor(
+      ifelse(wday(date) %in% c(1, 7), "Weekend", "Weekday")
+    )
+  )
+
+bike_test <- bike_test %>%
+  mutate(
+    weekday_weekend = factor(
+      ifelse(wday(date) %in% c(1, 7), "Weekend", "Weekday")
+    )
+  )
+```
+
+```{r}
+numeric_vars <- c(
+  "temperature", "humidity", "wind_speed", "visibility",
+  "dew_point", "solar",
+  "rainfall", "snowfall"
+)
+
+train_means <- sapply(bike_train[numeric_vars], mean)
+train_sds <- sapply(bike_train[numeric_vars], sd)
+
+bike_train <- bike_train %>%
+  mutate(across(
+    all_of(numeric_vars),
+    ~ (.x - train_means[cur_column()]) /
+      train_sds[cur_column()]
+  ))
+
+bike_test <- bike_test %>%
+  mutate(across(
+    all_of(numeric_vars),
+    ~ (.x - train_means[cur_column()]) /
+      train_sds[cur_column()]
+  ))
+```
+
+#### Models
+
+
+```{r}
+model_1 <- lm(
+  bike_count ~ temperature + humidity + wind_speed + visibility +
+    dew_point + solar + rainfall + snowfall +
+    seasons + holiday + weekday_weekend,
+  data = bike_train
+)
+
+model_2 <- lm(
+  bike_count ~ temperature + humidity + wind_speed + visibility +
+    dew_point + solar + rainfall + snowfall +
+    seasons + holiday + weekday_weekend +
+    seasons:holiday + seasons:temperature + temperature:rainfall,
+  data = bike_train
+)
+
+model_3 <- lm(
+  bike_count ~ temperature + humidity + wind_speed + visibility +
+    dew_point + solar + rainfall + snowfall +
+    seasons + holiday + weekday_weekend +
+    seasons:holiday + seasons:temperature + temperature:rainfall +
+    I(temperature^2) + I(humidity^2),
+  data = bike_train
+)
+
+```
+
+
+#### Predictions
+
+```{r}
+pred1 <- predict(model_1, newdata = bike_test)
+pred2 <- predict(model_2, newdata = bike_test)
+pred3 <- predict(model_3, newdata = bike_test)
+
+```
+
+Metric
+
+```{r}
+#RMSE
+
+rmse <- function(actual, predicted) {
+  sqrt(mean((actual - predicted)^2))
+}
+
+rmse1 <- rmse(bike_test$bike_count, pred1)
+rmse2 <- rmse(bike_test$bike_count, pred2)
+rmse3 <- rmse(bike_test$bike_count, pred3)
+```
+
+
+```{r}
+model_results <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3"),
+  RMSE = c(rmse1, rmse2, rmse3)
+)
+
+model_results
+```
+
+Model 3 is the best model when evaluated using RMSE metric, since it has the least error.
+
+
