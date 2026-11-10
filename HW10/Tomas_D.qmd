@@ -1,0 +1,134 @@
+---
+title: "ST558 HW10"
+format: html
+editor: visual
+---
+
+#### From HW9
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(tidymodels)
+
+# Read from URL
+bike_url <- "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv"
+raw_data <- read_csv(bike_url, locale = locale(encoding = "latin1"))
+```
+
+```{r}
+#Check missingness and structure
+sum(is.na(raw_data))
+glimpse(raw_data)
+
+#Clean names, convert date format, convert factors
+bike_clean <- raw_data |>
+  janitor::clean_names() |>
+  
+  mutate(
+    # Forma dataset dd/mm/yyyy
+    date = dmy(date),
+    seasons = as.factor(seasons),
+    holiday = as.factor(holiday),
+    functioning_day = as.factor(functioning_day)
+  )
+
+#Initial summaries =
+bike_clean |>
+  group_by(functioning_day) |>
+  summarize(
+    total_rentals = sum(rented_bike_count),
+    mean_rentals = mean(rented_bike_count),
+    n = n()
+  )
+
+# Filter to keep functional hours only:
+bike_functional <- bike_clean |>
+  filter(functioning_day == "Yes")
+
+# 1 observation per day
+# Sum for bike count, rainfall, snowfall, Mean for all other numeric weather variables
+daily_bike <- bike_functional |>
+  group_by(date, seasons, holiday) |>
+  summarize(
+    rented_bike_count = sum(rented_bike_count),
+    rainfall = sum(rainfall_mm),
+    snowfall = sum(snowfall_cm),
+    temperature = mean(temperature_c),
+    humidity = mean(humidity_percent),
+    wind_speed = mean(wind_speed_m_s),
+    visibility = mean(visibility_10m),
+    dew_point_temperature = mean(dew_point_temperature_c),
+    solar_radiation = mean(solar_radiation_mj_m2),
+    .groups = "drop"
+  )
+
+#Summaries
+summary(daily_bike)
+
+# Correlation matrix 
+numeric_cols <- daily_bike |> select(where(is.numeric))
+cor(numeric_cols)
+
+# Exploratory plot: Rentals vs Temperature colored by Season
+ggplot(daily_bike, aes(x = temperature, y = rented_bike_count, color = seasons)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Daily Bike Rentals vs. Temperature by Season",
+    x = "Mean Daily Temperature (°C)",
+    y = "Total Daily Rentals"
+  )
+```
+
+#### Splitting the data
+
+```{r}
+
+
+set.seed(123)
+
+# 75/25 split by season
+bike_split <- initial_split(daily_bike, prop = 0.75, strata = seasons)
+train_data <- training(bike_split)
+test_data  <- testing(bike_split)
+
+# 10-fold CV split 
+bike_folds <- vfold_cv(train_data, v = 10, strata = seasons)
+
+```
+
+#### Create MLR
+
+```{r}
+# 1st MLR
+bike_rec1 <- recipe(rented_bike_count ~ ., data = train_data) |>
+  update_role(date, new_role = "ID") |>
+  step_date(date, features = "dow") |>
+  step_mutate(
+    day_type = factor(if_else(date_dow %in% c("Sat", "Sun"), "Weekend", "Weekday"))
+  ) |>
+  step_rm(date_dow) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(seasons, holiday, day_type)
+
+
+```
+
+#### Second MLR - First MLR + interaction
+
+```{r}
+# 2nd MLR, 1 + interactions
+bike_rec2 <- bike_rec1 |>
+  step_interact(
+    terms = ~ starts_with("seasons_"):starts_with("holiday_") +
+      starts_with("seasons_"):temperature +
+      temperature:rainfall
+  )
+
+# 3rd MLR: MLR 2 + quadratic terms for temperature and humidity
+bike_rec3 <- bike_rec2 |>
+  step_mutate(temp_sq = temperature^2, hum_sq = humidity^2)
+
+```
