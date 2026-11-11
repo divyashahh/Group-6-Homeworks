@@ -1,0 +1,596 @@
+---
+title: "HW 10: Modeling Practice"
+author: "Group 6"
+editor: visual
+---
+
+This homework focused on fitting multiple linear regression (MLR) models with `tidymodels`. The data record hourly bike rentals in Seoul, together with the weather and calendar conditions for each hour. The goal is to predict the number of bikes rented per day. The steps were: read in the data, explore and clean it, summarize it to one row per day, split it into training and test sets, compare three MLR models with 10-fold cross-validation, and evaluate the best one on the test set. Building on that, HW 10 adds tuned LASSO, regression tree, bagged tree, and random forest models, compares every final model on the test set using RMSE and MAE, and fits the overall best model to the full data set.
+
+```{r libraries}
+library(tidyverse)
+library(janitor)
+library(tidymodels)
+```
+
+## Reading Data
+
+The data come from the UCI Machine Learning Repository. The file is not saved as UTF-8. It is encoded as Latin-1 (ISO-8859-1), since two of the column names contain the degree symbol (`Temperature(°C)` and `Dew point temperature(°C)`). With `readr`'s default UTF-8 assumption, that character can trigger an `invalid multibyte string` error. Telling `read_csv()` the file's encoding through `locale()` fixes it.
+
+```{r read-data}
+bike_data <- read_csv(
+  "https://www4.stat.ncsu.edu/~online/datasets/SeoulBikeData.csv",
+  locale = locale(encoding = "latin1")
+)
+bike_data
+```
+
+The data have 8,760 rows, one per hour for a full year (365 × 24), and 14 columns with variables including the date, the hourly rental count (our response), the hour, eight weather measurements, and three categorical variables (`Seasons`, `Holiday`, and `Functioning Day`).
+
+## EDA
+
+### Checking the Data
+
+**1. Missingness:** Before any cleaning, we checked whether any values are missing to prevent problems later.
+
+```{r check-missing}
+colSums(is.na(bike_data))
+```
+
+None of the 14 columns has missing values, so no imputing or dropping of rows is needed for that reason.
+
+**2. Column types and values:** Next, we checked that each column was read in as the right type and that its values make sense. For numeric columns that means summary statistics. For categorical columns, `janitor::tabyl()` shows each unique value along with how often it appears. We also used `janitor::get_dupes()` to confirm that no date-hour combination appears more than once, since each row should be exactly one hour.
+
+```{r check-columns}
+# column types
+str(bike_data)
+
+# basic summary stats for the numeric columns
+bike_data |>
+  select(where(is.numeric)) |>
+  summary()
+
+# unique values (and their frequencies) for each categorical column
+bike_data |> tabyl(Seasons)
+bike_data |> tabyl(Holiday)
+bike_data |> tabyl(`Functioning Day`)
+
+# each date/hour combination should appear exactly once
+bike_data |> get_dupes(Date, Hour)
+```
+
+Most of the numeric columns look reasonable. `Hour` runs from 0 to 23, temperature ranges from -17.8°C to 39.4°C, and hourly rentals range from 0 to 3,556. A few things stand out. Humidity has a minimum of 0%, which is physically implausible and likely a sensor error, but it affects very few rows, so we left it in. Visibility tops out at exactly 2000 (20 km), which suggests the measurement is capped. Rainfall and snowfall are 0 in most hours, so both are very right-skewed. On the categorical side, the four seasons each make up about a quarter of the hours. About 5% of hours (432) fall on holidays, and about 3% (295) are marked as non-functioning, which comes up again below. `get_dupes()` found no duplicate date-hour combinations, so every row is a distinct hour. `Date` and the three categorical variables were all read in as character, so they still need to be converted.
+
+**3. Converting the date:** `Date` came in as a character string in day/month/year format (`01/12/2017` is December 1, 2017), so we converted it with `lubridate::dmy()`.
+
+```{r convert-date}
+bike_data <- bike_data |>
+    mutate(Date = dmy(Date))
+range(bike_data$Date)
+```
+
+The data cover exactly one year, from December 1, 2017 through November 30, 2018. That's 365 days × 24 hours, which matches the 8,760 rows.
+
+**4. Converting character variables to factors:** `Seasons`, `Holiday`, and `Functioning Day` are categorical, so we converted them to factors. For `Seasons` I set the levels in calendar order instead of R's default alphabetical order, so tables and plots read Winter, Spring, Summer, Fall. The data spell this season "Autumn", so we matched on that value with `levels` and relabeled it "Fall" with `labels`; listing "Fall" in `levels` alone would turn every Autumn hour into `NA`.
+
+```{r make-factors}
+bike_data <- bike_data |>
+  mutate(
+    Seasons = factor(Seasons,
+                     levels = c("Winter", "Spring", "Summer", "Autumn"),
+                     labels = c("Winter", "Spring", "Summer", "Fall")),
+    Holiday = factor(Holiday),
+    `Functioning Day` = factor(`Functioning Day`)
+  )
+```
+
+**5. Renaming the variables:** Finally, we renamed every column to lower snake case. `janitor::clean_names()` does most of this automatically by lowercasing everything, replaces spaces and punctuation with underscores, and handles symbols like `%` and `°`. The cleaned names keep their units, though (`rented_bike_count`, `humidity_percent`, `rainfall_mm`, ...), so we followed up with `rename()` to shorten the ones we will use most. We matched the columns with `starts_with()` because the exact cleaned name for the two temperature columns depends on how the degree symbol gets transliterated on a given system, and `starts_with()` matches either way.
+
+```{r rename-columns}
+bike_data <- bike_data |>
+  clean_names() |>
+  rename(
+    bike_count      = rented_bike_count,
+    temp            = starts_with("temperature"),
+    dew_point_temp  = starts_with("dew_point"),
+    humidity        = starts_with("humidity"),
+    wind_speed      = starts_with("wind_speed"),
+    visibility      = starts_with("visibility"),
+    solar_radiation = starts_with("solar"),
+    rainfall        = starts_with("rainfall"),
+    snowfall        = starts_with("snowfall")
+  )
+
+names(bike_data)
+```
+
+**6. Summary statistics across the categorical variables:** With the data cleaned up, we looked at summary statistics for the response, `bike_count`, both overall and across each categorical variable.
+
+```{r summary-by-category}
+# overall
+bike_data |>
+  summarize(mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+# across each categorical variable
+bike_data |>
+  group_by(seasons) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_data |>
+  group_by(functioning_day) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+```
+
+Rentals vary a lot by season. The average Summer hour has about 1,034 rentals, more than four times the roughly 226 in Winter, with Spring (730) and Fall (820) in between. Holiday hours average fewer rentals than non-holiday hours (500 vs. 715). The `functioning_day` summary is where something is clearly off: every one of the 295 non-functioning hours has exactly 0 rentals.
+
+```{r functioning-day-check}
+# where do the non-functioning hours fall?
+bike_data |>
+  tabyl(seasons, functioning_day) |>
+  adorn_totals("row")
+```
+
+The cross-tabulation shows that non-functioning hours only occur in Spring (48 hours) and Fall (247 hours). They cover 12 full days plus 7 hours of October 6, 2018. During these hours the bike-share system was not operating, so those zeros reflect the service being down, not a lack of demand. Leaving them in would pull down the averages for Spring and Fall and teach the models that certain weather conditions produce zero rentals when they don't. So we removed the non-functioning hours. After that, `functioning_day` has only one value, so we dropped the column too.
+
+```{r remove-nonfunctioning}
+bike_data <- bike_data |>
+  filter(functioning_day == "Yes") |>
+  select(-functioning_day)
+
+bike_data
+```
+
+That leaves 8,465 hours across 353 days. Removing the shutdowns also changes the seasonal picture: Fall's average hourly rentals rise from about 820 to about 924, and Spring's from about 730 to about 746.
+
+**7. Summarizing to one row per day:** To simplify the analysis, we collapsed the hourly data, so each day has a single observation. We grouped by `date`, `seasons`, and `holiday`. Season and holiday status never change within a day, so grouping by them does not split any day into multiple rows, instead just keeps those columns in the summarized data. Within each day, we added up the variables that accumulate over the day (total rentals, total rainfall, and total snowfall). For the other weather variables (temperature, humidity, wind speed, visibility, dew point, and solar radiation) and we took the daily average. `hour` is dropped, since it no longer applies once the hours are combined.
+
+```{r summarize-daily}
+bike_daily <- bike_data |>
+  group_by(date, seasons, holiday) |>
+  summarize(
+    across(c(bike_count, rainfall, snowfall), sum),
+    across(c(temp, humidity, wind_speed, visibility,
+             dew_point_temp, solar_radiation), mean),
+    .groups = "drop"
+  )
+
+bike_daily
+```
+
+The result has 353 rows, one for each remaining day, and 12 columns. This is the data used for the rest of the analysis. One day needs a caveat: October 6, 2018 had 7 non-functioning hours removed above, so its total of 16,037 rentals is based on only 17 hours instead of 24. That day also had 35.5 mm of rain, which may explain the partial shutdown. Since it's a single day out of 353, I kept it.
+
+**8. Summaries, plots, and correlations on the daily data:** With one row per day, we recreated the summary statistics, this time on daily totals instead of hourly counts.
+
+```{r daily-numeric-summary}
+bike_daily |>
+  select(where(is.numeric)) |>
+  summary()
+```
+
+Across the 353 days, daily rentals range from 977 to 36,149, with a mean of about 17,485 and a median of about 18,563. Rainfall and snowfall remain heavily skewed: 253 of the 353 days had no rain at all, and only 27 had any snow.
+
+```{r daily-summary-by-category}
+bike_daily |>
+  group_by(seasons) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_daily |>
+  group_by(holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            sd = sd(bike_count), min = min(bike_count), max = max(bike_count))
+
+bike_daily |>
+  group_by(seasons, holiday) |>
+  summarize(n = n(), mean = mean(bike_count), median = median(bike_count),
+            .groups = "drop")
+```
+
+The seasonal pattern from the hourly data holds up. An average Winter day has about 5,400 rentals, compared to about 24,800 in Summer, with Fall (about 22,100) and Spring (about 17,900) in between. Spring has the largest spread (SD of about 8,400), which makes sense for a transition season that runs from cold March days into warm May ones. Holidays look much lower at first glance (about 12,700 vs. 17,700 rentals), but the season-by-holiday breakdown shows that comparison is misleading. Of the 17 holidays, 8 fall in Winter, the slowest season, so the holiday average is dragged down by season. Within Summer and Fall, holiday and non-holiday days average nearly the same. With only 17 holidays in total, these within-season comparisons rest on very few days.
+
+```{r plot-histogram}
+ggplot(bike_daily, aes(x = bike_count)) +
+  geom_histogram(bins = 30) +
+  labs(title = "Distribution of daily rentals", x = "Daily rentals", y = "Days")
+```
+
+The distribution of daily rentals is clearly bimodal. One cluster of days sits around 3,000 to 8,000 rentals (mostly Winter) and a second, broader cluster around 20,000 to 30,000. A single overall mean hides that split, which suggests season will be an important predictor.
+
+```{r plot-season-holiday}
+ggplot(bike_daily, aes(x = seasons, y = bike_count, fill = holiday)) +
+  geom_boxplot() +
+  labs(title = "Daily rentals by season and holiday",
+       x = "Season", y = "Daily rentals", fill = "")
+```
+
+The boxplots show the same seasonal ordering, with Winter far below the rest. The holiday gap is clear in Winter and Spring and mostly disappears in Summer and Fall. That hints that the effect of a holiday may depend on the season, which is the seasons × holiday interaction added in the second recipe below.
+
+```{r plot-temp}
+ggplot(bike_daily, aes(x = temp, y = bike_count, color = seasons)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Daily rentals vs. average temperature",
+       x = "Average temperature (°C)", y = "Daily rentals", color = "Season")
+```
+
+Temperature has the strongest visible relationship with rentals, but it isn't a straight line. Rentals climb steadily as days warm up to roughly 22 to 25°C, then fall off on the hottest Summer days above about 28°C. This curve is the main motivation for the quadratic terms in the third recipe: a purely linear temperature effect would overpredict rentals on the hottest days.
+
+```{r plot-rainfall}
+ggplot(bike_daily, aes(x = rainfall, y = bike_count)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "Daily rentals vs. total rainfall",
+       x = "Total rainfall (mm)", y = "Daily rentals")
+```
+
+Most days are stacked at zero rainfall, across the full range of rental counts. Once rain does fall, high-rental days become rare, and days with heavy rain (above roughly 30 mm) almost all have low rentals. The effect of rain may also depend on temperature, since a rainy summer day and a rainy winter day aren't comparable. That's the reasoning behind the temperature × rainfall interaction in the second recipe.
+
+```{r plot-time}
+ggplot(bike_daily, aes(x = date, y = bike_count, color = seasons)) +
+  geom_line() +
+  labs(title = "Daily rentals over the year",
+       x = "Date", y = "Daily rentals", color = "Season")
+```
+
+Over the year, rentals rise from their Winter lows, peak around June, and stay high through early Fall before tapering off in November. The sharp single-day dips throughout Spring, Summer, and Fall line up with the rainfall pattern above.
+
+```{r correlations}
+bike_daily |>
+  select(where(is.numeric)) |>
+  cor() |>
+  round(2)
+```
+
+Among the numeric variables, daily rentals are most strongly correlated with average temperature (r = 0.75), solar radiation (0.74), and dew point temperature (0.65). Snowfall (-0.27), rainfall (-0.24), and wind speed (-0.19) are weakly negatively correlated with rentals, and humidity has essentially no linear relationship (0.04). One relationship to keep in mind for modeling: temperature and dew point temperature are almost perfectly correlated (r = 0.96). Including both in a linear model makes their individual coefficients unstable and hard to interpret, though predictions shouldn't suffer much. Since the goal is prediction, we kept both.
+
+## Split the Data
+
+Before fitting anything, we split the daily data into a training set (75%) and a test set (25%). We stratified the split on `seasons`, so both sets get about the same mix of seasons. Rentals differ so much by season that an unlucky split, for example one with very few Winter days in the training set, could distort the models. We then split the training set into 10 cross-validation folds, which we use to compare the three candidate models.
+
+```{r split-data}
+set.seed(558)
+bike_split <- initial_split(bike_daily, prop = 0.75, strata = seasons)
+bike_train <- training(bike_split)
+bike_test  <- testing(bike_split)
+
+bike_cv_folds <- vfold_cv(bike_train, v = 10)
+bike_cv_folds
+```
+
+The training set has 263 days and the test set 90, and each season makes up about a quarter of both. Note how each CV fold trains on 236 or 237 days and evaluates on the remaining 26 or 27.
+
+## Fitting MLR Models
+
+### Recipes
+
+**Recipe 1.** This recipe sets up the preprocessing that all three models share. We gave `date` an `ID` role so it stays out of the model, but we still used it to create a `Weekday/Weekend` variable with `step_date()` and `step_mutate()` since rentals likely differ between the two. Then, we standardized the numeric predictors because they are in different scales and created dummy variables for `seasons`, `holiday`, and `day_type`.
+
+```{r recipe-1}
+rec1 <- recipe(bike_count ~ ., data = bike_train) |>
+  update_role(date, new_role = "ID") |>
+  step_date(date, features = "dow") |>
+  step_mutate(day_type = factor(if_else(date_dow %in% c("Sat", "Sun"),
+                                        "Weekend", "Weekday"))) |>
+  step_rm(date_dow) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(seasons, holiday, day_type)
+
+rec1
+```
+
+This returns 13 predictors, where the 8 standardized weather variables, 3 season dummies (with Winter as the baseline), a holiday indicator, and a weekend indicator.
+
+**Recipe 2.** This recipe builds on Recipe 1 by adding three interactions suggested by the EDA such as seasons × holiday, seasons × temperature, and temperature × rainfall. We used `starts_with("seasons")` so that each season dummy gets its own interaction term.
+
+```{r recipe-2}
+rec2 <- rec1 |>
+  step_interact(terms = ~ starts_with("seasons"):starts_with("holiday") +
+                  starts_with("seasons"):temp) |>
+  step_interact(terms = ~ temp:rainfall)
+
+rec2
+```
+
+This adds 7 interaction terms (3 season × holiday, 3 season × temperature, and temperature × rainfall), for 20 predictors in total.
+
+**Recipe 3.** This recipe adds `temp_sq` and `humidity_sq` on top of recipe 2, for 22 predictors in total.
+
+```{r recipe-3}
+rec3 <- rec2 |>
+  step_mutate(temp_sq = temp^2, humidity_sq = humidity^2)
+
+rec3
+```
+
+### Model Fitting
+
+All three models are ordinary multiple linear regressions fit with the `"lm"` engine. We paired the same model specification with each recipe in a workflow, so each workflow carries its own preprocessing and fitting steps together.
+
+```{r model-spec}
+lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+wf1 <- workflow() |> add_recipe(rec1) |> add_model(lm_spec)
+wf2 <- workflow() |> add_recipe(rec2) |> add_model(lm_spec)
+wf3 <- workflow() |> add_recipe(rec3) |> add_model(lm_spec)
+```
+
+To compare the models we fit each workflow with `fit_resamples()` on the 10 CV folds. In each fold, the model is trained on 9/10 of the training data and evaluated on the remaining 1/10, and the metrics are averaged across the folds.
+
+```{r cv-fits}
+cv_fit1 <- wf1 |> fit_resamples(bike_cv_folds)
+cv_fit2 <- wf2 |> fit_resamples(bike_cv_folds)
+cv_fit3 <- wf3 |> fit_resamples(bike_cv_folds)
+
+bind_rows(
+  collect_metrics(cv_fit1) |> mutate(model = "Recipe 1: main effects"),
+  collect_metrics(cv_fit2) |> mutate(model = "Recipe 2: + interactions"),
+  collect_metrics(cv_fit3) |> mutate(model = "Recipe 3: + quadratics")
+) |>
+  filter(.metric == "rmse") |>
+  arrange(mean)
+```
+
+Notice how fitting these models produces a "prediction from rank-deficient fit" warning in 2 of the 10 folds for Recipes 2 and 3. Because there are only 2 Summer holidays given in the whole dataset and some folds the training data contain no Summer holiday at all. For those fold cases the Summer × holiday interaction column is identical to the Summer dummy, then `lm()` drops one of the two redundant columns. The remaining coefficients and the predictions are unaffected, so the warning is harmless.
+
+Adding interactions made the biggest difference CV RMSE dropped from about 4,095 rentals per day to approximately 3,064. The squared terms used in Recipe 3 lowered further to about 3,027 suggesting that is the best model by CV RMSE. I.e. we chose Recipe 3 since it has the lowest CV error.
+
+## Final Model
+
+Since we chose Recipe 3, we refit it on the entire dataset.
+
+```{r final-fit}
+final_model <- fit(wf3, data = bike_daily)
+
+#coefficients
+final_model |>
+  extract_fit_parsnip() |>
+  tidy() |>
+  print(n = Inf)
+```
+
+The numeric predictors were standardized, so their coefficients show relative importance (the change in rentals per one standard deviation) rather than an exact per-unit effect. The season and weekend variables are 0/1 indicators, so their coefficients are in rentals per day. Season is the largest effect: holding the other predictors at their average values, a Summer day has about 24,000 more rentals than a Winter day. Weekends have about 2,365 fewer rentals than weekdays. The effect of temperature depends on the season (the season × temperature interactions are large), and temperature and dew point are highly correlated, so their individual coefficients shouldn’t be interpreted on their own.
+
+## Additional Models
+
+```{r libraries-pt2}
+library(glmnet)
+library(rpart.plot)
+library(baguette)
+library(ranger)
+library(future)
+plan(multisession)
+```
+
+To verify whether more flexible models can beat linear regression, we fit four more model types such as LASSO, a regression tree, a bagged tree, and a random forest. All four use Recipe 1 given above as its contains main effects only, with no interactions or quadratic terms. And the same 10 CV folds, so we can compare results directly to the MLR models. Each model has tuning parameters, meaning that for each one we try a grid of values with `tune_grid()`, choose the value with the lowest CV RMSE, and then fit that final model on the full training set with `last_fit()`.
+
+### LASSO
+
+LASSO is defined as a linear regression which contains a penalty that shrinks coefficients towards zero. When there exists a large enough penalty sets some exactly to zero, removing those predictors from the model. The strength of the penalty is the tuning parameter, and setting `mixture = 1` makes it a LASSO, as opposed to ridge regression or a mix of the two.
+
+```{r lasso-tune}
+lasso_spec <- linear_reg(penalty = tune(), mixture = 1) |>
+  set_engine("glmnet")
+
+lasso_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(lasso_spec)
+
+lasso_grid <- lasso_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(penalty(), levels = 30))
+
+lasso_grid |>
+  show_best(metric = "rmse")
+```
+
+The best penalty values return the same CV RMSE, about 4,121 rentals per day. The default `penalty()` grid only goes from 10^-10^ up to 1, which is tiny compared to a response measured in the thousands, so every value in the grid ends up with essentially the same fit. That RMSE is close to the MLR version of Recipe 1 (about 4,095), which makes sense, since a LASSO with almost no penalty is nearly ordinary regression.
+
+```{r lasso-final}
+best_lasso <- lasso_grid |>
+  select_best(metric = "rmse")
+
+lasso_final_fit <- lasso_wf |>
+  finalize_workflow(best_lasso) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+lasso_final_fit |>
+  extract_fit_parsnip() |>
+  tidy()
+```
+
+Even with a small penalty, the LASSO shows one meaningful difference: it set the temperature coefficient to exactly 0 and kept dew point temperature instead. That fits what we saw in the EDA, where the two are almost perfectly correlated (r = 0.96). The LASSO dropped one of the redundant predictors, while ordinary regression kept both. The remaining coefficients point in the same directions as before: rain, humidity, and weekends lower rentals, while solar radiation, the non-Winter seasons, and non-holidays raise them.
+
+### Regression Tree
+
+A regression tree is a non-linear model that splits the predictor space into rectangular regions, then fits a constant value in each region. The tuning parameters are `tree_depth`, which controls how many splits the tree can make, and `cost_complexity`, which controls how much the tree is pruned. A larger `cost_complexity` produces a smaller tree.
+
+```{r tree-tune}
+tree_spec <- decision_tree(tree_depth = tune(),
+                           min_n = 20,
+                           cost_complexity = tune()) |>
+  set_engine("rpart") |>
+  set_mode("regression")
+
+tree_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(tree_spec)
+
+tree_grid <- tree_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(cost_complexity(), tree_depth(),
+                                levels = c(10, 5)))
+
+tree_grid |>
+  show_best(metric = "rmse")
+```
+
+The best trees have a CV RMSE of about 4,153 rentals per day, reached at depths of 11 and 15 with very small pruning penalties. Beyond a depth of about 11, extra depth makes no difference, because the tree stops splitting on its own once groups get smaller than 20 days. Several settings tie for the best CV RMSE because they all produce the same tree, so it doesn’t matter which one select_best() picks.
+
+```{r tree-final}
+tree_best <- tree_grid |>
+  select_best(metric = "rmse")
+
+tree_final_fit <- tree_wf |>
+  finalize_workflow(tree_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+tree_final_fit |>
+  extract_fit_engine() |>
+  rpart.plot::rpart.plot(roundint = FALSE)
+```
+
+The final tree has 23 final groups (leaves), so the plot is busy, but the top splits tell the main story. The splits are on the standardized scale from Recipe 1, so values like -0.28 are in standard deviations rather than °C. The very first split is on temperature, at about 9.5°C. On colder days, the tree next separates Fall days from the rest and then splits on solar radiation. On warmer days, it splits first on solar radiation, separating out very dark days, and then on rainfall (about 1.75 mm), before splitting further on temperature, humidity, and visibility. The predicted daily rentals range from about 3,900 for cold, low-sun, windy days to about 33,000 for the warmest Summer days. Temperature and solar radiation appear in the most splits, which matches their strong correlations with rentals in the EDA.
+
+### Bagged Tree
+
+A single regression tree is unstable, implying that small changes in the data can produce a very different tree. Bagging stabilizes the predictions by averaging many trees fit to bootstrap samples of the training data. The tuning parameter `cost_complexity` controls how much each tree is pruned, with larger values producing smaller trees.
+
+```{r bagged-tree-tune}
+bag_spec <- bag_tree(min_n = 10, cost_complexity = tune()) |>
+  set_engine("rpart", times = 50) |>
+  set_mode("regression")
+
+bag_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(bag_spec)
+
+set.seed(558)
+bag_grid <- bag_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(cost_complexity(), levels = 15))
+
+bag_grid |>
+  show_best(metric = "rmse")
+```
+
+```{r}
+bag_grid |>
+  collect_metrics() |>
+  filter(.metric == "rmse") |>
+  arrange(desc(cost_complexity)) |>
+  head(4)
+```
+
+Bagging is a big improvement over the single tree. For small penalty values, the CV RMSE stays around 3,100 rentals per day, compared to about 4,153 for the single tree, which puts it close to the best MLR model (about 3,027). The small differences between neighboring penalty values are mostly random noise from the bootstrap samples. Only the largest penalties clearly hurt, because they prune each tree back so far that it can't capture much: at 0.1, the CV RMSE jumps to above 5,000.
+
+```{r bagged-tree-final}
+bag_best <- bag_grid |>
+  select_best(metric = "rmse")
+
+set.seed(558)
+bag_final_fit <- bag_wf |>
+  finalize_workflow(bag_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+bag_final_fit |>
+  extract_fit_engine() |>
+  pluck("imp") |>
+  mutate(term = fct_reorder(term, value)) |>
+  ggplot(aes(x = value, y = term)) + 
+  geom_col() +
+  labs(title = "Bagged tree variable importance", x = "Importance", y = NULL)
+
+```
+
+The variable importance plot shows how much each predictor improved the fit, summed over all its splits and averaged across the 50 trees. Temperature is the most important predictor, followed closely by dew point temperature and solar radiation, then humidity and rainfall. The season, holiday, and weekend indicators are near the bottom. That's different from the MLR and LASSO models, where the weekend effect was clearly significant. Trees get most of their improvement from splitting on the continuous weather variables, so a 0/1 variable with a moderate effect rarely gets chosen for a split.
+
+### Random Forest
+
+A random forest is a bagged tree model which adds randomness to the tree-building process. Each tree is fit to a bootstrap sample of the training data, and at each split only a random subset of predictors is considered. The tuning parameter `mtry` controls how many predictors are considered at each split. A smaller `mtry` increases the randomness and reduces correlation between trees, which can improve predictions. Recipe 1 has 13 predictors, so we tried every value of `mtry` from 1 to 13, with 500 trees per forest.
+
+```{r rf-tune}
+rf_spec <- rand_forest(mtry = tune(), trees = 500) |>
+  set_engine("ranger", importance = "impurity") |>
+  set_mode("regression")
+
+rf_wf <- workflow() |>
+  add_recipe(rec1) |>
+  add_model(rf_spec)
+
+set.seed(558)
+
+rf_grid <- rf_wf |>
+  tune_grid(resamples = bike_cv_folds,
+            grid = grid_regular(mtry(range = c(1, 13)), levels = 13))
+rf_grid |>
+  show_best(metric = "rmse")
+```
+
+The best forest uses `mtry` = 9, with a CV RMSE of about 3,036 rentals per day. The other top settings (`mtry` of 10 to 13) are nearly identical, at about 3,040 to 3,060, and the differences are much smaller than the standard errors (about 125 to 145)
+
+```{r rf-final}
+rf_best <- rf_grid |>
+  select_best(metric = "rmse")
+
+set.seed(558)
+
+rf_final_fit <- rf_wf |>
+  finalize_workflow(rf_best) |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+
+rf_final_fit |>
+  extract_fit_engine() |>
+  pluck("variable.importance") |>
+  enframe(name = "term", value = "importance") |>
+  mutate(term = fct_reorder(term, importance)) |>
+  ggplot(aes(x = importance, y = term)) +
+  geom_col() +
+  labs(title = "Random forest variable importance",
+       x = "Importance", y = NULL)
+```
+
+Temperature is by far the most important predictor, and solar radiation is a clear second at about half its importance, with dew point, rainfall, and the Fall indicator well behind. We set `importance = "impurity"` in the ranger engine so the scores could be pulled out with `extract_fit_engine()`.
+
+## Comparing all the Final Models
+
+With the best version of each model type chosen by cross-validation, the final step is to compare them on the test set, which none of them has seen yet. The best MLR model from HW 9 (Recipe 3) was only evaluated on RMSE, so we refit it with `last_fit()` to also get the MAE (mean absolute error). RMSE squares each error before averaging, so it penalizes a few large misses heavily. MAE is the average size of a miss in rentals per day, which makes it easier to interpret and less sensitive to the occasional very bad prediction.
+
+```{r mlr-final-rmse-mae}
+mlr_final_fit <- wf3 |>
+  last_fit(bike_split, metrics = metric_set(rmse, mae))
+```
+
+```{r compare-models}
+bind_rows(
+  collect_metrics(mlr_final_fit)   |> mutate(model = "MLR (Recipe 3)"),
+  collect_metrics(lasso_final_fit) |> mutate(model = "LASSO"),
+  collect_metrics(tree_final_fit)  |> mutate(model = "Regression tree"),
+  collect_metrics(bag_final_fit)   |> mutate(model = "Bagged tree"),
+  collect_metrics(rf_final_fit)    |> mutate(model = "Random forest")
+) |>
+  select(model, .metric, .estimate) |>
+  pivot_wider(names_from = .metric, values_from = .estimate) |>
+  arrange(rmse)
+```
+
+The random forest has the best test-set performance on both metrics, with an RMSE of about 2,197 and an MAE of about 1,691 rentals per day. The bagged tree is a close second (about 2,309 and 1,856), and both tree ensembles beat the best MLR model (about 3,059 and 2,132). The single regression tree (about 3,514 and 2,543) and the LASSO (about 4,138 and 3,077) trail well behind. Both are limited to the main-effects recipe in their own way: the LASSO can't capture the curved and season-dependent effects the MLR model got from its interactions, and a single tree's predictions jump between a few fixed values. The ensembles get around both problems, since averaging many trees lets them pick up nonlinear and interacting effects automatically. In cross-validation the forest, the bagged tree, and the MLR model were all close (about 3,030 to 3,060), so with only 90 test days part of the ensembles' lead may be luck, but they come out ahead on both metrics.
+
+The final fits for the other models were summarized in their own sections above: the LASSO coefficient table, the regression tree plot, and the variable importance plots for the bagged tree and random forest. The coefficient table for the final MLR model is shown below.
+
+```{r mlr-coefficients-hw10}
+mlr_final_fit |>
+  extract_fit_parsnip() |>
+  tidy()
+```
+
+Since the random forest performed best, the last step is to refit it, with the `mtry` value chosen by cross-validation, on the entire data set: all 353 days, training and test combined. That's the version we'd use to predict future days, since it learns from every observation we have.
+
+```{r best-model-full-data}
+set.seed(558)
+
+best_overall_fit <- rf_wf |>
+  finalize_workflow(rf_best) |>
+  fit(data = bike_daily)
+
+best_overall_fit
+```
+
+## Overall Conclusion
+
+Building on the MLR models from HW 9, we added tuned LASSO, regression tree, bagged tree, and random forest models, all using the main-effects recipe. The tree ensembles did best, and the random forest came out on top on the test set by both RMSE and MAE, so it is our final model. The LASSO and the single tree did noticeably worse. The LASSO is limited by being linear, and a single tree is unstable, while the ensembles average many trees and pick up nonlinear and interacting effects on their own, which the MLR model only matched once we added the interactions by hand. In the tree-based models, temperature and solar radiation stood out as the most important predictors of daily bike rentals in Seoul.
