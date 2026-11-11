@@ -132,3 +132,111 @@ bike_rec3 <- bike_rec2 |>
   step_mutate(temp_sq = temperature^2, hum_sq = humidity^2)
 
 ```
+
+#### Fitting and evaluating MLR Models
+
+```{r}
+
+# Set up linear regression with "lm"
+lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+# combining each recipe with the linear mode
+lm_wf1 <- workflow() |> add_recipe(bike_rec1) |> add_model(lm_spec)
+lm_wf2 <- workflow() |> add_recipe(bike_rec2) |> add_model(lm_spec)
+lm_wf3 <- workflow() |> add_recipe(bike_rec3) |> add_model(lm_spec)
+
+# Evaluate all 3 across the 10 CV folds
+cv_metrics <- metric_set(rmse, mae)
+
+lm_res1 <- fit_resamples(lm_wf1, resamples = bike_folds, metrics = cv_metrics)
+lm_res2 <- fit_resamples(lm_wf2, resamples = bike_folds, metrics = cv_metrics)
+lm_res3 <- fit_resamples(lm_wf3, resamples = bike_folds, metrics = cv_metrics)
+
+# Compare 10-fold CV results to pick the best model
+mlr_cv_comparison <- bind_rows(
+  collect_metrics(lm_res1) |> mutate(Model = "MLR 1 (Main Effects)"),
+  collect_metrics(lm_res2) |> mutate(Model = "MLR 2 (+ Interactions)"),
+  collect_metrics(lm_res3) |> mutate(Model = "MLR 3 (+ Quadratic)")
+) |>
+  filter(.metric == "rmse") |>
+  select(Model, .metric, mean, std_err)
+
+mlr_cv_comparison
+
+```
+
+#### Fitting the best model
+
+```{r}
+# Fit the best MLR modelto the entire training set and evaluate on test set
+best_mlr_last_fit <- last_fit(lm_wf3, split = bike_split, metrics = cv_metrics)
+
+# View test set RMSE and MAE
+collect_metrics(best_mlr_last_fit)
+
+```
+
+#### Tuned Regression Tree
+
+```{r}
+
+library(rpart.plot)
+
+set.seed(123)
+
+#  Regression tree specification with tuning parameters
+tree_spec <- decision_tree(
+  cost_complexity = tune(),
+  tree_depth = tune(),
+  min_n = 20
+) |>
+  set_engine("rpart") |>
+  set_mode("regression")
+
+# using Recipe 1
+tree_wf <- workflow() |>
+  add_recipe(bike_rec1) |>
+  add_model(tree_spec)
+
+# Create tuning grid
+tree_grid <- grid_regular(
+  cost_complexity(),
+  tree_depth(),
+  levels = c(10, 5)
+)
+
+# Tune across the 10-fold CV folds
+tree_res <- tune_grid(
+  tree_wf,
+  resamples = bike_folds,
+  grid = tree_grid,
+  metrics = cv_metrics
+)
+
+# Select best hyperparameters
+best_tree_params <- select_best(tree_res, metric = "rmse")
+best_tree_params
+
+# Finalize and fit to entire training set
+final_tree_wf <- finalize_workflow(tree_wf, best_tree_params)
+tree_last_fit <- last_fit(final_tree_wf, split = bike_split, metrics = cv_metrics)
+
+# Test set performance
+collect_metrics(tree_last_fit)
+
+
+# Extract the fitted rpart
+tree_final_engine <- extract_fit_engine(tree_last_fit)
+
+# Plot the fitted decision tree
+rpart.plot(
+  tree_final_engine, 
+  roundint = FALSE, 
+  type = 2, 
+  extra = 101, 
+  main = "Final Fitted Regression Tree"
+)
+
+
+```
