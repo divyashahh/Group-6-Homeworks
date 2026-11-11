@@ -240,3 +240,178 @@ rpart.plot(
 
 
 ```
+
+####Tuned Bagged Tree
+
+```{r}
+library(baguette)
+
+set.seed(123)
+
+#Model specification with tuning parameters
+
+bag_spec <- bag_tree(
+  cost_complexity = tune(),
+  tree_depth = 10,
+  min_n = tune()
+) |>
+  set_engine("rpart", times = 50) |>
+  set_mode("regression")
+
+# Recipe 1
+bag_wf <- workflow() |>
+  add_recipe(bike_rec1) |>
+  add_model(bag_spec)
+
+# regular tuning grid
+bag_grid <- grid_regular(
+  cost_complexity(),
+  min_n(),
+  levels = 5
+)
+
+#Tune across the 10-fold CV folds
+bag_res <- tune_grid(
+  bag_wf,
+  resamples = bike_folds,
+  grid = bag_grid,
+  metrics = cv_metrics
+)
+
+
+# Select best hyperparameters 
+best_bag_params <- select_best(bag_res, metric = "rmse")
+best_bag_params
+
+# 6. Finalize workflow and fit to entire training set using last_fit()
+final_bag_wf <- finalize_workflow(bag_wf, best_bag_params)
+bag_last_fit <- last_fit(final_bag_wf, split = bike_split, metrics = cv_metrics)
+
+# View test set metrics
+collect_metrics(bag_last_fit)
+```
+
+#### Tuned Random Forest
+
+```{r}
+library(ranger)
+
+set.seed(123)
+
+# Random forest specification with tuning parameters
+rf_spec <- rand_forest(
+  mtry = tune(),
+  trees = 500,
+  min_n = tune()
+) |>
+  set_engine("ranger", importance = "impurity") |>
+  set_mode("regression")
+
+# Workflow using Recipe 1
+rf_wf <- workflow() |>
+  add_recipe(bike_rec1) |>
+  add_model(rf_spec)
+
+# Create regular tuning grid
+
+rf_grid <- grid_regular(
+  mtry(range = c(2, 13)),
+  min_n(range = c(2, 20)),
+  levels = 5
+)
+
+#Tune across the 10-fold CV folds
+rf_res <- tune_grid(
+  rf_wf,
+  resamples = bike_folds,
+  grid = rf_grid,
+  metrics = cv_metrics
+)
+
+#Select best hyperparameters based on RMSE
+best_rf_params <- select_best(rf_res, metric = "rmse")
+best_rf_params
+
+#Finalize workflow and fit to entire training set using last_fit()
+final_rf_wf <- finalize_workflow(rf_wf, best_rf_params)
+rf_last_fit <- last_fit(final_rf_wf, split = bike_split, metrics = cv_metrics)
+
+# View test set metrics
+collect_metrics(rf_last_fit)
+```
+
+#### Compare Models on the Test Set
+
+```{r}
+# Combine test set metrics from each best family model
+test_comparison <- bind_rows(
+  collect_metrics(best_mlr_last_fit) |> mutate(Model = "MLR (Model 3)"),
+  collect_metrics(tree_last_fit)     |> mutate(Model = "Regression Tree"),
+  collect_metrics(bag_last_fit)      |> mutate(Model = "Bagged Tree"),
+  collect_metrics(rf_last_fit)       |> mutate(Model = "Random Forest")
+) |>
+  select(Model, .metric, .estimate) |>
+  pivot_wider(names_from = .metric, values_from = .estimate) |>
+  arrange(rmse)
+
+test_comparison
+```
+
+#### Model Summaries and Variable Importance Plots
+
+```{r}
+# MLR Final Coefficient Table
+mlr_final_fit <- extract_fit_parsnip(best_mlr_last_fit)
+tidy(mlr_final_fit)
+
+# Bagged Tree Variable Importance 
+bag_final_engine <- extract_fit_engine(bag_last_fit)
+
+bag_final_engine$imp |>
+  mutate(term = fct_reorder(term, value)) |>
+  ggplot(aes(x = value, y = term)) +
+  geom_col(fill = "steelblue") +
+  theme_minimal() +
+  labs(
+    title = "Variable Importance: Bagged Tree Model",
+    x = "Importance Score",
+    y = "Predictor"
+  )
+
+# Random Forest Variable Importance 
+rf_engine <- extract_fit_engine(rf_last_fit)
+
+rf_importance <- tibble(
+  Variable = names(rf_engine$variable.importance),
+  Importance = rf_engine$variable.importance
+)
+
+ggplot(rf_importance, aes(x = Importance, y = fct_reorder(Variable, Importance))) +
+  geom_col(fill = "darkorange") +
+  theme_minimal() +
+  labs(
+    title = "Variable Importance: Random Forest Model",
+    x = "Importance (Impurity)",
+    y = "Predictor"
+  )
+```
+
+#### Fit Overall Best Model to Entire Dataset
+
+```{r}
+# Identify the overall best model based on lowest test RMSE
+best_model_name <- test_comparison$Model[1]
+cat("Overall Best Model based on Test RMSE:", best_model_name, "\n")
+
+# Match to the winning workflow and fit to the full daily_bike dataset
+overall_best_wf <- switch(
+  best_model_name,
+  "MLR (Model 3)"   = lm_wf3,
+  "Regression Tree" = final_tree_wf,
+  "Bagged Tree"     = final_bag_wf,
+  "Random Forest"   = final_rf_wf
+)
+
+final_full_fit <- fit(overall_best_wf, data = daily_bike)
+final_full_fit
+```
